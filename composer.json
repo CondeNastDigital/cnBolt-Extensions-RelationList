@@ -19,9 +19,5 @@
         "psr-4": {
             "Bolt\\Extension\\CND\\RelationList\\": ""
         }
-    },
-    
-    "extra": {
-        "bolt-assets": "assets"
     }
 }
