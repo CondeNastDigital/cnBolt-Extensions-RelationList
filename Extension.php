@@ -150,7 +150,9 @@ class Extension extends BaseExtension
      */
     public function initialize() {
         $this->addJquery();
-
+        
+        $this->addJavascript('assets/RelationList.js', true);
+        
         // Define routes
         $this->app->get("/relationlist/finditems/{contenttype}/{field}/{search}", array($this, 'findItems'));
         $this->app->post("/relationlist/fetchJsonList", array($this, 'fetchContentElementArray'));
