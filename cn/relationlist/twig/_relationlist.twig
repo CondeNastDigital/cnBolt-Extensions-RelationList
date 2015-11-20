@@ -1,0 +1,56 @@
+{% set option = {
+class:        field.class|default(''),
+label:        field.label|default(''),
+pattern:      field.pattern|default(''),
+placeholder:  field.placeholder|default(''),
+errortext:    field.error|default(''),
+readonly:     field.readonly|default(false),
+title:        field.title|default(''),
+variant:      field.variant|default(''),
+info:         field.info|default('')
+} %}
+
+{% set attr_search = {
+class:          option.class,
+name:           name,
+id:             'search-' ~ key,
+title:          option.title,
+type:           'text'
+} %}
+
+{% set attr_hidden = {
+class:          option.class,
+name:           name,
+id:             key,
+type:           'hidden',
+value:          context.content.get(contentkey),
+} %}
+
+<fieldset class="relationlist RelationListComponent">
+        <div class="col-sm-12">
+            <label class="control-label">{{ (option.info) ? macro.infopop(labelkey, option.info) : labelkey }}</label>
+            <input{{ macro.attr(attr_search) }}>
+            <div class="searchResultWrapper">
+            	<div class="searchResultList" id="searchResult-{{key}}"></div>
+            </div>
+        	<div class="selectedElementsList" id="selectedElements-{{key}}"></div>
+            <input{{ macro.attr(attr_hidden) }}>
+        </div>
+
+</fieldset>
+
+<script data-id="start.js" type="text/javascript">
+jQuery(document).ready(function($) {
+	RelationList_{{key}} = new RelationListComponent({
+		contenttype: "{{context.content.contenttype.name}}",
+		fieldName: "{{key}}",
+		baseUrl: "{{url('homepage')}}",
+		validation: {
+			min: "{{field.options.min|default('0')}}",
+			max: "{{field.options.max|default('0')}}"
+		}
+	});
+});
+</script>
+
+
