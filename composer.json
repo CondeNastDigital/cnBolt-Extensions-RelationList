@@ -1,0 +1,27 @@
+{
+    "name": "cnd/relationlist",
+    "description": "Provides a backend field for a content type which defines a list of relations to content objects",
+    "type": "bolt-extension",
+    "require": {
+        "bolt/bolt": ">=2.0.0,<3.0.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Benedikt Roßgardt & Christian Woldt",
+            "email": "cndevteam@condenast.de"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "init.php"
+        ],
+        "psr-4": {
+            "Bolt\\Extension\\CND\\RelationList\\": ""
+        }
+    },
+    
+    "extra": {
+        "bolt-assets": "assets"
+    }
+}
