@@ -152,11 +152,28 @@ class Extension extends BaseExtension
         $this->addJquery();
         
         $this->addJavascript('assets/RelationList.js', true);
+        $this->addCss('assets/styles.css', true);
+
+        // Add custom twig filters
+        $this->addTwigFilter('json_decode', 'json_decode');
         
         // Define routes
         $this->app->get("/relationlist/finditems/{contenttype}/{field}/{search}", array($this, 'findItems'));
         $this->app->post("/relationlist/fetchJsonList", array($this, 'fetchContentElementArray'));
     }
+
+
+    /**
+     * Decode JSON string to an array
+     * 
+     * @param  string $string JSON string
+     * 
+     * @return array         Decoded JSON string
+     */
+    public function json_decode($string) {
+        return json_decode($string, true);
+    }
+    
 
     /**
      * Get the field name
@@ -298,7 +315,7 @@ class Extension extends BaseExtension
         $config = $this->getFieldConfig($contenttype, $field);
 
         if ( !$config )
-            return $this->makeErrorResponse("Internal error: Field configuration could not be read!");
+            return $this->makeErrorResponse("Missing field configuration! Please make sure, the `options` attribute is defined according to the `README.md` file.");
         
         $allowedTypes = isset($config["allowed-types"]) ? $config["allowed-types"] : array();
 
@@ -323,14 +340,17 @@ class Extension extends BaseExtension
      * Determine the field config from the contenttypes.yml
      * @param string $contenttype
      * @param string $field
-     * @return array
+     * @return array|false Returns false, if there is no configuration
      */
     protected function getFieldConfig($contenttype, $field){
         $contenttype = $this->app['storage']->getContentType($contenttype);
+
         if(!$contenttype)
             return false;
+
         if(isset($contenttype["fields"][$field]["options"]))
             return $contenttype["fields"][$field]["options"];
+
         return false;
     }
 }
