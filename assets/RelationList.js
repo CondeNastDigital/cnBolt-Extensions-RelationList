@@ -312,8 +312,6 @@ var RelationListComponent = function( config )
 			type: "GET",
 			url: searchUrl,
 			success: function __searchSuccess( response ) {
-				response = $.parseJSON(response);
-
 				if ( response.status === "error" ) {
 					console.error("[RelationListComponent::__searchSuccess] Error: " + response.message);
 					return;
@@ -409,8 +407,6 @@ var RelationListComponent = function( config )
 		elementList = JSON.parse(elementList);
 
 	self.fetchJsonElements( elementList, function __handleInitialContentFetch( response ) {
-		var response = $.parseJSON(response);
-
 		if ( response.status === "error" ) {
 			console.error("[RelationListComponent::__handleInitialContentFetch] Error: " + response.message);
 			self.freeze();

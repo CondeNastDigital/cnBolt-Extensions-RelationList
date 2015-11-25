@@ -13,8 +13,6 @@ use Bolt\Content;
 
 class Extension extends BaseExtension
 {
-    private $dataValidation;
-
     private static $typeName = "relationlist";
 
     public function __construct(Application $app)
@@ -26,122 +24,8 @@ class Extension extends BaseExtension
             $this->app['twig.loader.filesystem']->prependPath(__DIR__."/twig");
         }
 
-        // TODO: Evaluate, if the backend validation is possible
-        //$this->app['dispatcher']->addListener(StorageEvents::PRE_SAVE, array("Bolt\Extension\CND\RelationList\Extension", 'presaveRelationList'));
     }
 
-
-    /**
-     * Callback method that controls the data validation for this extensions new field type
-     * 
-     * @param  \Bolt\Events\StorageEvent $event
-     * 
-     * @return boolean True, is validation passed
-     */
-    /*
-    public function presaveRelationList( \Bolt\Events\StorageEvent $event ) {
-      // get content + config
-      $contentType = $event->getContentType();
-      $content = $event->getContent();
-
-      // get `relationlist` fields
-      $fields = Extension::getRelationListFields( $content );
-      $messageCount = 0;
-      $validationResults = array();
-
-      // validate fields
-      foreach ( $fields as $key => $field ) {
-        $validation = Extension::validateRelationListField( $field, $content );
-        $validationResults[] = $validation;
-        $messageCount += count($validation);
-      }
-
-      global $app;
-
-      if ( $messageCount > 0 ) {
-        $app['session']->getFlashBag()->add('error', "There is a problem, sir!");
-        return false;
-      }
-
-      $app['session']->getFlashBag()->add('success', "Everything alright!");
-      return true;
-    }
-    */
-
-
-    /**
-     * Validate contenttype field based on the field information
-     * 
-     * @param  array $field - Field information array
-     * 
-     * @return array List of messages
-     */
-    /*
-    private static function validateRelationListField( array $field, \Bolt\Content &$content ) {
-      if ( !isset($field) || count(array_keys($field)) !== 1 )
-        return array("Internal error: Invalid field infos!");
-
-      $errors = array();
-      $fieldName = array_keys($field)[0]; // access field info
-      $fieldInfos = $field[$fieldName];
-
-      if ( !isset( $fieldInfos["options"] ) )
-        return array();
-
-      $options = $fieldInfos["options"];
-      $fieldValue = $content->get($fieldName);
-      $fieldValue = json_decode($fieldValue, true);
-
-      /*
-        Check `min` option
-       *
-      if ( isset( $options["min"] ) && is_numeric($options["min"]) ) {
-        $min = intval($options["min"]);
-
-        if ( count($fieldValue) < $min ) {
-          $errors[$fieldName] = "Please select at least " . $min . " item(s)!";
-        }
-      }
-
-      /*
-        Check `max` option
-       *
-      if ( isset( $options["max"] ) && is_numeric($options["max"]) ) {
-        $max = intval($options["max"]);
-
-        if ( count($fieldValue) > $max ) {
-          $errors[$fieldName] = "Please select a maximum of " . $min . " item(s)!";
-        }
-      }
-
-      return $errors;
-    }
-    */
-
-    /**
-     * Retrieve the field infos for the content object`s relation list fields
-     * 
-     * @param \Bolt\Content &$content
-     * 
-     * @return array Field info list that matches the typeName of this class
-     */
-    /*
-    
-    private static function getRelationListFields( \Bolt\Content &$content ) {
-      $result = array();
-      $fields =  array_keys( $content->getValues() );
-
-      // get field config
-      foreach( $fields as $field ) {
-        $fi = $content->fieldinfo($field);
-        if ( $fi["type"] == Extension::$typeName ) {
-          $result[] = array($field => $fi);
-        }
-      }
-
-      return $result;
-    }
-    */
 
     /**
      * Initialize the extension
@@ -177,7 +61,7 @@ class Extension extends BaseExtension
 
     /**
      * Get the field name
-     * @return [type] [description]
+     * @return string
      */
     public function getName()
     {
@@ -186,22 +70,26 @@ class Extension extends BaseExtension
 
     /**
       * Create an JSON response with error message
+      *
+      * @return JsonResponse
       */
     private function makeErrorResponse( $message ) {
-      return new JsonResponse( json_encode(array(
+      return new JsonResponse(array(
           "status" => "error",
           "message" => $message
-        )));
+        ));
     }
 
     /**
       * Create an JSON response with error message
+      * 
+      * @return JsonResponse
       */
     private function makeDataResponse( $data ) {
-      return new JsonResponse( json_encode(array(
+      return new JsonResponse(array(
           "status" => "okay",
           "data" => $data
-        )));
+        ));
     }
 
     /**
@@ -219,24 +107,37 @@ class Extension extends BaseExtension
             return $this->makeErrorResponse("Given elements are not in a valid format.");
 
         $elements = $this->filterIdentifierList( $elements );
+        $elements = $this->mapContentElementIdList( $elements ); // mapping list -> prep for db queries
 
+
+        $contentTypes = array_keys( $elements );
         $results = array();
-        foreach ( $elements as $element ) {
-            $element = explode("/", $element);
-            $contentType = $element[0];
-            $elementId = $element[1];
 
-            /*
-              TODO: Reduce number of database requests by mapping the array
-              and use $this->app["storage"]->getContent('pages', array('id' => array(3, 4, 5)))
-            */
-            $obj = $this->getContentObjectById( $contentType, $elementId, array("id", "title", "slug", "datechanged") );
+        foreach ( $contentTypes as $contentType ) {
+            // Retrieve content objects
+            $contentObjects = $this->app["storage"]->getContent( $contentType, $elements[$contentType] );
 
-            $contentObject = new Content( $this->app, $contentType, $obj );
+            if ( !is_array($contentObjects) && get_class($contentObjects) == "Bolt\Content" ) {
+                $newList = array();
+                $newList[$contentObjects->id] = $contentObjects;
+                $contentObjects = $newList;
+            }
 
-            $obj["id"] = implode("/", $element);
-            $obj["contenttype"] = $contentType;
-            $obj["link"] = $contentObject->editlink();
+            foreach ($contentObjects as $cObject) {
+                if ( !get_class($cObject) == "Bolt\Content" )
+                  throw new Exception("Problem parsing getContent results!");
+
+                $obj = array();
+                $obj["id"] = $cObject->contenttype["name"] . "/" . $cObject->id;
+                $obj["title"] = $cObject->getTitle();
+                $dateChanged = new \DateTime( $cObject->get("datechanged") );
+                $obj["datechanged"] = $dateChanged->format('Y-m-d H') . " Uhr";
+                $obj["contenttype"] = $cObject->contenttype["singular_name"];
+                $obj["link"] = $cObject->editlink();
+
+                $results[] = $obj;
+                $obj = null;
+            }
 
             if ( $obj ) $results[] = $obj;
         }
@@ -244,9 +145,38 @@ class Extension extends BaseExtension
         return $this->makeDataResponse( array("results" => $results) );
     }
 
+
+
+    /**
+     * Maps array in format ["Page/5", "Page/1", "Record/6"] to
+     * [
+     *   "Page" => ["id" => ["5", "1"]],
+     *   "Record" => ["id" => ["6"]]
+     * ]
+     * 
+     * @param  array  $elements - Holds a list of content element ids
+     * 
+     * @return array - Nested list of ids, grouped by content type
+     */
+    public function mapContentElementIdList( array $elements ) {
+        $result = array();
+
+        foreach ( $elements as $element ) {
+            $element = explode("/", $element);
+            $contentType = $element[0];
+            $elementId = $element[1];
+
+            $result[$contentType]['id'] = $elementId;
+        }
+
+        return $result;
+    }
+
     /**
       * Validate id schema within a list of ids
       * Invalid Ids will be deleted
+      *
+      * Schema: [A-Za-z0-9_]*)\/([0-9]*)
       *
       * @param Array $ids - String list of content element Ids in the forma `contenttype/id`
       *
@@ -304,8 +234,6 @@ class Extension extends BaseExtension
      * @return JsonResponse
      */
     public function findItems($contenttype, $field, $search){
-        // TODO: Limit results!
-        // TODO: filter by status = `published`
         $contenttype = preg_replace("/[^a-z0-9\\-_]+/i", "", $contenttype);
         $field       = preg_replace("/[^a-z0-9\\-_]+/i", "", $field);
 
