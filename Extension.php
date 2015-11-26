@@ -166,7 +166,11 @@ class Extension extends BaseExtension
             $contentType = $element[0];
             $elementId = $element[1];
 
-            $result[$contentType]['id'] = $elementId;
+            $result[$contentType]['id'][] = intval($elementId);
+        }
+
+        foreach( array_keys($result) as $key ) {
+            $result[$key]['id'] = implode(" || ", $result[$key]['id']);
         }
 
         return $result;
