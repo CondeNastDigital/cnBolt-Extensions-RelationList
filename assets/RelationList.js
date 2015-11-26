@@ -10,8 +10,6 @@
   * @property {String} validation.max - Maximum number of selected elements
   */
 
-//TODO: Generate PHP and JS Doc for extension
-
 /**
  * Constructor
  * @param {RelationListConfig} config - Holds all configurations for the component
