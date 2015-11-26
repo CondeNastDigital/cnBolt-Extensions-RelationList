@@ -199,36 +199,6 @@ class Extension extends BaseExtension
     }
 
     /**
-      * Fetch a single content object with the given object id
-      *
-      * @param string $contenttype
-      * @param int|string $id
-      * @param array $fields - (Optional) Define fields to retrieve. If `null`, retrives all fields available.
-      */    
-    private function getContentObjectById( $contenttype, $id, $fields = null )
-    {
-        if ( !is_string( $contenttype ) || !is_numeric($id) )
-            throw new Exception("Invalid parameter type!");
-
-        if ( $fields == null )
-            $fields = "*";
-
-        $tableName = $this->app["storage"]->getContenttypeTablename( $contenttype );
-
-        $query = "SELECT " . implode(", ", $fields) . " FROM " . $tableName . " WHERE id = " . $id . ";";
-        $queryResults = $this->app['db']->fetchAll( $query );
-
-        if ( count($queryResults) > 1 )
-            throw new Exception("Invalid result count! Something went wrong!");
-
-        if ( count($queryResults) == 0 )
-            return null;
-
-        return $queryResults[0];
-    }
-
-
-    /**
      * Get a list of matching contents per type
      * 
      * @param string $contenttype
