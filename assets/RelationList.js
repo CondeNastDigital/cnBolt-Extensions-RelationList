@@ -206,10 +206,13 @@ var RelationListComponent = function( config )
 				return;
 		}
 
+		// TODO: automatically iterate over data object $(this).data()
 		var newElement = {
 			"id": id,
 			"title": $(this).data("entry-title"),
-			"slug": $(this).data("entry-slug")
+			"slug": $(this).data("entry-slug"),
+			"contenttype": $(this).data("contenttype"),
+			"datechanged": $(this).data("datechanged")
 		};
 
 		self.selectedElements.push( newElement );
