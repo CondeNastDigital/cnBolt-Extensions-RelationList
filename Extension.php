@@ -100,7 +100,7 @@ class Extension extends BaseExtension
     public function fetchContentElementArray( Request $request ) {
         $elements = $request->request->get("elements");
 
-        if( !$this->app["users"]->isAllowed("edit") )
+        if( !$this->app["users"]->isValidSession() )
             return $this->makeErrorResponse("Insufficient access rights!");
 
         if ( !isset( $elements ) || !is_array( $elements ) )
@@ -211,7 +211,7 @@ class Extension extends BaseExtension
         $contenttype = preg_replace("/[^a-z0-9\\-_]+/i", "", $contenttype);
         $field       = preg_replace("/[^a-z0-9\\-_]+/i", "", $field);
 
-        if(!$this->app["users"]->isAllowed("contenttype:$contenttype:edit"))
+        if(!$this->app["users"]->isValidSession())
             return $this->makeErrorResponse("Insufficient access rights!");
 
         $config = $this->getFieldConfig($contenttype, $field);
