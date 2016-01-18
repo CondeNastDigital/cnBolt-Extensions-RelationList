@@ -283,8 +283,13 @@ var RelationListComponent = function( config )
 				"elements": jsonString
 			},
 			success: successCallback,
-			error: function fetchingJsonFailed( xhr, errorType, error ) {
-				console.error("[RelationList::fetchJsonElements] " + errorType + ":" + error.message);
+			error: function fetchingJsonFailed( xhr ) {
+				try {
+					var error = $.parseJSON(xhr.responseText);
+					alert('[RelationList::fetchJsonElements] ' + error.status +' : '+ error.message);
+				} catch(e) {
+					alert('[RelationList::fetchJsonElements] Something bad happened!');
+				}
 			}
 		});
 	};
@@ -313,7 +318,7 @@ var RelationListComponent = function( config )
 			url: searchUrl,
 			success: function __searchSuccess( response ) {
 				if ( response.status === "error" ) {
-					console.error("[RelationListComponent::__searchSuccess] Error: " + response.message);
+					alert("[RelationListComponent::__searchSuccess] Error: " + response.message);
 					return;
 				}
 
@@ -408,7 +413,7 @@ var RelationListComponent = function( config )
 
 	self.fetchJsonElements( elementList, function __handleInitialContentFetch( response ) {
 		if ( response.status === "error" ) {
-			console.error("[RelationListComponent::__handleInitialContentFetch] Error: " + response.message);
+			alert("[RelationListComponent::__handleInitialContentFetch] Error: " + response.message);
 			self.freeze();
 			return;
 		}
