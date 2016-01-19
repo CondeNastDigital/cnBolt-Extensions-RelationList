@@ -39,6 +39,8 @@ var RelationListComponent = function( config )
 
 	self.initialKeyword = "Search...";
 
+	self.errorMessage = "There was a problem with the relationlist. Please try again or contact your tech support!";
+
 	if ( typeof self.config.baseUrl !== "string" )
 		console.warn("[RelationList::fetchJsonElements] self.config.baseUrl is not defined! This may lead to invalid API calls on different environments!");
 
@@ -286,9 +288,9 @@ var RelationListComponent = function( config )
 			error: function fetchingJsonFailed( xhr ) {
 				try {
 					var error = $.parseJSON(xhr.responseText);
-					alert('[RelationList::fetchJsonElements] ' + error.status +' : '+ error.message);
+					alert(self.errorMessage + '\n\n([RelationList::fetchJsonElements] ' + error.status +' : '+ error.message + ')');
 				} catch(e) {
-					alert('[RelationList::fetchJsonElements] Something bad happened!');
+					alert(self.errorMessage + '\n([RelationList::fetchJsonElements])');
 				}
 			}
 		});
@@ -318,7 +320,7 @@ var RelationListComponent = function( config )
 			url: searchUrl,
 			success: function __searchSuccess( response ) {
 				if ( response.status === "error" ) {
-					alert("[RelationListComponent::__searchSuccess] Error: " + response.message);
+					alert(self.errorMessage + '\n\n([RelationListComponent::__searchSuccess] ' + response.status +' : ' + response.message + ')');
 					return;
 				}
 
@@ -413,7 +415,7 @@ var RelationListComponent = function( config )
 
 	self.fetchJsonElements( elementList, function __handleInitialContentFetch( response ) {
 		if ( response.status === "error" ) {
-			alert("[RelationListComponent::__handleInitialContentFetch] Error: " + response.message);
+			alert(self.errorMessage + "\n\n([RelationListComponent::__handleInitialContentFetch] " + response.status + " : " + response.message + ')');
 			self.freeze();
 			return;
 		}
