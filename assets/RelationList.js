@@ -243,7 +243,7 @@ var RelationListComponent = function( config )
 	 * be obtained
 	 */
 	self.freeze = function ( ) {
-		self.config.searchFieldNode.prop('disabled', true);
+		//self.config.searchFieldNode.prop('disabled', true);
 		self.config.componentContainerNode.addClass('error');
 	}
 
