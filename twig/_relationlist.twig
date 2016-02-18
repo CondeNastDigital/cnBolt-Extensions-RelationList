@@ -44,7 +44,7 @@ jQuery(document).ready(function($) {
 	RelationList_{{key}} = new RelationListComponent({
 		contenttype: "{{context.content.contenttype.name}}",
 		fieldName: "{{key}}",
-		baseUrl: "{{url('homepage')}}",
+		baseUrl: "{{ paths.rooturl }}",
 		validation: {
 			min: "{{field.options.min|default('0')}}",
 			max: "{{field.options.max|default('0')}}"
