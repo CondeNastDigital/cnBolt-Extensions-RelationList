@@ -5,10 +5,9 @@ namespace Bolt\Extension\CND\RelationList;
 use Bolt;
 use Bolt\Application;
 use Bolt\BaseExtension;
+use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Bolt\Events\StorageEvents;
-use Bolt\Config;
 use Bolt\Content;
 
 class Extension extends BaseExtension
@@ -29,14 +28,13 @@ class Extension extends BaseExtension
 
     /**
      * Initialize the extension
-     * 
-     * @return {null}
+     *
      */
     public function initialize() {
         $this->addJquery();
         
-        $this->addJavascript('assets/RelationList.js', true);
-        $this->addCss('assets/styles.css', true);
+        $this->addJavascript('assets/RelationList.js', array("late" => true));
+        $this->addCss('assets/styles.css', array("late" => true));
 
         // Add custom twig filters
         $this->addTwigFilter('json_decode', 'json_decode');
@@ -69,10 +67,11 @@ class Extension extends BaseExtension
     }
 
     /**
-      * Create an JSON response with error message
-      *
-      * @return JsonResponse
-      */
+     * Create an JSON response with error message
+     *
+     * @param string $message
+     * @return JsonResponse
+     */
     private function makeErrorResponse( $message ) {
       return new JsonResponse(array(
           "status" => "error",
@@ -81,10 +80,11 @@ class Extension extends BaseExtension
     }
 
     /**
-      * Create an JSON response with error message
-      * 
-      * @return JsonResponse
-      */
+     * Create an JSON response with error message
+     *
+     * @param array $data
+     * @return JsonResponse
+     */
     private function makeDataResponse( $data ) {
       return new JsonResponse(array(
           "status" => "okay",
@@ -93,10 +93,12 @@ class Extension extends BaseExtension
     }
 
     /**
-      * Fetch a JSON object list of elements
-      * 
-      * @return Content elements as JSON
-      */
+     * Fetch a JSON object list of elements
+     *
+     * @param Request $request
+     * @return Content elements as JSON
+     * @throws Exception
+     */
     public function fetchContentElementArray( Request $request ) {
         $elements = $request->request->get("elements");
 
@@ -117,16 +119,17 @@ class Extension extends BaseExtension
             // Retrieve content objects
             $contentObjects = $this->app["storage"]->getContent( $contentType, $elements[$contentType] );
 
-            if ( !is_array($contentObjects) && get_class($contentObjects) == "Bolt\Content" ) {
+            if ( !is_array($contentObjects) && get_class($contentObjects) == "Bolt\\Content" ) {
                 $newList = array();
                 $newList[$contentObjects->id] = $contentObjects;
                 $contentObjects = $newList;
             }
 
             foreach ($contentObjects as $cObject) {
-                if ( !get_class($cObject) == "Bolt\Content" )
+                if ( !get_class($cObject) == "Bolt\\Content" )
                   throw new Exception("Problem parsing getContent results!");
 
+                /* @var $cObject Content */
                 $obj = array();
                 $obj["id"] = $cObject->contenttype["name"] . "/" . $cObject->id;
                 $obj["title"] = $cObject->getTitle();
@@ -138,8 +141,6 @@ class Extension extends BaseExtension
                 $results[] = $obj;
                 $obj = null;
             }
-
-            if ( $obj ) $results[] = $obj;
         }
 
         return $this->makeDataResponse( array("results" => $results) );
@@ -182,9 +183,9 @@ class Extension extends BaseExtension
       *
       * Schema: [A-Za-z0-9_]*)\/([0-9]*)
       *
-      * @param Array $ids - String list of content element Ids in the forma `contenttype/id`
+      * @param array $ids - String list of content element Ids in the forma `contenttype/id`
       *
-      * @return Array - String list of validated ids
+      * @return array - String list of validated ids
       */
     private function filterIdentifierList( $ids ) {
         $result = array();
