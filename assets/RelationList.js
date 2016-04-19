@@ -12,7 +12,7 @@
 
 /**
  * Constructor
- * @param {RelationListConfig} config - Holds all configurations for the component
+ * @param {RelationListConfig} config  Holds all configurations for the component
  */
 var RelationListComponent = function( config )
 {
@@ -75,7 +75,7 @@ var RelationListComponent = function( config )
 	/**
 	 * Keeps the currently processed AJAX search request
 	 */
-	self.searchRequest = {};
+    self.searchRequest = null;
 
 	/**
 	 * Private methods
@@ -194,7 +194,7 @@ var RelationListComponent = function( config )
 			&& self.isNumeric(self.config.validation.max) ) {
 			if ( self.selectedElements.length >= self.config.validation.max ) {
 				alert("A maximum of " + self.config.validation.max + " element(s) can be selected!" );
-				self.destroySearchProcess();
+                self.hideSearchPanel();
 				return;
 			}
 		}
@@ -303,11 +303,12 @@ var RelationListComponent = function( config )
 	 */
 	self.findEntries = function ( keyword )
 	{
-		if ( typeof self.searchRequest === "object" && typeof self.searchRequest.abort === "function" ) {
-			self.searchRequest.abort();
-			self.searchRequest = {};
+        if ( self.searchRequest !== null ) {
+            self.searchTermChanged = true;
+            return;
 		}
 
+        self.lastSearchTerm = keyword;
 		var searchUrl = self.applyVariables(
 			self.getAbsoluteApiUrl( self.apiUrls.findEntries ), {
 				"contenttype": self.config.contenttype,
@@ -315,10 +316,18 @@ var RelationListComponent = function( config )
 				"search": keyword
 			});
 
+        var inputClass = self.config.searchFieldNode.attr('class');
+        if ( inputClass.indexOf('searching') == -1 ) {
+            self.config.searchFieldNode.attr('class', inputClass + ' searching');
+        }
+
 		self.searchRequest = $.ajax({
 			type: "GET",
 			url: searchUrl,
 			success: function __searchSuccess( response ) {
+                var inputClass = self.config.searchFieldNode.attr('class');
+                self.config.searchFieldNode.attr('class', inputClass.replace('searching', ''));
+
 				if ( response.status === "error" ) {
 					alert(self.errorMessage + '\n\n([RelationListComponent::__searchSuccess] ' + response.status +' : ' + response.message + ')');
 					return;
@@ -358,7 +367,21 @@ var RelationListComponent = function( config )
 			}
 		});
 
+        self.searchRequest.then(function( ) {
+            self.searchRequest = null;
+
+            if ( self.searchTermChanged == true ) {
+                self.searchTermChanged = false;
+
+                if ( self.lastSearchTerm !== self.config.searchFieldNode.val() ) {
+                    self.hideSearchPanel();
+                    self.findEntries( self.config.searchFieldNode.val() );
+                }
 	}
+        });
+
+        return self.searchRequest;
+    };
 
 
 
@@ -367,19 +390,25 @@ var RelationListComponent = function( config )
 	 * was cancelled. Removes the search result list
 	 * and aborts the search request, if running.
 	 */
-	self.destroySearchProcess = function ( )
+    self.hideSearchPanel = function ( )
 	{
-		if ( self
-			&& typeof self.searchRequest === "object"
-			&& typeof self.searchRequest.abort === "function" ) {
-
-			self.searchRequest.abort();
-		}
-
 		self.config.outputContainerNode.hide();
 	};
 
+    /**
+     * When a search is already running and further chracters are being typed,
+     * this flag will change to `true`, indicating that another search request
+     * will be done when the other one finished
+     *
+     * @type {Boolean}
+     */
+    self.searchTermChanged = false;
 
+    /**
+     * Represents the last search keyword
+     * @type {String}
+     */
+    self.lastSearchTerm = null;
 
 	/**
 	 * Initialize...
@@ -392,9 +421,9 @@ var RelationListComponent = function( config )
 	 */
 	self.config.searchFieldNode.on('keyup', function handleSearchInput( event ) {
 		if ( self.config.searchFieldNode.val().length > 2 ) {
-			self.findEntries( self.config.searchFieldNode.val(), "searchResult-{{key}}" );
+            self.findEntries( self.config.searchFieldNode.val() );
 		}
-	}).on("blur", self.destroySearchProcess);
+    }).on("blur", self.hideSearchPanel);
 
 	self.config.searchFieldNode.val( self.initialKeyword );
 
