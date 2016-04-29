@@ -31,10 +31,14 @@ class Extension extends BaseExtension
      *
      */
     public function initialize() {
-        $this->addJquery();
-        
-        $this->addJavascript('assets/RelationList.js', array("late" => true));
-        $this->addCss('assets/styles.css', array("late" => true));
+
+        if ($this->app['config']->getWhichEnd()=='backend') {
+            $this->addJquery();
+
+            // Add assets for new field type
+            $this->addJavascript('assets/RelationList.js', array("late" => true));
+            $this->addCss('assets/styles.css', array("late" => true));
+        }
 
         // Add custom twig filters
         $this->addTwigFilter('json_decode', 'json_decode');
