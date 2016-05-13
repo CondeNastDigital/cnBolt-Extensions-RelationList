@@ -113,6 +113,7 @@ class Extension extends BaseExtension
             return $this->makeErrorResponse("Given elements are not in a valid format.");
 
         $elements = $this->filterIdentifierList( $elements );
+        $ordered = $elements;
         $elements = $this->mapContentElementIdList( $elements ); // mapping list -> prep for db queries
 
 
@@ -133,24 +134,37 @@ class Extension extends BaseExtension
                 if ( !get_class($cObject) == "Bolt\\Content" )
                   throw new Exception("Problem parsing getContent results!");
 
-                /* @var $cObject Content */
-                $obj = array();
-                $obj["id"] = $cObject->contenttype["name"] . "/" . $cObject->id;
-                $obj["title"] = $cObject->getTitle();
-                $dateChanged = new \DateTime( $cObject->get("datechanged") );
-                $obj["datechanged"] = $dateChanged->format('Y-m-d H') . " Uhr";
-                $obj["contenttype"] = $cObject->contenttype["singular_name"];
-                $obj["link"] = $cObject->editlink();
-
-                $results[] = $obj;
-                $obj = null;
+                $item = $this->filterElement($cObject);
+                $results[$item["id"]] = $item;
             }
         }
 
-        return $this->makeDataResponse( array("results" => $results) );
+        // Sort items
+        $sortedResults = array();
+        foreach($ordered as $id)
+            if(isset($results[$id]))
+                $sortedResults[] = $results[$id];
+
+        return $this->makeDataResponse( array("results" => $sortedResults) );
     }
 
+    protected function filterElement(Content $cObject){
 
+        $length = 125 - strlen($cObject->getTitle()["title"]) - strlen($cObject->contenttype["singular_name"]) - 15;
+
+        $obj = array();
+        $obj["id"] = $cObject->contenttype["singular_slug"] . "/" . $cObject->id;
+        $obj["title"] = $cObject->getTitle();
+        $obj["excerpt"] = (string)$cObject->excerpt($length);
+        $obj["thumbnail"] = $cObject->getImage();
+
+        $dateChanged = new \DateTime( $cObject->get("datechanged") );
+        $obj["datechanged"] = $dateChanged->format('Y-m-d');
+        $obj["contenttype"] = $cObject->contenttype["singular_name"];
+        $obj["link"] = $cObject->editlink();
+
+        return $obj;
+    }
 
     /**
      * Maps array in format ["Page/5", "Page/1", "Record/6"] to
@@ -232,12 +246,7 @@ class Extension extends BaseExtension
         if($content["results"]) {
             foreach ($content["results"] as $entry) {
                 /* @var \Bolt\Content $entry */
-                $results[] = array(
-                    'id' => $entry->contenttype["singular_name"].'/'.$entry->id,
-                    'title' => $entry->getTitle(),
-                    'contenttype' => $entry->contenttype["singular_name"],
-                    'slug' => $entry->editlink(),
-                    'datechanged' => date('d.m.Y, H:i', strtotime($entry->get('datechanged'))));
+                $results[] = $this->filterElement($entry);
             }
         }
         return $this->makeDataResponse( $results );
