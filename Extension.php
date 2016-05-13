@@ -139,11 +139,16 @@ class Extension extends BaseExtension
             }
         }
 
-        // Sort items
+        // Sort items (and add unsortables at bottom. We may have unsortables because of old style names in id's instead of singular_slug)
         $sortedResults = array();
-        foreach($ordered as $id)
-            if(isset($results[$id]))
+        foreach($ordered as $id) {
+            if (isset($results[$id])) {
                 $sortedResults[] = $results[$id];
+                unset($results[$id]);
+            }
+        }
+        $sortedResults = array_merge($sortedResults, $results);
+        $sortedResults = array_values($sortedResults);
 
         return $this->makeDataResponse( array("results" => $sortedResults) );
     }
