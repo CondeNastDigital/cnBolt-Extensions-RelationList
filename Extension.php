@@ -12,6 +12,8 @@ use Bolt\Content;
 
 class Extension extends BaseExtension
 {
+    const DEFAULT_EXCERPT_LENGTH = 125;
+
     private static $typeName = "relationlist";
 
     public function __construct(Application $app)
@@ -40,26 +42,10 @@ class Extension extends BaseExtension
             $this->addCss('assets/styles.css', array("late" => true));
         }
 
-        // Add custom twig filters
-        $this->addTwigFilter('json_decode', 'json_decode');
-        
         // Define routes
         $this->app->get("/relationlist/finditems/{contenttype}/{field}/{search}", array($this, 'findItems'));
         $this->app->post("/relationlist/fetchJsonList", array($this, 'fetchContentElementArray'));
     }
-
-
-    /**
-     * Decode JSON string to an array
-     * 
-     * @param  string $string JSON string
-     * 
-     * @return array         Decoded JSON string
-     */
-    public function json_decode($string) {
-        return json_decode($string, true);
-    }
-    
 
     /**
      * Get the field name
@@ -153,9 +139,9 @@ class Extension extends BaseExtension
         return $this->makeDataResponse( array("results" => $sortedResults) );
     }
 
-    protected function filterElement(Content $cObject){
+    protected function filterElement(Content $cObject, $length = self::DEFAULT_EXCERPT_LENGTH){
 
-        $length = 125 - strlen($cObject->getTitle()["title"]) - strlen($cObject->contenttype["singular_name"]) - 15;
+        $length = $length - strlen($cObject->getTitle()["title"]) - strlen($cObject->contenttype["singular_name"]) - 15;
 
         $obj = array();
         $obj["id"] = $cObject->contenttype["singular_slug"] . "/" . $cObject->id;
