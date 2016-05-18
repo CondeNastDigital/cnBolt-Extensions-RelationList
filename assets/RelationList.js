@@ -43,6 +43,28 @@ var RelationListComponent = function( config )
 	if ( typeof self.config.boltUrl !== "string" )
 		console.warn("[RelationList::fetchJsonElements] self.config.boltUrl is not defined! This may lead to invalid API calls on different environments!");
 
+	/**
+	 * Generate an absolute API url based on the self.config.baseUrl setting.
+	 *
+	 * @param {String} relativeUrl - Url with leading slash `/`
+	 *
+	 * @return {String} Absolute URL to the API service
+	 */
+	self.getAbsoluteApiUrl = function( relativeUrl ) {
+		if ( typeof self.config.baseUrl !== "string"
+			|| typeof relativeUrl !== 'string'
+			|| relativeUrl.length === 0 )
+			return relativeUrl;
+
+		var baseUrl = self.config.baseUrl;
+		var lastBaseChar = baseUrl.substr( baseUrl.length-1, 1 );
+
+		// Remove trailing slash
+		if ( lastBaseChar === "/" || lastBaseChar === "\\" )
+			baseUrl = baseUrl.substr( 0, baseUrl.length-1 );
+
+		return ( baseUrl + relativeUrl );
+	};
 
 	/**
 	 * Initialize node elements
@@ -60,7 +82,7 @@ var RelationListComponent = function( config )
 	 * using the RelationList.applyVariables method
 	 */
 	self.BaseEntryTemplate = "<div class='preview'>"
-		+ "<img src='"+self.config.baseUrl+"/files/##thumbnail##' data-url=\"##thumbnail##\"/>"
+		+ "<img src='"+self.getAbsoluteApiUrl("/files/##thumbnail##")+"' data-url=\"##thumbnail##\"/>"
 		+ "<span class=\"title\">##title##</span> "
 		+ "<span class=\"contenttype\">##contenttype##</span> <span class=\"datechanged\">##datechanged##</span> - "
 		+ "<span class=\"excerpt\">##excerpt##</span></a></div>";
@@ -152,29 +174,6 @@ var RelationListComponent = function( config )
 			self.setNothingSelected();
 
 		self.storeSelectedList();
-	};
-
-	/**
-	 * Generate an absolute API url based on the self.config.baseUrl setting.
-	 *
-	 * @param {String} relativeUrl - Url with leading slash `/`
-	 *
-	 * @return {String} Absolute URL to the API service
-	 */
-	self.getAbsoluteApiUrl = function( relativeUrl ) {
-		if ( typeof self.config.baseUrl !== "string"
-			|| typeof relativeUrl !== 'string'
-			|| relativeUrl.length === 0 )
-			return relativeUrl;
-
-		var baseUrl = self.config.baseUrl;
-		var lastBaseChar = baseUrl.substr( baseUrl.length-1, 1 );
-
-		// Remove trailing slash
-		if ( lastBaseChar === "/" || lastBaseChar === "\\" )
-			baseUrl = baseUrl.substr( 0, baseUrl.length-1 );
-
-		return ( baseUrl + relativeUrl );
 	};
 
 	/**
