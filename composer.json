@@ -3,24 +3,26 @@
     "description": "Provides a backend field for a content type which defines a list of relations to content objects",
     "type": "bolt-extension",
     "require": {
-        "bolt/bolt": ">=2.0.0,<3.0.0"
+        "bolt/bolt": ">=3.0.0,<4.0.0"
     },
-    "license": "MIT",
+    "license": "Private",
     "authors": [
         {
-            "name": "Benedikt Roßgardt & Christian Woldt",
-            "email": "cndevteam@condenast.de"
+            "name": "Condé Nast Verlag GmbH",
+            "email": "cndevteam@condenast.de",
+            "homepage": "https://cndevteamwiki.condenastdigital.de/doku.php/wiki/bolt/relationlist"
         }
     ],
     "autoload": {
-        "files": [
-            "init.php"
-        ],
         "psr-4": {
-            "Bolt\\Extension\\CND\\RelationList\\": ""
+            "Bolt\\Extension\\CND\\RelationList\\": "src"
         }
     },
     "extra": {
-        "bolt-assets": "assets"
+        "bolt-assets": "web",
+        "branch-alias" : {
+            "dev-bolt3" : "2.0.x-dev"
+        },
+        "bolt-class": "Bolt\\Extension\\CND\\RelationList\\Extension"
     }
 }

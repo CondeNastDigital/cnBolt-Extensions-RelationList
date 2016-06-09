@@ -3,6 +3,7 @@
  * @typedef RelationListConfig
  * @type Object
  * @property {String} baseUrl - Needed to construct full URLs for REST calls
+ * @property {String} boltUrl - Needed to construct full URLs for editcontent calls*
  * @property {String} contenttype - Contenttype of the current content object. Used to retrieve the field configrations within the backend
  * @property {String} fieldName - Name of the field that is currently being edited. Used to retrieve the field configrations within the backend
  * @property {Object} validation - Holds all validation parameters
@@ -12,7 +13,7 @@
 
 /**
  * Constructor
- * @param {RelationListConfig} config - Holds all configurations for the component
+ * @param {RelationListConfig} config  Holds all configurations for the component
  */
 var RelationListComponent = function( config )
 {
@@ -25,16 +26,11 @@ var RelationListComponent = function( config )
 	self.config = config || {};
 
 	/**
-	 * List of selected content objects
-	 */
-	self.selectedElements = [];
-
-	/**
 	 * Api URLs to be used
 	 */
 	self.apiUrls = {
-		findEntries: "/relationlist/finditems/##contenttype##/##field##/##search##",
-		fetchJsonList: "/relationlist/fetchJsonList"
+		findEntries: "/bolt/relationlist/finditems/##contenttype##/##field##/##search##",
+		fetchJsonList: "/bolt/relationlist/fetchJsonList"
 	};
 
 	self.initialKeyword = "Search...";
@@ -44,38 +40,66 @@ var RelationListComponent = function( config )
 	if ( typeof self.config.baseUrl !== "string" )
 		console.warn("[RelationList::fetchJsonElements] self.config.baseUrl is not defined! This may lead to invalid API calls on different environments!");
 
+	if ( typeof self.config.boltUrl !== "string" )
+		console.warn("[RelationList::fetchJsonElements] self.config.boltUrl is not defined! This may lead to invalid API calls on different environments!");
+
+	/**
+	 * Generate an absolute API url based on the self.config.baseUrl setting.
+	 *
+	 * @param {String} relativeUrl - Url with leading slash `/`
+	 *
+	 * @return {String} Absolute URL to the API service
+	 */
+	self.getAbsoluteApiUrl = function( relativeUrl ) {
+		if ( typeof self.config.baseUrl !== "string"
+			|| typeof relativeUrl !== 'string'
+			|| relativeUrl.length === 0 )
+			return relativeUrl;
+
+		var baseUrl = self.config.baseUrl;
+		var lastBaseChar = baseUrl.substr( baseUrl.length-1, 1 );
+
+		// Remove trailing slash
+		if ( lastBaseChar === "/" || lastBaseChar === "\\" )
+			baseUrl = baseUrl.substr( 0, baseUrl.length-1 );
+
+		return ( baseUrl + relativeUrl );
+	};
+
 	/**
 	 * Initialize node elements
 	 */
-	self.config.storageFieldNode = $("#" + self.config.fieldName),
-		self.config.componentContainerNode = self.config.storageFieldNode.closest(".RelationListComponent");
-	self.config.searchFieldNode = $("#search-" + self.config.fieldName),
-		self.config.outputContainerNode = $("#searchResult-" + self.config.fieldName),
-		self.config.selectedElementsNode = $("#selectedElements-" + self.config.fieldName),
+	self.config.storageFieldNode = $("#" + self.config.fieldName);
+	self.config.componentContainerNode = self.config.storageFieldNode.closest(".RelationListComponent");
+	self.config.searchFieldNode = $("#search-" + self.config.fieldName);
+	self.config.outputContainerNode = $("#searchResult-" + self.config.fieldName);
+	self.config.selectedElementsNode = $("#selectedElements-" + self.config.fieldName);
 
-		self.config.outputContainerNode.hide();
+	self.config.outputContainerNode.hide();
 
 	/**
 	 * HTML templates to be compiled
 	 * using the RelationList.applyVariables method
 	 */
-	self.searchResultEntryTemplate = "<div class=\"entry\">"
-		+ "<a class=\"title\" data-datechanged=\"##datechanged##\" data-contenttype=\"##contenttype##\" data-entry-id=\"##id##\" data-entry-title=\"##title##\" data-entry-slug=\"##slug##\" href=\"#\">##title##</a>"
-		+ "<span class=\"type\">##contenttype##</span>"
-		+ "<span class=\"date\">##datechanged##</span>"
+	self.BaseEntryTemplate = "<div class='preview'>"
+		+ "<img src='"+self.getAbsoluteApiUrl("/files/##thumbnail##")+"' data-url=\"##thumbnail##\"/>"
+		+ "<span class=\"title\">##title##</span> "
+		+ "<span class=\"contenttype\">##contenttype##</span> <span class=\"datechanged\">##datechanged##</span> - "
+		+ "<span class=\"excerpt\">##excerpt##</span></a></div>";
+
+	self.searchResultEntryTemplate = "<div class=\"entry clearfix\" data-entry-id=\"##id##\">"
+		+ "<a href=\"#\">"+self.BaseEntryTemplate+"</a>"
 		+ "</div>";
 
-	self.selectedEntryTemplate = "<div class=\"entry\" data-entry-id=\"##id##\">"
-		+ "<a target=\"_blank\" class=\"title\" data-entry-id=\"##id##\" href=\"##link##\">##title##</a>"
-		+ "<span class=\"type\">##contenttype##</span>"
-		+ "<span class=\"date\">##datechanged##</span>"
-		+ "<a href=\"#\" class=\"remove fa fa-trash\">Remove</a>"
+	self.selectedEntryTemplate = "<div class=\"entry clearfix\" data-entry-id=\"##id##\">"
+		+ "<a target=\”_blank\” href=\""+self.config.boltUrl+"editcontent/##id##\">"+self.BaseEntryTemplate+"</a>"
+		+ "<a href=\"#\" class=\"remove fa fa-trash\">&nbsp;</a>"
 		+ "</div>";
 
 	/**
 	 * Keeps the currently processed AJAX search request
 	 */
-	self.searchRequest = {};
+	self.searchRequest = null;
 
 	/**
 	 * Private methods
@@ -89,7 +113,7 @@ var RelationListComponent = function( config )
 	 */
 	self.isNumeric = function( n ) {
 		return !isNaN( parseFloat( n ) ) && isFinite(n);
-	}
+	};
 
 
 	/**
@@ -128,12 +152,14 @@ var RelationListComponent = function( config )
 	 *
 	 * Method requires context! (In case, use `apply`)
 	 */
-	self.removeEntry = function( ) {
+	self.removeEntry = function(event) {
+		event.preventDefault();
+
 		// Do validation beforehand!
 		if ( self.config.validation
 			&& typeof self.config.validation.min === "string"
 			&& self.isNumeric(self.config.validation.min) ) {
-			if ( self.selectedElements.length <= self.config.validation.min ) {
+			if ( self.config.selectedElementsNode.children(".entry").length <= self.config.validation.min ) {
 				alert("At least " + self.config.validation.min + " element(s) have to be selected!" );
 				return;
 			}
@@ -141,14 +167,6 @@ var RelationListComponent = function( config )
 
 		var htmlEntry = $(this).closest('.entry');
 		var elementId = $(htmlEntry).data('entry-id');
-		var elements = self.selectedElements;
-
-		for(var i=0; elements.length; i++) {
-			if ( elements[i].id === elementId ) {
-				elements.splice(i, 1);
-				break;
-			}
-		}
 
 		$(htmlEntry).remove();
 
@@ -156,29 +174,6 @@ var RelationListComponent = function( config )
 			self.setNothingSelected();
 
 		self.storeSelectedList();
-	};
-
-	/**
-	 * Generate an absolute API url based on the self.config.baseUrl setting.
-	 *
-	 * @param {String} relativeUrl - Url with leading slash `/`
-	 *
-	 * @return {String} Absolute URL to the API service
-	 */
-	self.getAbsoluteApiUrl = function( relativeUrl ) {
-		if ( typeof self.config.baseUrl !== "string"
-			|| typeof relativeUrl !== 'string'
-			|| relativeUrl.length === 0 )
-			return relativeUrl;
-
-		var baseUrl = self.config.baseUrl
-		var lastBaseChar = baseUrl.substr( baseUrl.length-1, 1 );
-
-		// Remove trailing slash
-		if ( lastBaseChar === "/" || lastBaseChar === "\\" )
-			baseUrl = baseUrl.substr( 0, baseUrl.length-1 )
-
-		return ( baseUrl + relativeUrl );
 	};
 
 	/**
@@ -192,37 +187,43 @@ var RelationListComponent = function( config )
 		if ( self.config.validation
 			&& typeof self.config.validation.max === "string"
 			&& self.isNumeric(self.config.validation.max) ) {
-			if ( self.selectedElements.length >= self.config.validation.max ) {
+			if ( self.config.selectedElementsNode.children(".entry").length >= self.config.validation.max ) {
 				alert("A maximum of " + self.config.validation.max + " element(s) can be selected!" );
-				self.destroySearchProcess();
+				self.hideSearchPanel();
 				return;
 			}
 		}
 
-		var id = $(this).data("entry-id");
+		var node = $(this);
+
+		var id = node.parents("div.entry").data("entry-id");
 
 		// Check, if element was already selected
-		for( var i=0; i < self.selectedElements.length; i++ )
-		{
-			if ( self.selectedElements[i].id === id )
-				return;
-		}
+		var found = false;
+		self.config.selectedElementsNode.children(".entry").each(function(idx, element){
+			if($(element).data("entry-id") == id)
+				found = found | true;
+		});
+		if(found)
+			return;
 
 		var newElement = {
 			"id": id,
-			"title": $(this).data("entry-title"),
-			"slug": $(this).data("entry-slug")
+			"title": node.find(".title").html(),
+			"contenttype": node.find(".contenttype").html(),
+			"datechanged": node.find(".datechanged").html(),
+			"excerpt": node.find(".excerpt").html(),
+			"thumbnail": node.find("img").data("url")
 		};
-
-		self.selectedElements.push( newElement );
-		self.storeSelectedList();
 
 		if (self.config.selectedElementsNode.children('.entry').length === 0)
 			self.config.selectedElementsNode.html("");
 
-		self.config.selectedElementsNode.append( self.applyVariables( self.selectedEntryTemplate, newElement ) );
-		var newChild = self.config.selectedElementsNode.children('.entry:last-child');
-		newChild.find('a.remove').on('click', self.removeEntry);
+		var remover = $(self.applyVariables( self.selectedEntryTemplate, newElement ));
+		remover.find('a.remove').on('click', self.removeEntry);
+		self.config.selectedElementsNode.append( remover );
+
+		self.storeSelectedList();
 
 		return false;
 	};
@@ -247,20 +248,22 @@ var RelationListComponent = function( config )
 	self.freeze = function ( ) {
 		//self.config.searchFieldNode.prop('disabled', true);
 		self.config.componentContainerNode.addClass('error');
-	}
+	};
 
 	/**
 	 * Write current list into the hidden input field
 	 */
 	self.storeSelectedList = function( ) {
 		var res = {};
-		var elements = self.selectedElements;
 		var jsonValue = '';
+		var hasElements = false;
 
-		for ( var i=0; i < elements.length; i ++ )
-			res[i] = elements[i].id;
+		self.config.selectedElementsNode.children(".entry").each(function(idx, element){
+			res[idx] = $(element).data("entry-id");
+			hasElements = true;
+		});
 
-		if(elements.length > 0)
+		if(hasElements)
 			jsonValue = JSON.stringify(res);
 
 		self.config.storageFieldNode.val(jsonValue);
@@ -303,11 +306,12 @@ var RelationListComponent = function( config )
 	 */
 	self.findEntries = function ( keyword )
 	{
-		if ( typeof self.searchRequest === "object" && typeof self.searchRequest.abort === "function" ) {
-			self.searchRequest.abort();
-			self.searchRequest = {};
+		if ( self.searchRequest !== null ) {
+			self.searchTermChanged = true;
+			return;
 		}
 
+		self.lastSearchTerm = keyword;
 		var searchUrl = self.applyVariables(
 			self.getAbsoluteApiUrl( self.apiUrls.findEntries ), {
 				"contenttype": self.config.contenttype,
@@ -315,10 +319,18 @@ var RelationListComponent = function( config )
 				"search": keyword
 			});
 
+		var inputClass = self.config.searchFieldNode.attr('class');
+		if ( inputClass.indexOf('searching') == -1 ) {
+			self.config.searchFieldNode.attr('class', inputClass + ' searching');
+		}
+
 		self.searchRequest = $.ajax({
 			type: "GET",
 			url: searchUrl,
 			success: function __searchSuccess( response ) {
+				var inputClass = self.config.searchFieldNode.attr('class');
+				self.config.searchFieldNode.attr('class', inputClass.replace('searching', ''));
+
 				if ( response.status === "error" ) {
 					alert(self.errorMessage + '\n\n([RelationListComponent::__searchSuccess] ' + response.status +' : ' + response.message + ')');
 					return;
@@ -358,7 +370,21 @@ var RelationListComponent = function( config )
 			}
 		});
 
-	}
+		self.searchRequest.then(function( ) {
+			self.searchRequest = null;
+
+			if ( self.searchTermChanged == true ) {
+				self.searchTermChanged = false;
+
+				if ( self.lastSearchTerm !== self.config.searchFieldNode.val() ) {
+					self.hideSearchPanel();
+					self.findEntries( self.config.searchFieldNode.val() );
+				}
+			}
+		});
+
+		return self.searchRequest;
+	};
 
 
 
@@ -367,19 +393,25 @@ var RelationListComponent = function( config )
 	 * was cancelled. Removes the search result list
 	 * and aborts the search request, if running.
 	 */
-	self.destroySearchProcess = function ( )
+	self.hideSearchPanel = function ( )
 	{
-		if ( self
-			&& typeof self.searchRequest === "object"
-			&& typeof self.searchRequest.abort === "function" ) {
-
-			self.searchRequest.abort();
-		}
-
 		self.config.outputContainerNode.hide();
 	};
 
+	/**
+	 * When a search is already running and further chracters are being typed,
+	 * this flag will change to `true`, indicating that another search request
+	 * will be done when the other one finished
+	 *
+	 * @type {Boolean}
+	 */
+	self.searchTermChanged = false;
 
+	/**
+	 * Represents the last search keyword
+	 * @type {String}
+	 */
+	self.lastSearchTerm = null;
 
 	/**
 	 * Initialize...
@@ -392,9 +424,9 @@ var RelationListComponent = function( config )
 	 */
 	self.config.searchFieldNode.on('keyup', function handleSearchInput( event ) {
 		if ( self.config.searchFieldNode.val().length > 2 ) {
-			self.findEntries( self.config.searchFieldNode.val(), "searchResult-{{key}}" );
+			self.findEntries( self.config.searchFieldNode.val() );
 		}
-	}).on("blur", self.destroySearchProcess);
+	}).on("blur", self.hideSearchPanel);
 
 	self.config.searchFieldNode.val( self.initialKeyword );
 
@@ -427,19 +459,15 @@ var RelationListComponent = function( config )
 
 		for ( var i=0; i < results.length; i++ ) {
 			var html = self.applyVariables( self.selectedEntryTemplate, results[i] );
-			self.selectedElements.push(results[i]);
 			self.config.selectedElementsNode.append( html );
 		}
 
 		self.config.selectedElementsNode.find(".entry a.remove").on("click", self.removeEntry);
 	});
 
-	if ( self.selectedElements.length > 0 )
-		self.config.selectedElementsNode.html("");
-
-	for(var i=0; i <self.selectedElements.length; i++)
-		self.config.selectedElementsNode.append( self.applyVariables( self.selectedEntryTemplate, self.selectedElements[i] ) );
-
+	self.config.selectedElementsNode.sortable({
+		update: self.storeSelectedList
+	});
 
 	/**
 	 * Public methods
@@ -453,8 +481,7 @@ var RelationListComponent = function( config )
 		 */
 		getSelectedElements: function( ) {
 			return jQuery.extend( {}, self.selectedElements);
-		},
-
+		}
 
 	};
 };
