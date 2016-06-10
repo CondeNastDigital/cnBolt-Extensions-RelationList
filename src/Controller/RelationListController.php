@@ -20,6 +20,7 @@ class RelationListController implements ControllerProviderInterface
     {
         $this->app = $app;
         $this->config = $config;
+        $this->app['twig.loader.filesystem']->prependPath(__DIR__."/../../templates");
     }
 
     public function connect(\Silex\Application $app)
@@ -74,6 +75,7 @@ class RelationListController implements ControllerProviderInterface
      * @throws Exception
      */
     public function fetchContentElementArray( Request $request ) {
+
         $elements = $request->request->get("elements");
 
         if( !$this->app["users"]->isValidSession() )
@@ -94,21 +96,20 @@ class RelationListController implements ControllerProviderInterface
             // Retrieve content objects
             $contentObjects = $this->app["storage"]->getContent( $contentType, $elements[$contentType] );
 
-            if ( !is_array($contentObjects) && get_class($contentObjects) == "Bolt\\Content" ) {
+            if ( !is_array($contentObjects) && get_class($contentObjects) == "Bolt\\Legacy\\Content" ) {
                 $newList = array();
                 $newList[$contentObjects->id] = $contentObjects;
                 $contentObjects = $newList;
             }
 
             foreach ($contentObjects as $cObject) {
-                if ( !get_class($cObject) == "Bolt\\Content" )
+                if ( !get_class($cObject) == "Bolt\\Legacy\\Content" )
                     throw new Exception("Problem parsing getContent results!");
 
                 $item = $this->filterElement($cObject);
                 $results[$item["id"]] = $item;
             }
         }
-
         // Sort items (and add unsortables at bottom. We may have unsortables because of old style names in id's instead of singular_slug)
         $sortedResults = array();
         foreach($ordered as $id) {
@@ -154,7 +155,7 @@ class RelationListController implements ControllerProviderInterface
         $length = $length - strlen($cObject->getTitle()["title"]) - strlen($cObject->contenttype["singular_name"]) - 15;
 
         $obj = array();
-        $obj["id"] = $cObject->contenttype["singular_slug"] . "/" . $cObject->id;
+        $obj["id"] = $cObject->contenttype["slug"] . "/" . $cObject->id;
         $obj["title"] = $cObject->getTitle();
         $obj["excerpt"] = (string)$cObject->excerpt($length);
         $obj["thumbnail"] = $cObject->getImage();

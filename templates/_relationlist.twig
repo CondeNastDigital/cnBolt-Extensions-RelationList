@@ -1,5 +1,5 @@
 {% set option = {
-class:        field.class|default(''),
+class:        field.class|default('form-control'),
 label:        field.label|default(''),
 pattern:      field.pattern|default(''),
 placeholder:  field.placeholder|default(''),
@@ -12,7 +12,6 @@ info:         field.info|default('')
 
 {% set attr_search = {
 class:          option.class,
-name:           name,
 id:             'search-' ~ key,
 title:          option.title,
 type:           'text'
@@ -26,7 +25,7 @@ type:           'hidden',
 value:          context.content.get(contentkey),
 } %}
 
-<fieldset class="relationlist RelationListComponent">
+<fieldset class="form-group relationlist RelationListComponent">
         <div class="col-sm-12">
             <label class="control-label">{{ (option.info) ? macro.infopop(labelkey, option.info) : labelkey }}</label>
             <input{{ macro.attr(attr_search) }}>
