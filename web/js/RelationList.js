@@ -29,8 +29,8 @@ var RelationListComponent = function( config )
 	 * Api URLs to be used
 	 */
 	self.apiUrls = {
-		findEntries: "/relationlist/finditems/##contenttype##/##field##/##search##",
-		fetchJsonList: "/relationlist/fetchJsonList"
+		findEntries: "/bolt/relationlist/finditems/##contenttype##/##field##/##search##",
+		fetchJsonList: "/bolt/relationlist/fetchJsonList"
 	};
 
 	self.initialKeyword = "Search...";

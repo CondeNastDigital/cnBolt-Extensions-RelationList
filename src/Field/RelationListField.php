@@ -1,8 +1,8 @@
 <?php
 
-namespace Bolt\Extension\CND\RelationList;
+namespace Bolt\Extension\CND\RelationList\Field;
 
-use Bolt\Field\FieldInterface;
+use Bolt\Storage\Field\FieldInterface;
 
 class RelationListField implements FieldInterface
 {
