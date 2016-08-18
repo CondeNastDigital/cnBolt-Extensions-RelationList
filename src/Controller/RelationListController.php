@@ -152,12 +152,12 @@ class RelationListController implements ControllerProviderInterface
 
     protected function filterElement(Content $cObject, $length = self::DEFAULT_EXCERPT_LENGTH){
 
-        $length = $length - strlen($cObject->getTitle()["title"]) - strlen($cObject->contenttype["singular_name"]) - 15;
+        $length = $length - mb_strlen($cObject->getTitle()["title"]) - mb_strlen($cObject->contenttype["singular_name"]) - 15;
 
         $obj = array();
         $obj["id"] = $cObject->contenttype["slug"] . "/" . $cObject->id;
         $obj["title"] = $cObject->getTitle();
-        $obj["excerpt"] = (string)$cObject->excerpt($length);
+        $obj["excerpt"] = mb_convert_encoding((string)$cObject->excerpt($length), "utf-8", "utf-8"); // Broken utf-8 characters will break JSON encoder. This filters invalid chars
         $obj["thumbnail"] = $cObject->getImage();
 
         $dateChanged = new \DateTime( $cObject->get("datechanged") );
