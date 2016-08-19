@@ -9,8 +9,8 @@
     "authors": [
         {
             "name": "Condé Nast Verlag GmbH",
-            "email": "cndevteam@condenast.de",
-            "homepage": "https://cndevteamwiki.condenastdigital.de/doku.php/wiki/bolt/relationlist"
+            "email": "tobias.bulla@condenast.de",
+            "homepage": "https://techblog.condenast.de"
         }
     ],
     "autoload": {
@@ -20,9 +20,10 @@
     },
     "extra": {
         "bolt-assets": "web",
-        "branch-alias" : {
-            "dev-bolt3" : "2.0.x-dev"
-        },
-        "bolt-class": "Bolt\\Extension\\CND\\RelationList\\Extension"
+        "bolt-class": "Bolt\\Extension\\CND\\RelationList\\Extension",
+        "bolt-icon": "icon_marketplace.png",
+        "bolt-screenshots": [
+            "screen_marketplace.png"
+        ]
     }
 }
