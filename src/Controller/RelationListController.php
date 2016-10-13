@@ -152,7 +152,7 @@ class RelationListController implements ControllerProviderInterface
 
     protected function filterElement(Content $cObject, $length = self::DEFAULT_EXCERPT_LENGTH){
 
-        $length = $length - strlen($cObject->getTitle()["title"]) - strlen($cObject->contenttype["singular_name"]) - 15;
+        $length = $length - strlen($cObject->getTitle()) - strlen($cObject->contenttype["singular_name"]) - 15;
 
         $obj = array();
         $obj["id"] = $cObject->contenttype["slug"] . "/" . $cObject->id;
