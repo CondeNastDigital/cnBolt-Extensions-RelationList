@@ -71,7 +71,7 @@ var RelationlistST = function(properties) {
                 contenttype: this.custom.contenttype,
                 storageFieldName: this.fieldId,
                 subFieldName: this.custom.subFieldName,
-                fieldName: this.custom.fieldName,
+                fieldName: SirTrevor.getInstance(this.instanceID).el.name,
                 boltUrl: this.extensionUrl,
                 baseUrl: this.extensionWebPath,
                 validation: {
@@ -97,7 +97,6 @@ var RelationlistST = function(properties) {
                     custom: options[block]
                 };
 
-                newBlock.custom.fieldName = options[block].fieldName;
                 newBlock.custom.subFieldName = block;
                 newBlock.custom.contenttype = $('[name="contenttype"]').val();
 

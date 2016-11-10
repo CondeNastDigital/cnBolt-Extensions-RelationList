@@ -17,6 +17,11 @@ class RelationListController implements ControllerProviderInterface
     private $app;
     private $config;
 
+    /**
+     * Some content types allow the integration of the relationlist. The config of the field therefore can lay at
+     * different places. This config is the needed mapping for the know integrations.
+     * @var array
+     */
     private $contentTypeConfigs = [
         'default' => 'options',
         'structuredcontentfield' => 'extend'
@@ -33,7 +38,7 @@ class RelationListController implements ControllerProviderInterface
     {
         $ctr = $app['controllers_factory'];
         $ctr->get('/finditems/{contenttype}/{field}/{search}', array($this, 'findItems'));
-        $ctr->get('/finditems/{contenttype}/{field}/{search}/{subfield}', array($this, 'findItems'));
+        $ctr->get('/finditems/{contenttype}/{field}/{subfield}/{search}', array($this, 'findItems'));
         $ctr->post('/fetchJsonList', array($this, 'fetchContentElementArray'));
 
         return $ctr;
@@ -48,7 +53,7 @@ class RelationListController implements ControllerProviderInterface
      *
      * @return JsonResponse
      */
-    public function findItems($contenttype, $field, $search, $subfield=null){
+    public function findItems($contenttype, $field, $subfield=null, $search=null){
         $contenttype = preg_replace("/[^a-z0-9\\-_]+/i", "", $contenttype);
         $field       = preg_replace("/[^a-z0-9\\-_]+/i", "", $field);
         $subfield    = preg_replace("/[^a-z0-9\\-_]+/i", "", $subfield);
@@ -182,6 +187,7 @@ class RelationListController implements ControllerProviderInterface
      * @return array|false Returns false, if there is no configuration
      */
     protected function getFieldConfig($contenttype, $field, $subfield=null){
+
         $contenttype = $this->app['storage']->getContentType($contenttype);
 
         if(!$contenttype)
@@ -198,8 +204,7 @@ class RelationListController implements ControllerProviderInterface
             $configPath .= '.'.$subfield;
 
         $configPath = explode('.', $configPath);
-
-        $config = $fieldDefinition;
+        $config     = $fieldDefinition;
 
         foreach ($configPath as $path)
             if(isset($config[$path]))

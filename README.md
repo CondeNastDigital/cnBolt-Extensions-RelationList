@@ -15,6 +15,22 @@ myfield:
         max: 3
 ```
 
+The Sir Trevor Configuration consits of adding an extended block, of type relationlist. 
+Example:
+```
+structuredcontent:
+    type: structuredcontentfield
+    height: 400px
+    blocks: [Pages]
+    extend:  #block_config
+        Pages:
+            type: relationlist
+            label: Pages
+            allowed-types: [pages]
+            min: 0
+            max: 10
+```
+
 ## Usage
 Within your twig template, you may access the content type field which comes in form of an JSON string.
 There is a custom twig filter, which converts the JSON string into an array. Here is an example, how to fetch the content elements within a twig template:
