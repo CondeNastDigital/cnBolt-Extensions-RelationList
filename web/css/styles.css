@@ -110,7 +110,7 @@
     border-radius: 3px;
 }
 
-.st-block h2 {
+.st-block .block-title {
     padding: 0;
     margin: 0 0 10px 0;
     font-size: 0.8em;

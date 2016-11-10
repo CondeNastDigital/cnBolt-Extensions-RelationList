@@ -27,7 +27,7 @@ var RelationlistST = function(properties) {
             contenttype: ''
         },
         editorHTML: '<div class="frontend-target relationlist">'+
-        '    <h2></h2>'+
+        '    <div class="block-title"></div>'+
         '    <input class="form-control search" id="" type="text">'+
         '    <div class="searchResultWrapper">'+
         '        <div class="searchResultList" id=""></div>'+
@@ -61,7 +61,7 @@ var RelationlistST = function(properties) {
 
             this.fieldId = 'relationlist-st-' + String(new Date().valueOf());
 
-            $(this.$('h2')).html(this.custom.label);
+            $(this.$('.block-title')).html(this.custom.label);
             $(this.$('input.search')).attr('id', 'search-' + this.fieldId);
             $(this.$('input.data-target')).attr('id', this.fieldId);
             $(this.$('.searchResultList')).attr('id', 'searchResult-'+this.fieldId);
