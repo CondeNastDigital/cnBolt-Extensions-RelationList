@@ -1,0 +1,8 @@
+{% for key, data in section.data %}
+    {% if data | default() %}
+        <section>
+            {% setcontent relation = data %}
+            {% include '_relationlist_' ~ relation.contenttype.slug ~ '.twig' with {content: relation} %}
+        </section>
+    {% endif %}
+{% endfor %}

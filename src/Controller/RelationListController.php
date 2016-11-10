@@ -13,8 +13,14 @@ use Symfony\Component\HttpFoundation\Request;
 class RelationListController implements ControllerProviderInterface
 {
     const DEFAULT_EXCERPT_LENGTH = 125;
+
     private $app;
     private $config;
+
+    private $contentTypeConfigs = [
+        'default' => 'options',
+        'structuredcontentfield' => 'extend'
+    ];
 
     public function __construct (Application $app, array $config)
     {
@@ -27,6 +33,7 @@ class RelationListController implements ControllerProviderInterface
     {
         $ctr = $app['controllers_factory'];
         $ctr->get('/finditems/{contenttype}/{field}/{search}', array($this, 'findItems'));
+        $ctr->get('/finditems/{contenttype}/{field}/{search}/{subfield}', array($this, 'findItems'));
         $ctr->post('/fetchJsonList', array($this, 'fetchContentElementArray'));
 
         return $ctr;
@@ -41,20 +48,20 @@ class RelationListController implements ControllerProviderInterface
      *
      * @return JsonResponse
      */
-    public function findItems($contenttype, $field, $search){
+    public function findItems($contenttype, $field, $search, $subfield=null){
         $contenttype = preg_replace("/[^a-z0-9\\-_]+/i", "", $contenttype);
         $field       = preg_replace("/[^a-z0-9\\-_]+/i", "", $field);
+        $subfield    = preg_replace("/[^a-z0-9\\-_]+/i", "", $subfield);
 
         if(!$this->app["users"]->isValidSession())
             return $this->makeErrorResponse("Insufficient access rights!");
 
-        $config = $this->getFieldConfig($contenttype, $field);
+        $config = $this->getFieldConfig($contenttype, $field, $subfield);
 
         if ( !$config )
             return $this->makeErrorResponse("Missing field configuration! Please make sure, the `options` attribute is defined according to the `README.md` file.");
 
         $allowedTypes = isset($config["allowed-types"]) ? $config["allowed-types"] : array();
-
         $results = array();
         $content = $this->app['storage']->searchContent($search, $allowedTypes, null, 100, 0);
 
@@ -174,16 +181,33 @@ class RelationListController implements ControllerProviderInterface
      * @param string $field
      * @return array|false Returns false, if there is no configuration
      */
-    protected function getFieldConfig($contenttype, $field){
+    protected function getFieldConfig($contenttype, $field, $subfield=null){
         $contenttype = $this->app['storage']->getContentType($contenttype);
 
         if(!$contenttype)
             return false;
 
-        if(isset($contenttype["fields"][$field]["options"]))
-            return $contenttype["fields"][$field]["options"];
+        $fieldDefinition = $contenttype['fields'][$field];
 
-        return false;
+        if(isset($this->contentTypeConfigs[$fieldDefinition['type']]))
+            $configPath = $this->contentTypeConfigs[$fieldDefinition['type']];
+        else
+            $configPath = $this->contentTypeConfigs['default'];
+
+        if($subfield)
+            $configPath .= '.'.$subfield;
+
+        $configPath = explode('.', $configPath);
+
+        $config = $fieldDefinition;
+
+        foreach ($configPath as $path)
+            if(isset($config[$path]))
+                $config = $config[$path];
+            else
+                $config = false;
+
+        return $config;
     }
 
     /**

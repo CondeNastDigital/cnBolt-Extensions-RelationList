@@ -29,8 +29,9 @@ var RelationListComponent = function( config )
 	 * Api URLs to be used
 	 */
 	self.apiUrls = {
-		findEntries: "/bolt/relationlist/finditems/##contenttype##/##field##/##search##",
-		fetchJsonList: "/bolt/relationlist/fetchJsonList"
+		findEntries: "/relationlist/finditems/##contenttype##/##field##/##search##",
+        findSTFieldEntries: "/relationlist/finditems/##contenttype##/##field##/##search##/##subfield##", // Structuredcontentfield
+		fetchJsonList: "/relationlist/fetchJsonList"
 	};
 
 	self.initialKeyword = "Search...";
@@ -43,37 +44,44 @@ var RelationListComponent = function( config )
 	if ( typeof self.config.boltUrl !== "string" )
 		console.warn("[RelationList::fetchJsonElements] self.config.boltUrl is not defined! This may lead to invalid API calls on different environments!");
 
-	/**
-	 * Generate an absolute API url based on the self.config.baseUrl setting.
-	 *
-	 * @param {String} relativeUrl - Url with leading slash `/`
-	 *
-	 * @return {String} Absolute URL to the API service
-	 */
-	self.getAbsoluteApiUrl = function( relativeUrl ) {
-		if ( typeof self.config.baseUrl !== "string"
-			|| typeof relativeUrl !== 'string'
-			|| relativeUrl.length === 0 )
-			return relativeUrl;
+    /**
+     * Generate an absolute API url based on the self.config.baseUrl setting.
+     *
+     * @param {String} relativeUrl - Url with leading slash `/`
+     *
+     * @param {Boolean} frontend - Create a frontend URL, default is false
+     * @return {String} Absolute URL to the API service
+     */
+    self.getAbsoluteApiUrl = function( relativeUrl, frontend ) {
 
-		var baseUrl = self.config.baseUrl;
-		var lastBaseChar = baseUrl.substr( baseUrl.length-1, 1 );
+        if( typeof(frontend) !== 'undefined' )
+            var url = self.config.baseUrl;
+        else
+            var url = self.config.boltUrl;
 
-		// Remove trailing slash
-		if ( lastBaseChar === "/" || lastBaseChar === "\\" )
-			baseUrl = baseUrl.substr( 0, baseUrl.length-1 );
+        if ( typeof url !== "string"
+            || typeof relativeUrl !== 'string'
+            || relativeUrl.length === 0 )
+            return relativeUrl;
 
-		return ( baseUrl + relativeUrl );
-	};
+        var lastBaseChar = url.substr( url.length-1, 1 );
+
+        // Remove trailing slash
+        if ( lastBaseChar === "/" || lastBaseChar === "\\" )
+            url = url.substr( 0, url.length-1 );
+
+        return ( url + relativeUrl );
+    };
 
 	/**
 	 * Initialize node elements
 	 */
-	self.config.storageFieldNode = $("#" + self.config.fieldName);
+    self.config.storageFieldName = self.config.storageFieldName || self.config.fieldName;
+	self.config.storageFieldNode = $("#" + self.config.storageFieldName);
 	self.config.componentContainerNode = self.config.storageFieldNode.closest(".RelationListComponent");
-	self.config.searchFieldNode = $("#search-" + self.config.fieldName);
-	self.config.outputContainerNode = $("#searchResult-" + self.config.fieldName);
-	self.config.selectedElementsNode = $("#selectedElements-" + self.config.fieldName);
+	self.config.searchFieldNode = $("#search-" + self.config.storageFieldName);
+	self.config.outputContainerNode = $("#searchResult-" + self.config.storageFieldName);
+	self.config.selectedElementsNode = $("#selectedElements-" + self.config.storageFieldName);
 
 	self.config.outputContainerNode.hide();
 
@@ -82,7 +90,7 @@ var RelationListComponent = function( config )
 	 * using the RelationList.applyVariables method
 	 */
 	self.BaseEntryTemplate = "<div class='preview'>"
-		+ "<img src='"+self.getAbsoluteApiUrl("/files/##thumbnail##")+"' data-url=\"##thumbnail##\"/>"
+		+ "<img src='"+self.getAbsoluteApiUrl("/files/##thumbnail##", true)+"' data-url=\"##thumbnail##\"/>"
 		+ "<span class=\"title\">##title##</span> "
 		+ "<span class=\"contenttype\">##contenttype##</span> <span class=\"datechanged\">##datechanged##</span> - "
 		+ "<span class=\"excerpt\">##excerpt##</span></a></div>";
@@ -312,10 +320,13 @@ var RelationListComponent = function( config )
 		}
 
 		self.lastSearchTerm = keyword;
+
+        var url = self.config.subFieldName ? self.apiUrls.findSTFieldEntries : self.apiUrls.findEntries;
 		var searchUrl = self.applyVariables(
-			self.getAbsoluteApiUrl( self.apiUrls.findEntries ), {
+			self.getAbsoluteApiUrl( url ), {
 				"contenttype": self.config.contenttype,
 				"field": self.config.fieldName,
+                "subfield": self.config.subFieldName,
 				"search": keyword
 			});
 

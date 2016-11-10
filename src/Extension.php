@@ -27,8 +27,33 @@ class Extension extends SimpleExtension
      */
     protected function registerAssets(){
 
+        $config = $this->getConfig();
+        $config = json_encode($config);
+
+        $resources    = $this->container['resources'];
+        $extensionUrl = $resources->getUrl('bolt');
+        $extensionWebPath = $resources->getUrl('root');
+
         return [
-            (new JavaScript('js/RelationList.js'))->setZone(Zone::BACKEND)->setLate(true),
+            (new JavaScript('js/RelationList.js'))
+                ->setZone(Zone::BACKEND)
+                ->setAttributes([
+                    "data-extension-relationlist-config=".$config,
+                    "data-root-url=".$extensionWebPath,
+                    "data-extension-url=".$extensionUrl,
+                ])
+                ->setLate(true)
+                ->setPriority(1),
+            (new JavaScript('js/extension-for/sir-trevor.js'))
+                ->setZone(Zone::BACKEND)
+                ->setAttributes([
+                    "data-extension-relationlist-config=".$config,
+                    "data-root-url=".$extensionWebPath,
+                    "data-extension-url=".$extensionUrl,
+                ])
+                ->setLate(true)
+                ->setPriority(1),
+
             (new Stylesheet('css/styles.css'))->setZone(Zone::BACKEND)->setLate(true),
         ];
     }
@@ -37,7 +62,7 @@ class Extension extends SimpleExtension
      * {@inheritdoc}
      */
     protected function registerTwigPaths(){
-        return ['templates'];
+        return ['templates', 'templates/structured-content'];
     }
 
     /**
