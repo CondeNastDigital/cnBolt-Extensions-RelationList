@@ -25,9 +25,9 @@ type:           'hidden',
 value:          context.content.get(contentkey),
 } %}
 
-<fieldset class="form-group relationlist RelationListComponent">
+<fieldset class="bolt-field-relationlist form-group relationlist RelationListComponent">
         <div class="col-sm-12">
-            <label class="control-label">{{ (option.info) ? macro.infopop(labelkey, option.info) : labelkey }}</label>
+            <label class="main control-label">{{ (option.info) ? macro.infopop(labelkey, option.info) : labelkey }}:</label>
             <input{{ macro.attr(attr_search) }}>
             <div class="searchResultWrapper">
             	<div class="searchResultList" id="searchResult-{{key}}"></div>
