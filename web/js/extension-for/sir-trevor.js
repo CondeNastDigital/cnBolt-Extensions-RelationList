@@ -27,7 +27,7 @@ var RelationlistST = function(properties) {
             contenttype: ''
         },
         editorHTML: '<div class="frontend-target relationlist">'+
-        '    <h2></h2>'+
+        '    <div class="block-title"></div>'+
         '    <input class="form-control search" id="" type="text">'+
         '    <div class="searchResultWrapper">'+
         '        <div class="searchResultList" id=""></div>'+
@@ -61,7 +61,7 @@ var RelationlistST = function(properties) {
 
             this.fieldId = 'relationlist-st-' + String(new Date().valueOf());
 
-            $(this.$('h2')).html(this.custom.label);
+            $(this.$('.block-title')).html(this.custom.label);
             $(this.$('input.search')).attr('id', 'search-' + this.fieldId);
             $(this.$('input.data-target')).attr('id', this.fieldId);
             $(this.$('.searchResultList')).attr('id', 'searchResult-'+this.fieldId);
@@ -71,7 +71,7 @@ var RelationlistST = function(properties) {
                 contenttype: this.custom.contenttype,
                 storageFieldName: this.fieldId,
                 subFieldName: this.custom.subFieldName,
-                fieldName: this.custom.fieldName,
+                fieldName: SirTrevor.getInstance(this.instanceID).el.name,
                 boltUrl: this.extensionUrl,
                 baseUrl: this.extensionWebPath,
                 validation: {
@@ -97,7 +97,6 @@ var RelationlistST = function(properties) {
                     custom: options[block]
                 };
 
-                newBlock.custom.fieldName = options[block].fieldName;
                 newBlock.custom.subFieldName = block;
                 newBlock.custom.contenttype = $('[name="contenttype"]').val();
 

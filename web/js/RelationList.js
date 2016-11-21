@@ -30,7 +30,7 @@ var RelationListComponent = function( config )
 	 */
 	self.apiUrls = {
 		findEntries: "/relationlist/finditems/##contenttype##/##field##/##search##",
-        findSTFieldEntries: "/relationlist/finditems/##contenttype##/##field##/##search##/##subfield##", // Structuredcontentfield
+        findSTFieldEntries: "/relationlist/finditems/##contenttype##/##field##/##subfield##/##search##", // Structuredcontentfield
 		fetchJsonList: "/relationlist/fetchJsonList"
 	};
 
