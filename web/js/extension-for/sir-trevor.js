@@ -89,7 +89,7 @@ var RelationlistST = function(properties) {
         if(typeof(SirTrevor)) {
             Object.keys(options).forEach(function (block) {
 
-                if (options[block].type != 'relationlist')
+                if (!(options[block] instanceof Object && options[block].hasOwnProperty('type') && options[block].type == 'relationlist'))
                     return;
 
                 var newBlock = {
