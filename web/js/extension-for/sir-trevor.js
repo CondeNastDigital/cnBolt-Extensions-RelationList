@@ -106,12 +106,13 @@ var RelationlistST = function(properties) {
                 }
             });
         }
-    };
 
+    };
+    
     return that;
 };
 
-var relationListST = RelationlistST({
+var relationListST = new RelationlistST({
     extensionUrl: document.currentScript.getAttribute('data-extension-url'),
     extensionWebPath: document.currentScript.getAttribute('data-root-url'),
     extensionOptions: document.currentScript.getAttribute('data-extension-relationlist-config')
