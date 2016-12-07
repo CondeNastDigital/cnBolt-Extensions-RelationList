@@ -97,9 +97,9 @@ class RelationListController implements ControllerProviderInterface
             return $this->makeErrorResponse("Given elements are not in a valid format.");
 
         $elements = $this->filterIdentifierList( $elements );
+        $elements = $this->translateSlugs( $elements );
         $ordered = $elements;
         $elements = $this->mapContentElementIdList( $elements ); // mapping list -> prep for db queries
-
 
         $contentTypes = array_keys( $elements );
         $results = array();
@@ -108,12 +108,18 @@ class RelationListController implements ControllerProviderInterface
             // Retrieve content objects
             $contentObjects = $this->app["storage"]->getContent( $contentType, $elements[$contentType] );
 
+            // Nothing found or invalid query
+            if(!$contentObjects)
+                continue;
+
+            // Convert single object to list of objects
             if ( !is_array($contentObjects) && get_class($contentObjects) == "Bolt\\Legacy\\Content" ) {
                 $newList = array();
                 $newList[$contentObjects->id] = $contentObjects;
                 $contentObjects = $newList;
             }
 
+            // Iterate through objects
             foreach ($contentObjects as $cObject) {
                 if ( !get_class($cObject) == "Bolt\\Legacy\\Content" )
                     throw new Exception("Problem parsing getContent results!");
@@ -227,7 +233,7 @@ class RelationListController implements ControllerProviderInterface
      */
     private function filterIdentifierList( $ids ) {
         $result = array();
-        $id_pattern = "/([A-Za-z0-9_]*)\\/([0-9]*)/";
+        $id_pattern = "/([A-Za-z0-9_]*)\\/([0-9a-z-]*)/";
 
         foreach ( $ids as $id ) {
             if ( is_string($id) && preg_match($id_pattern, $id) )
@@ -264,6 +270,46 @@ class RelationListController implements ControllerProviderInterface
         }
 
         return $result;
+    }
+
+    protected function translateSlugs($elements) {
+
+        // Collect items to translate
+        $translatable = [];
+        foreach($elements as $element){
+            list($type,$id) = explode("/", $element);
+
+            if(!is_numeric($id))
+                $translatable[$type][$id] = $id;
+        }
+
+        // Collect info from database for all translatable ids
+        $prefix = $this->app['config']->get('general/database/prefix');
+        foreach($translatable as $type => $slugs) {
+            if ($slugs) {
+
+                $contenttype = $this->app["storage"]->getContentType($type);
+                if(!$contenttype)
+                    continue;
+
+                /* @var \Doctrine\DBAL\Query\QueryBuilder $query */
+                $query = $this->app['db']->createQueryBuilder()
+                    ->select("id", "slug")
+                    ->from($prefix.$contenttype["tablename"])
+                    ->where('slug IN (:slugs)')
+                    ->setParameter("slugs", array_keys($slugs), \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+                $results = $query->execute()->fetchAll();
+
+                foreach($results as $row){
+                    $idx = array_search($type."/".$row["slug"], $elements);
+                    if($idx !== false)
+                        $elements[$idx] = $type."/".$row["id"];
+                }
+            }
+        }
+
+        return $elements;
+
     }
 
 }
