@@ -100,7 +100,7 @@ var RelationListComponent = function( config )
 		+ "</div>";
 
 	self.selectedEntryTemplate = "<div class=\"entry clearfix\" data-entry-id=\"##id##\">"
-		+ "<a target=\”_blank\” href=\""+self.config.boltUrl+"editcontent/##id##\">"+self.BaseEntryTemplate+"</a>"
+		+ "<a target=\"_blank\" href=\""+self.config.boltUrl+"editcontent/##id##\">"+self.BaseEntryTemplate+"</a>"
 		+ "<a href=\"#\" class=\"remove fa fa-trash\">&nbsp;</a>"
 		+ "</div>";
 
