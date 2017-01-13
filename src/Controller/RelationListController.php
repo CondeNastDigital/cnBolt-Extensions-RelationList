@@ -113,7 +113,7 @@ class RelationListController implements ControllerProviderInterface
                 continue;
 
             // Convert single object to list of objects
-            if ( !is_array($contentObjects) && get_class($contentObjects) == "Bolt\\Legacy\\Content" ) {
+            if (!is_array($contentObjects) && ($contentObjects instanceof Content)) {
                 $newList = array();
                 $newList[$contentObjects->id] = $contentObjects;
                 $contentObjects = $newList;
@@ -121,7 +121,7 @@ class RelationListController implements ControllerProviderInterface
 
             // Iterate through objects
             foreach ($contentObjects as $cObject) {
-                if ( !get_class($cObject) == "Bolt\\Legacy\\Content" )
+                if ($contentObjects instanceof Content)
                     throw new Exception("Problem parsing getContent results!");
 
                 $item = $this->filterElement($cObject);
