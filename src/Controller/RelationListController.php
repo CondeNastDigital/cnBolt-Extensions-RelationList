@@ -172,10 +172,17 @@ class RelationListController implements ControllerProviderInterface
 
         $length = $length - mb_strlen($cObject->getTitle()) - mb_strlen($cObject->contenttype["singular_name"]) - 15;
 
+        if ($length > 0) {
+            // Broken utf-8 characters will break JSON encoder. This filters invalid chars
+            $excerpt = mb_convert_encoding((string) $cObject->excerpt($length), "utf-8", "utf-8");
+        } else {
+            $excerpt = '';
+        }
+
         $obj = array();
         $obj["id"] = $cObject->contenttype["slug"] . "/" . $cObject->id;
         $obj["title"] = $cObject->getTitle();
-        $obj["excerpt"] = mb_convert_encoding((string)$cObject->excerpt($length), "utf-8", "utf-8"); // Broken utf-8 characters will break JSON encoder. This filters invalid chars
+        $obj["excerpt"] = $excerpt;
         $obj["thumbnail"] = $cObject->getImage();
 
         $dateChanged = new \DateTime( $cObject->get("datechanged") );
