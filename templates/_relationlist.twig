@@ -41,7 +41,7 @@ value:          context.content.get(contentkey),
 <script data-id="start.js" type="text/javascript">
 jQuery(document).ready(function($) {
 	RelationList_{{key}} = new RelationListComponent({
-		contenttype: "{{context.content.contenttype.name}}",
+		contenttype: "{{context.content.contenttype.slug}}",
 		fieldName: "{{key}}",
 		baseUrl: "{{ paths.root }}",
 		boltUrl: "{{ paths.bolt }}",
