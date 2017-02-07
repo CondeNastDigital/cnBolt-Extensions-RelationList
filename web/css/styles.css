@@ -78,6 +78,9 @@
 	float: left;
 	margin-right: 5px;
 }
+.relationlist .entry img[data-url=''] {
+    visibility : hidden;
+}
 
 .relationlist .entry a.remove {
 	position: absolute;
