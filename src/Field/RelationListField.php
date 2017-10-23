@@ -2,9 +2,9 @@
 
 namespace Bolt\Extension\CND\RelationList\Field;
 
-use Bolt\Storage\Field\FieldInterface;
+use Bolt\Storage\Field\Type\FieldTypeBase;
 
-class RelationListField implements FieldInterface
+class RelationListField extends FieldTypeBase
 {
 
     public function getName()
