@@ -24,7 +24,7 @@ class RelationListField extends FieldTypeBase
 
     public function getStorageOptions()
     {
-        return array('default'=>'');
+        return ['notnull' => false];
     }
 
 }
