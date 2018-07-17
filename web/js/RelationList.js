@@ -90,7 +90,7 @@ var RelationListComponent = function( config )
 	 * using the RelationList.applyVariables method
 	 */
 	self.BaseEntryTemplate = "<div class='preview'>"
-		+ "<img src='"+self.getAbsoluteApiUrl("/files/##thumbnail##", true)+"' data-url=\"##thumbnail##\"/>"
+		+ "<img src='##thumbnail##' data-url=\"##thumbnail##\"/>"
 		+ "<span class=\"title\">##title##</span> "
 		+ "<span class=\"contenttype\">##contenttype##</span> <span class=\"datechanged\">##datechanged##</span> - "
 		+ "<span class=\"excerpt\">##excerpt##</span></a></div>";
@@ -378,6 +378,8 @@ var RelationListComponent = function( config )
 
 				self.config.outputContainerNode.html("An error occured!");
 				console.error('RelationList: An error occured!');
+
+                self.searchRequest = {};
 			}
 		});
 

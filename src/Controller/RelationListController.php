@@ -39,7 +39,7 @@ class RelationListController implements ControllerProviderInterface
         $ctr = $app['controllers_factory'];
         $ctr->get('/finditems/{contenttype}/{field}/{search}', array($this, 'findItems'));
         $ctr->get('/finditems/{contenttype}/{field}/{subfield}/{search}', array($this, 'findItems'));
-        $ctr->post('/fetchJsonList', array($this, 'fetchContentElementArray'));
+        $ctr->match('/fetchJsonList', array($this, 'fetchContentElementArray'));
 
         return $ctr;
     }
@@ -68,14 +68,33 @@ class RelationListController implements ControllerProviderInterface
 
         $allowedTypes = isset($config["allowed-types"]) ? $config["allowed-types"] : array();
         $results = array();
-        $content = $this->app['storage']->searchContent($search, $allowedTypes, null, 100, 0);
 
-        if($content["results"]) {
+        // VERSION A - CND Storage Library
+        if($this->app->offsetExists("cnd-library.storage")){
+            $parameters = [
+                "limit" => 20,
+                "contenttypes" => $allowedTypes,
+                "order" => ["datepublish" => true],
+                "filter" => [ "title" => $search ],
+                "operator" => [ "title" => \Bolt\Extension\CND\Library\Services\StorageService::OPERATOR_CONTAINS ]
+                // "options" => ["showquery" => true, "showparams" => true]
+            ];
+            $content = [
+                "results" => $this->app["cnd-library.storage"]->selectContent($parameters)
+            ];
+        }
+        // VERSION B - Bolt native search
+        else {
+            $content = $this->app['storage']->searchContent($search, $allowedTypes, null, 100, 0);
+        }
+
+        if ($content["results"]) {
             foreach ($content["results"] as $entry) {
                 /* @var \Bolt\Legacy\Content $entry */
                 $results[] = $this->filterElement($entry);
             }
         }
+
         return $this->makeDataResponse( $results );
     }
 
@@ -83,12 +102,12 @@ class RelationListController implements ControllerProviderInterface
      * Fetch a JSON object list of elements
      *
      * @param Request $request
-     * @return Content elements as JSON
+     * @return JsonResponse Content elements as JSON
      * @throws Exception
      */
     public function fetchContentElementArray( Request $request ) {
 
-        $elements = $request->request->get("elements");
+        $elements = $request->get("elements");
 
         if( !$this->app["users"]->isValidSession() )
             return $this->makeErrorResponse("Insufficient access rights!");
@@ -136,6 +155,8 @@ class RelationListController implements ControllerProviderInterface
                 unset($results[$id]);
             }
         }
+
+
         $sortedResults = array_merge($sortedResults, $results);
         $sortedResults = array_values($sortedResults);
 
@@ -184,6 +205,24 @@ class RelationListController implements ControllerProviderInterface
         $obj["title"] = $cObject->getTitle();
         $obj["excerpt"] = $excerpt;
         $obj["thumbnail"] = $cObject->getImage();
+
+        // Support for ImageService
+        if($obj["thumbnail"] instanceof \Bolt\Extension\CND\ImageService\Image && $this->app->offsetExists("cnd.image-service.image")){
+            $obj["thumbnail"] = $this->app["cnd.image-service.image"]->imageUrl($obj["thumbnail"], 150);
+        }
+        // Support for Bolt Tumbnails
+        else {
+            $thumbservice = false;
+
+            // Bolt 3.3+
+            if(isset($this->app['twig.runtime.bolt_image']))
+                $thumbservice = $this->app['twig.runtime.bolt_image'];
+            // Bolt 3.0 - 3.2
+            elseif(isset($this->app['twig.handlers']['image']))
+                $thumbservice = $this->app['twig.handlers']['image'];
+
+            $obj["thumbnail"] = $thumbservice ? $thumbservice->thumbnail($obj["thumbnail"], 150, 150, "c") : false;
+        }
 
         $dateChanged = new \DateTime( $cObject->get("datechanged") );
         $obj["datechanged"] = $dateChanged->format('Y-m-d');
