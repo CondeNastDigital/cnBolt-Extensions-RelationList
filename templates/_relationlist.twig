@@ -50,7 +50,9 @@
 {% block fieldset_controls %}
     <div class="col-xs-12">
 
-        <div id="relationlist-{{ buid }}"><app></app></div>
+        <div id="relationlist-{{ buid }}">
+            <app></app>
+        </div>
 
         {% set values = context.content.get(contentkey)|default(field.default)|default({items:[]}) %}
 
@@ -58,7 +60,8 @@
         {% set relation = relation|merge(getRelatedGlobals(values)) %}
         {% set relation = relation|merge(getRelatedItems(values)) %}
 
-        <textarea style="display:none" id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>{{ relation|json_encode }}</textarea>
+        <textarea style="display:none"
+                  id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>{{ relation|json_encode }}</textarea>
 
         <script type="application/javascript">
             $(function () {
@@ -84,5 +87,3 @@
 
     </div>
 {% endblock fieldset_controls %}
-
-
