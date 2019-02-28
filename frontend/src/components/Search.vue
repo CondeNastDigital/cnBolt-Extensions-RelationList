@@ -1,0 +1,125 @@
+<template>
+    <div class="search">
+        <div class="searchbar">
+            <b-input
+                    type="text"
+                    placeholder="Search..."
+                    v-model="search"
+                    @input.native="findItems"
+            ></b-input>
+        </div>
+        <div class="results" v-if="foundItems.length > 0">
+            <b-card class="item" v-for="item in foundItems" :key="item.id">
+                <b-row>
+                    <div class="col-xs-12">
+                        <item
+                                v-bind="item"
+                                @click.native="addItem(item)"
+                        ></item>
+                    </div>
+                </b-row>
+            </b-card>
+        </div>
+    </div>
+</template>
+
+<script>
+
+    import item from './Item.vue'
+
+    export default {
+        name: 'Search',
+
+        components: {
+            item
+        },
+
+        methods: {
+
+            /**
+             * adds an item to the stored item list
+             * emits an event that the item has been added
+             */
+            addItem: function (item) {
+                this.$store.dispatch('addItem', item);
+                this.$root.$emit('cnrl-relation-updated');
+                this.reset();
+            },
+
+            /**
+             * finds an item in the database
+             * has a timeout to minimize the database connections
+             */
+            //todo refactor this function to prevent v-model and input.native
+            findItems: function () {
+
+                const timeout = 800;
+
+                if (this.timer) {
+                    clearTimeout(this.timer);
+                    this.timer = null;
+                }
+                this.timer = setTimeout(() => {
+                    let endpoint = this.$store.getters.getOptions['apiurl'] || '';
+
+                    this.foundItems = this._ajaxCall(endpoint, this.search);
+
+                    this.$emit('cnrl-items-found');
+                }, timeout);
+
+            },
+
+            /**
+             * makes the ajaxcall
+             * @param endpoint
+             * @param val
+             * @returns {Array}
+             * @private
+             */
+            _ajaxCall: function (endpoint, val) {
+
+                if (typeof(endpoint) !== 'undefined' && typeof(val) !== 'undefined') {
+                    this.$store.dispatch('setReady', false);
+
+                    this.$http
+                        .get(endpoint + val)
+                        .then(response => {
+                            if(response.data.status !== "error") {
+                                this.foundItems = response.data.data;
+                                this.$store.dispatch('setReady', true);
+                            }
+                        })
+                        .catch(error => console.error(error))
+                        .finally(() => {
+                            this.$store.dispatch('setReady', true);
+                        });
+
+                }
+
+                return this.foundItems;
+
+            },
+
+            /**
+             * resets the searchbar with a blank string
+             * resets the founditems array to clear the found items list
+             */
+            reset: function () {
+                this.search = '';
+                this.foundItems = [];
+            },
+        },
+
+        computed: {},
+
+        data() {
+            return {
+                search: '',
+                foundItems: []
+            }
+        },
+
+
+    }
+
+</script>

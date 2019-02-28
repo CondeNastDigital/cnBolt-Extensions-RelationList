@@ -1,0 +1,86 @@
+/* globals */
+.relationlist {
+    position: relative;
+    min-height: 350px;
+}
+.relationlist.scontent{
+    min-height: auto;
+}
+
+/* card */
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: .25rem;
+}
+
+.card-body {
+    flex: 1 1 auto;
+    padding: 1.25rem;
+}
+
+.card-title {
+    margin-bottom: .75rem;
+}
+
+/* loading */
+.loading{
+    position: absolute;
+    z-index: 1000;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(50,50,50,.3);
+}
+.loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 36px;
+    color: #555;
+}
+/* toolbar */
+.toolbar {
+    margin-bottom: .8rem;
+}
+.toolbar .btn-settings{
+    float: right;
+}
+
+/* search */
+.search {}
+.search .results {
+    position: absolute;
+    height: 275px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    z-index: 500;
+    border-radius: 0.25rem;
+    background-color: #fff;
+    box-shadow: 0 2px 2px #ccc;
+}
+
+/* definitions */
+.settings {}
+.settings .card{
+    background-color: #f5f5f5;
+}
+.settings .form-group {
+    margin: 0;
+}
+
+/* item */
+.item{}
+
+/* itemlist */
+.itemlist {
+    max-height: 300px;
+    overflow-y: auto;
+}

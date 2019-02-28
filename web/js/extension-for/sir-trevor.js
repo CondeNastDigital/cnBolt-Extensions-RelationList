@@ -1,16 +1,17 @@
-
-
 var RelationlistST = function(properties) {
 
     var that = this;
+    let rdm = Math.floor(Math.random() * 9999);
+
+    let fieldId = 'relationlist-st-' + String(new Date().valueOf());
+    let connector = '#connector-'+fieldId;
 
     that.blockPrototype = {
 
         extensionUrl: properties.extensionUrl,
         extensionWebPath: properties.extensionWebPath,
         extensionOptions: properties.extensionOptions,
-
-        fieldId: null,
+        extensionDefinitions: properties.extensionDefinitions,
 
         type: '',
         title: function() {
@@ -26,29 +27,26 @@ var RelationlistST = function(properties) {
             label: '',
             contenttype: ''
         },
-        editorHTML: '<div class="frontend-target relationlist">'+
-        '    <div class="block-title"></div>'+
-        '    <input class="form-control search" id="" type="text">'+
-        '    <div class="searchResultWrapper">'+
-        '        <div class="searchResultList" id=""></div>'+
-        '    </div>'+
-        '    <div class="selectedElementsList" id=""></div>'+
-        '    <input class="data-target" id="" type="hidden" value="">'+
-        '</div>',
+        editorHTML:
+            '<div class="frontend-target relationlist scontent">'+
+            '    <div class="block-title"></div>'+
+            '    <div class="relationlistApp" id=""></div>'+
+            '    <textarea style="display:none" class="connector" id=""></textarea>'+
+            '</div>',
 
         /**
          * Loads the json data in to the field
          * @param data
          */
         loadData: function(data){
-            $(this.$('.data-target')).val(JSON.stringify(data));
+            $(this.$('.connector')).val(JSON.stringify(data));
         },
 
         /**
          * Sets the data form the ImageService into the Block store
          */
         save: function(){
-            var data = $(this.$('.data-target')).val();
+            var data = $(this.$('.connector')).val();
             if(data) {
                 this.setData(JSON.parse(data));
             }
@@ -59,24 +57,28 @@ var RelationlistST = function(properties) {
          */
         onBlockRender: function() {
 
-            this.fieldId = 'relationlist-st-' + String(new Date().valueOf());
+            $('.frontend-target.relationlist').on('dragenter dragover drop', function(e){
+                e.stopPropagation();
+            });
 
             $(this.$('.block-title')).html(this.custom.label);
-            $(this.$('input.search')).attr('id', 'search-' + this.fieldId);
-            $(this.$('input.data-target')).attr('id', this.fieldId);
-            $(this.$('.searchResultList')).attr('id', 'searchResult-'+this.fieldId);
-            $(this.$('.selectedElementsList')).attr('id', 'selectedElements-'+this.fieldId);
+            $(this.$('.relationlistApp')).attr('id', 'relationlist-'+fieldId);
+            $(this.$('.connector')).attr('id', 'connector-'+fieldId);
 
-            this.realtionListInstance = new RelationListComponent({
-                contenttype: this.custom.contenttype,
-                storageFieldName: this.fieldId,
-                subFieldName: this.custom.subFieldName,
-                fieldName: SirTrevor.getInstance(this.instanceID).el.name,
-                boltUrl: this.extensionUrl,
-                baseUrl: this.extensionWebPath,
-                validation: {
-                    min: this.custom.min | this.extensionOptions.min | 0,
-                    max: this.custom.max | this.extensionOptions.max| 0
+            let definitions = SirTrevor.getInstance(this.instanceID).options.options.Items.globals || '{}';
+            let apiurl = this.extensionUrl + "relationlist/finditems/" + this.custom.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + this.custom.subFieldName + "/";
+
+            this.realtionListInstance = new CnRelationList({
+
+                options: {
+                    apiurl: apiurl,
+                    element: '#relationlist-' + fieldId,
+                    timeout: 800
+                },
+                value: $(connector).val() || '{}',
+                definitions: JSON.stringify(definitions),
+                onRelationUpdated: function (data) {
+                    $(connector).val(JSON.stringify(data));
                 }
             });
         }
@@ -108,20 +110,20 @@ var RelationlistST = function(properties) {
         }
 
     };
-    
+
     return that;
 };
 
 var relationListST = new RelationlistST({
-    extensionUrl: document.currentScript.getAttribute('data-extension-url'),
+    extensionUrl:     document.currentScript.getAttribute('data-extension-url'),
     extensionWebPath: document.currentScript.getAttribute('data-root-url'),
-    extensionOptions: document.currentScript.getAttribute('data-extension-relationlist-config')
+    extensionOptions: document.currentScript.getAttribute('data-extension-relationlist-config'),
+    extensionDefinitions: document.currentScript.getAttribute('data-extension-relationlist-definitions')
 });
 
 $(document).on('SirTrevor.DynamicBlock.All', function(){
     $(document).trigger('SirTrevor.DynamicBlock.Add', [relationListST] );
 });
 $(document).trigger('SirTrevor.DynamicBlock.Add', [relationListST] );
-
 
 
