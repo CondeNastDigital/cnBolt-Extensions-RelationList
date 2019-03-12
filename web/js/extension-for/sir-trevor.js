@@ -1,10 +1,6 @@
 var RelationlistST = function(properties) {
 
     var that = this;
-    let rdm = Math.floor(Math.random() * 9999);
-
-    let fieldId = 'relationlist-st-' + String(new Date().valueOf());
-    let connector = '#connector-'+fieldId;
 
     that.blockPrototype = {
 
@@ -56,6 +52,9 @@ var RelationlistST = function(properties) {
          * Creates the new image service block
          */
         onBlockRender: function() {
+
+            let fieldId = 'relationlist-st-' + String(new Date().valueOf());
+            let connector = '#connector-'+fieldId;
 
             $('.frontend-target.relationlist').on('dragenter dragover drop', function(e){
                 e.stopPropagation();

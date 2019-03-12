@@ -11,10 +11,11 @@
                         </div>
                         <div class="col-xs-2 text-right">
                             <b-button
-                                    variant="danger"
+                                    title="Unlinks this item from the relationlist"
+                                    variant="warning"
                                     @click="removeItem(item)"
                             >
-                                <font-awesome-icon icon="trash-alt"/>
+                                <font-awesome-icon icon="unlink" />
                             </b-button>
                         </div>
                     </b-row>
@@ -35,8 +36,6 @@
             draggable
         },
 
-        props: {},
-
         computed: {
 
             items: {
@@ -56,6 +55,20 @@
              * @param item
              */
             removeItem(item) {
+
+                // validation
+                let options = this.$store.getters.getOptions;
+                if (options.hasOwnProperty('validation') && options.validation.hasOwnProperty('min')){
+                    if(this.$store.getters.getItems.length <= (options.validation.min)){
+                        let error = {
+                            status: true,
+                            message: 'Error: At least ' + options.validation.min + ' element(s) have to be selected!'
+                        };
+                        this.$store.dispatch('setError', error);
+                        return;
+                    }
+                }
+
                 this.$store.dispatch('removeItem', item);
             },
         },

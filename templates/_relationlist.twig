@@ -56,9 +56,17 @@
 
         {% set values = context.content.get(contentkey)|default(field.default)|default({items:[]}) %}
 
-        {% set relation = [] %}
-        {% set relation = relation|merge(getRelatedGlobals(values)) %}
-        {% set relation = relation|merge(getRelatedItems(values)) %}
+        {% set relation = {} %}
+        {% set items = [] %}
+
+        {% set related_globals = getRelatedGlobals(values) %}
+        {% set related_items = getRelatedItems(values) %}
+
+        {% for item in related_items %}
+            {% set items = items|merge([item.contenttype.slug~'/'~item.id]) %}
+        {% endfor %}
+
+        {% set relation = {'globals': related_globals, 'items': items} %}
 
         <textarea style="display:none"
                   id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>{{ relation|json_encode }}</textarea>
@@ -69,13 +77,25 @@
                 let definitions = '{{ field.globals|default('{}')|json_encode|raw }}';
                 let connector = '#connector-{{ buid }}';
                 let apiurl = "{{ paths.bolt }}relationlist/finditems/{{ context.content.contenttype.slug }}/{{ key }}/";
+                let jsonurl = "{{ paths.bolt }}relationlist/fetchJsonList";
+
+                let options = {
+                    apiurl: apiurl,
+                    jsonurl: jsonurl,
+                    element: '#relationlist-{{ buid }}',
+                    validation: {}
+                };
+
+                {% if field.options.min is defined %}
+                    options.validation.min = "{{ field.options.min }}";
+                {% endif %}
+
+                {% if field.options.max is defined %}
+                    options.validation.max = "{{ field.options.max }}";
+                {% endif %}
 
                 let cnRelationList = new CnRelationList({
-                    options: {
-                        apiurl: apiurl,
-                        element: '#relationlist-{{ buid }}',
-                        timeout: 800
-                    },
+                    options: options,
                     value: $(connector).val() || '{}',
                     definitions: definitions,
                     onRelationUpdated: function (data) {
@@ -83,6 +103,7 @@
                     }
                 });
             });
+
         </script>
 
     </div>

@@ -15,6 +15,14 @@ export default () => {
             getItems(state) {
                 return state.items;
             },
+            getSimpleItems(state) {
+                let items = [];
+
+                 state.items.forEach(function(value){
+                     items.push(value.id)
+                 });
+                return items;
+            }
         },
 
         // actions
