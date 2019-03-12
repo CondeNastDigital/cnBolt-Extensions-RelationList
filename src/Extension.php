@@ -8,7 +8,8 @@ use Bolt\Asset\File\Stylesheet;
 use Bolt\Controller\Zone;
 use Bolt\Extension\CND\RelationList\Controller\RelationListController;
 use Bolt\Extension\SimpleExtension;
-use Bolt\Storage\Entity\Content;
+use Pimple as Container;
+use Silex\Application;
 
 class Extension extends SimpleExtension
 {
@@ -98,33 +99,20 @@ class Extension extends SimpleExtension
      * {@inheritdoc}
      */
     public function getRelatedItems($relation){
-
+        
         /* @var \Bolt\Application $app */
         $app = $this->getContainer();
-        $config = $this->getConfig();
-        $controller = new RelationListController($app, $config);
         $relation = json_decode($relation, true);
         $items = [];
 
-        foreach ($relation as $idx => $value){
+        $elements = isset($relation['items']) ? $relation['items'] : $relation;
 
-            // migration of old relationlist json string
-            if ($idx !== 'items' && $idx !== 'globals'){
-                list($contenttype, $id) = explode('/', $value);
-
-                $element = $app["storage"]->getContent( $contenttype, ["id" => $id] );
-
-                $items[] = $controller->filterElement($element);
-            }
-
-            if ($idx === 'items')
-                $items = $relation[$idx];
-
-
+        foreach ($elements as $idx => $value){
+            list($contenttype, $id) = explode('/', $value);
+            $items[] = $app["storage"]->getContent( $contenttype, ["id" => $id] );
         }
-        $relations['items'] = $items;
 
-        return $relations;
+        return $items;
 
     }
 
@@ -135,18 +123,13 @@ class Extension extends SimpleExtension
     public function getRelatedGlobals($relation){
 
         $relation = json_decode($relation, true);
-        $globals = '';
+        $globals = [];
 
-        foreach ($relation as $idx => $value){
-
-            if ($idx === 'globals')
-                $globals = $relation[$idx];
-
+        if (isset($relation['globals'])){
+            $globals = $relation['globals'];
         }
 
-        $relations['globals'] = $globals;
-
-        return $relations;
+        return $globals;
     }
 
 

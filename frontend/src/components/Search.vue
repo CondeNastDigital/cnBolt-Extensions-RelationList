@@ -41,6 +41,35 @@
              * emits an event that the item has been added
              */
             addItem: function (item) {
+
+                let options = this.$store.getters.getOptions;
+                let storeditems = this.$store.getters.getItems;
+
+                // validation
+                if (options.hasOwnProperty('validation') && options.validation.hasOwnProperty('max')){
+                    if(storeditems.length >= (options.validation.max)){
+                        let error = {
+                            status: true,
+                            message: 'Error: You tried to add too many items. Only ' + options.validation.max + ' are allowed!'
+                        };
+                        this.$store.dispatch('setError', error);
+                        this.reset();
+                        return;
+                    }
+                }
+
+                // Check, if element was already selected
+                let found = false;
+                for (let idx in storeditems){
+                    if (storeditems.hasOwnProperty(idx) && storeditems[idx].id === item.id)
+                        found = true;
+                }
+                if (found) {
+                    this.reset();
+                    return;
+                }
+
+                // add item
                 this.$store.dispatch('addItem', item);
                 this.$root.$emit('cnrl-relation-updated');
                 this.reset();
@@ -84,7 +113,7 @@
                     this.$http
                         .get(endpoint + val)
                         .then(response => {
-                            if(response.data.status !== "error") {
+                            if (response.data.status !== "error") {
                                 this.foundItems = response.data.data;
                                 this.$store.dispatch('setReady', true);
                             }

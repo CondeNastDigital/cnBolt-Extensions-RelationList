@@ -12,20 +12,22 @@ import BsCard from 'bootstrap-vue/es/components/card'
 import BsCollapse from 'bootstrap-vue/es/components/collapse'
 import BsButton from 'bootstrap-vue/es/components/button'
 import BsLayout from 'bootstrap-vue/es/components/layout'
+import BsAlert from 'bootstrap-vue/es/components/alert'
+import BsProgress from 'bootstrap-vue/es/components/progress'
 
 //import 'bootstrap/dist/css/bootstrap.min.css'
-//import 'bootstrap-vue/dist/bootstrap-vue.min.css'
+import 'bootstrap-vue/dist/bootstrap-vue.min.css'
 import './assets/css/relationlist.css'
 
 import {library} from '@fortawesome/fontawesome-svg-core'
-import {faMinus, faTrashAlt, faSpinner, faCogs} from '@fortawesome/free-solid-svg-icons'
+import {faMinus, faUnlink, faSpinner, faCogs} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
 
 import App from './components/App.vue'
 import Store from './store'
 
 library.add(
-    faMinus, faTrashAlt, faSpinner, faCogs
+    faMinus, faUnlink, faSpinner, faCogs
 );
 
 
@@ -44,6 +46,8 @@ export class cnRelationList {
         Vue.use(BsCollapse);
         Vue.use(BsButton);
         Vue.use(BsLayout);
+        Vue.use(BsAlert);
+        Vue.use(BsProgress);
 
         Vue.component('font-awesome-icon', FontAwesomeIcon);
 
@@ -59,7 +63,7 @@ export class cnRelationList {
      * initialization of the vue app
      * @returns {*}
      */
-    initApp(config){
+    initApp(config) {
         this.app = new Vue({
 
             el: config.options.element || '#app',
@@ -69,7 +73,7 @@ export class cnRelationList {
             },
 
             // creates the tag app
-            render (createComponent) {
+            render(createComponent) {
                 return createComponent('app', {
                     props: {
                         config: this.config || []
@@ -84,7 +88,7 @@ export class cnRelationList {
      * initialization of the vue globals storage (vuex)
      * set values to the store
      */
-    initStore(config){
+    initStore(config) {
         let _self = this;
         this.store = new Vuex.Store(Store());
 
@@ -93,25 +97,57 @@ export class cnRelationList {
         let globals = data.globals || {};
         let items = data.items || [];
 
-        // build the definitions
+        // build the store
         this.store.dispatch('setDefinitions', definitions);
         this.store.dispatch('setOptions', config.options);
         this.store.dispatch('setGlobals', globals);
-        this.store.dispatch('setItems', items);
 
-        this.store.subscribe(function(mutation, state){
+        this.getFullElements(items);
+
+        this.store.subscribe(function (mutation, state) {
             _self.relationUpdated(mutation, state);
         });
     };
 
-    relationUpdated(mutation, state){
+    /**
+     * function which will be triggered if the relation had been updated
+     * @param mutation
+     * @param state
+     */
+    relationUpdated(mutation, state) {
         let result = {};
         result.globals = this.store.getters.getGlobals;
-        result.items = this.store.getters.getItems;
+        result.items = this.store.getters.getSimpleItems;
 
         if (this.config.hasOwnProperty('onRelationUpdated') && typeof(this.config.onRelationUpdated) === 'function') {
             this.config.onRelationUpdated(result);
         }
 
     };
+
+    /**
+     * converts a contenttype slug to a full content element
+     * @param items
+     */
+    //todo: make this ajax call without jquery
+    getFullElements(items) {
+
+        let elements = [];
+        let _self = this;
+
+        $.ajax({
+            url: this.store.getters.getOptions.jsonurl,
+            method: 'POST',
+            data: {
+                "elements": items
+            }
+        }).done(function(data){
+            if (data.hasOwnProperty('data') && data.data.hasOwnProperty('results') && data.data.results.length > 0)
+                elements = data.data.results;
+
+            _self.store.dispatch('setItems', elements);
+        });
+        return elements;
+    }
+
 }

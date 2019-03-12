@@ -109,8 +109,8 @@ class RelationListController implements ControllerProviderInterface
 
         $elements = $request->get("elements");
 
-        #if( !$this->app["users"]->isValidSession() )
-        #    return $this->makeErrorResponse("Insufficient access rights!");
+        if( !$this->app["users"]->isValidSession() )
+            return $this->makeErrorResponse("Insufficient access rights!");
 
         if ( !isset( $elements ) || !is_array( $elements ) )
             return $this->makeErrorResponse("Given elements are not in a valid format.");

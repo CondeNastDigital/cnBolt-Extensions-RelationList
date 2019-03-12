@@ -5,12 +5,19 @@
 }
 .relationlist.scontent{
     min-height: auto;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
 }
 
 /* card */
 .card {
     position: relative;
+    display: -ms-flexbox;
     display: flex;
+    -ms-flex-direction: column;
     flex-direction: column;
     min-width: 0;
     word-wrap: break-word;
@@ -20,7 +27,12 @@
     border-radius: .25rem;
 }
 
+.card.item:nth-child(even) {
+    background-color: #eeeeee;
+}
+
 .card-body {
+    -ms-flex: 1 1 auto;
     flex: 1 1 auto;
     padding: 1.25rem;
 }
@@ -83,4 +95,7 @@
 .itemlist {
     max-height: 300px;
     overflow-y: auto;
+}
+.itemlist button.btn svg{
+    margin-top: 2px;
 }
