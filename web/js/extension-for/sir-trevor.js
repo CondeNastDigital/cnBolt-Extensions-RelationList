@@ -25,7 +25,6 @@ var RelationlistST = function(properties) {
         },
         editorHTML:
             '<div class="frontend-target relationlist scontent">'+
-            '    <div class="block-title"></div>'+
             '    <div class="relationlistApp" id=""></div>'+
             '    <textarea style="display:none" class="connector" id=""></textarea>'+
             '</div>',
@@ -64,17 +63,33 @@ var RelationlistST = function(properties) {
             $(this.$('.relationlistApp')).attr('id', 'relationlist-'+fieldId);
             $(this.$('.connector')).attr('id', 'connector-'+fieldId);
 
-            let definitions = SirTrevor.getInstance(this.instanceID).options.options.Items.globals || '{}';
+            let values = JSON.parse($(connector).val() || '{}');
+
+            let field = SirTrevor.getInstance(this.instanceID).options.options.Items;
+            let definitions = field.globals || '{}';
             let apiurl = this.extensionUrl + "relationlist/finditems/" + this.custom.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + this.custom.subFieldName + "/";
+            let jsonurl = this.extensionUrl + "relationlist/fetchJsonList";
+            let options = {
+                apiurl: apiurl,
+                jsonurl: jsonurl,
+                element: '#relationlist-'+fieldId,
+                validation: {}
+            };
+
+            if (field.hasOwnProperty('min')){
+                options.validation.min = field.min;
+            }
+
+            if (field.hasOwnProperty('max')){
+                options.validation.max = field.max;
+            }
+
+            values = that.migrate(values);
 
             this.realtionListInstance = new CnRelationList({
 
-                options: {
-                    apiurl: apiurl,
-                    element: '#relationlist-' + fieldId,
-                    timeout: 800
-                },
-                value: $(connector).val() || '{}',
+                options: options,
+                value: JSON.stringify(values),
                 definitions: JSON.stringify(definitions),
                 onRelationUpdated: function (data) {
                     $(connector).val(JSON.stringify(data));
@@ -108,6 +123,24 @@ var RelationlistST = function(properties) {
             });
         }
 
+    };
+
+    /**
+     * migrates the old json format to the new one
+     * @param values
+     * @returns {*}
+     */
+    that.migrate = function(values){
+        let items = values;
+        if (typeof values === 'object' && !values.hasOwnProperty('items')){
+            let elements = [];
+            for (let id in values){
+                if (values.hasOwnProperty(id))
+                    elements.push(values[id]);
+            }
+            items = {'items': elements};
+        }
+        return items;
     };
 
     return that;
