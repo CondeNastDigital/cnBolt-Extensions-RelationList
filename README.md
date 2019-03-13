@@ -5,10 +5,17 @@ Provides a backend field where you can select one or more other content objects 
 Note: The field does not provide any mechanism for fetching the selected objects. It only stores a JSON string with content ids. You have to fetch them yourself in your template. See sample below.
 
 ## Configuration
-Add the following field for your content type (within `contenttype.yml`). Those fields are mandatory.
+Add the following field for your content type (within `contenttype.yml`).
 ```
 myfield:
     type: relationlist
+    globals: 
+        title:
+            label: Title
+            type: text
+        description:
+            label: Description
+            type: textarea
     options:
         allowed-types: [pages, otherpages, evenotherpages]
         min: 1
@@ -32,16 +39,15 @@ structuredcontent:
 ```
 
 ## Usage
-Within your twig template, you may access the content type field which comes in form of an JSON string.
-There is a custom twig filter, which converts the JSON string into an array. Here is an example, how to fetch the content elements within a twig template:
+Within your twig template, you may get your related items by using the custom twig function, which returns the items as a record directly. Here is an example, how to use the function within a twig template:
 ```
-{% set elements = record.myfield|json_decode %}
+{% set value = record.myfield %}
 
-{% for el in elements %}
-    {% setcontent currentElement = el %}
-    {{ dump(currentElement) }}
+{% set related_globals = getRelatedGlobals(value) %}
+{{ dump(related_globals) }}
+
+{% set related_items = getRelatedItems(value) %}
+{% for item in related_items %}
+    {{ dump(item) }}
 {% endfor %}
 ```
-
-
-
