@@ -64,7 +64,7 @@
                             status: true,
                             message: 'Error: At least ' + options.validation.min + ' element(s) have to be selected!'
                         };
-                        this.$store.dispatch('setError', error);
+                        this.$root.$emit('cnrl-relation-error', error);
                         return;
                     }
                 }

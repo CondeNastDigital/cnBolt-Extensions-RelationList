@@ -48,9 +48,9 @@ var RelationlistST = function(properties) {
          * Sets the data form the ImageService into the Block store
          */
         save: function(){
-            var data = $(this.$('.data-target')).val();
+            var data = $(this.$('.connector')).val();
             if(data) {
-                this.setData(JSON.parse(data));
+                this.blockStorage.data = JSON.parse(data);
             }
         },
 

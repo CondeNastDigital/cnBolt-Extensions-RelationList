@@ -13,7 +13,6 @@ import BsCollapse from 'bootstrap-vue/es/components/collapse'
 import BsButton from 'bootstrap-vue/es/components/button'
 import BsLayout from 'bootstrap-vue/es/components/layout'
 import BsAlert from 'bootstrap-vue/es/components/alert'
-import BsProgress from 'bootstrap-vue/es/components/progress'
 
 //import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.min.css'
@@ -47,7 +46,6 @@ export class cnRelationList {
         Vue.use(BsButton);
         Vue.use(BsLayout);
         Vue.use(BsAlert);
-        Vue.use(BsProgress);
 
         Vue.component('font-awesome-icon', FontAwesomeIcon);
 

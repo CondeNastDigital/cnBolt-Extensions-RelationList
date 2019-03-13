@@ -43,7 +43,7 @@ var RelationlistST = function(properties) {
         save: function(){
             var data = $(this.$('.connector')).val();
             if(data) {
-                this.setData(JSON.parse(data));
+                this.blockStorage.data = JSON.parse(data);
             }
         },
 

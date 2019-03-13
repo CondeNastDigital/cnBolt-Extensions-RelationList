@@ -6,11 +6,7 @@ export default () =>  {
     return {
         // initial state
         state: {
-            ready: true,
-            error: {
-                status: false,
-                message: ''
-            }
+            ready: true
         },
 
         // modules
@@ -38,15 +34,6 @@ export default () =>  {
              */
             getOptions(state) {
                 return state.options
-            },
-
-            /**
-             *
-             * @param state
-             * @returns {*}
-             */
-            getError(state) {
-                return state.error
             }
         },
 
@@ -68,15 +55,6 @@ export default () =>  {
             //
             setOptions(context, options) {
                 context.commit('setOptions', options);
-            },
-
-            /**
-             *
-             * @param context
-             * @param error
-             */
-            setError(context, error) {
-                context.commit('setError', error);
             }
         },
 
@@ -98,16 +76,7 @@ export default () =>  {
              */
             setOptions(state, options) {
                 state.options = options;
-            },
-
-            /**
-             *
-             * @param state
-             * @param error
-             */
-            setError(state, error) {
-                state.error = error;
-            },
+            }
         }
     }
 }

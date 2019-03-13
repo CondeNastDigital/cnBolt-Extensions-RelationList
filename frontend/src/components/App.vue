@@ -30,22 +30,27 @@
             config: Object
         },
 
+        methods: {
+            getErrors: function(error){
+                this.error_status = error.status;
+                this.error_message = error.message;
+
+                if(this.error_status)
+                    this.dismissCountDown = this.dismissSecs;
+            }
+        },
+
         computed: {
             loading: function () {
                 return !this.$store.getters.isReady;
             },
-            error: function(){
-                if(this.$store.getters.getError.status)
-                    this.dismissCountDown = this.dismissSecs;
-
-                return this.$store.getters.getError.status
-            },
-            error_message: function(){
-                return this.$store.getters.getError.message;
-            },
             definitions: function(){
                 return Object.keys(this.$store.getters.getDefinitions).length > 0;
             }
+        },
+
+        created: function(){
+            this.$root.$on('cnrl-relation-error', this.getErrors);
         },
 
         components: {
@@ -58,6 +63,8 @@
             return {
                 dismissSecs: 5,
                 dismissCountDown: 0,
+                error_status: false,
+                error_message: '',
                 settingsId: 'settings' + Math.floor(Math.random()*9999)
             }
         }

@@ -52,7 +52,8 @@
                             status: true,
                             message: 'Error: You tried to add too many items. Only ' + options.validation.max + ' are allowed!'
                         };
-                        this.$store.dispatch('setError', error);
+                        this.$root.$emit('cnrl-relation-error', error);
+
                         this.reset();
                         return;
                     }
