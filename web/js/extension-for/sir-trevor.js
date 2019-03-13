@@ -157,5 +157,3 @@ $(document).on('SirTrevor.DynamicBlock.All', function(){
     $(document).trigger('SirTrevor.DynamicBlock.Add', [relationListST] );
 });
 $(document).trigger('SirTrevor.DynamicBlock.Add', [relationListST] );
-
-
