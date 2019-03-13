@@ -43,7 +43,7 @@ var RelationlistST = function(properties) {
         save: function(){
             var data = $(this.$('.connector')).val();
             if(data) {
-                this.setData(JSON.parse(data));
+                this.blockStorage.data = JSON.parse(data);
             }
         },
 
@@ -157,5 +157,3 @@ $(document).on('SirTrevor.DynamicBlock.All', function(){
     $(document).trigger('SirTrevor.DynamicBlock.Add', [relationListST] );
 });
 $(document).trigger('SirTrevor.DynamicBlock.Add', [relationListST] );
-
-
