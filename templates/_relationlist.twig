@@ -8,7 +8,8 @@
     required:     field.required|default(false),
     title:        field.title|default(''),
     variant:      field.variant|default(''),
-    info:         field.info|default('')
+    info:         field.info|default(''),
+    height:       field.height|default(false)
 } %}
 
 {% set attr_search = {
@@ -30,7 +31,7 @@
     text: {
         class:           option.class,
         data_errortext:  option.errortext,
-        name:            name,
+        name:            name|default(''),
         required:        option.required,
         style:           option.height ? 'height: ' ~ option.height ~ ';' : '',
     }
