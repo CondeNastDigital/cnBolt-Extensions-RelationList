@@ -99,7 +99,10 @@ class Extension extends SimpleExtension
      * {@inheritdoc}
      */
     public function getRelatedItems($relation){
-        
+
+        if (!$relation || $relation === '')
+            return [];
+
         /* @var \Bolt\Application $app */
         $app = $this->getContainer();
         $relation = json_decode($relation, true);
@@ -122,6 +125,9 @@ class Extension extends SimpleExtension
      */
     public function getRelatedGlobals($relation){
 
+        if (!$relation || $relation === '')
+            return [];
+
         $relation = json_decode($relation, true);
         $globals = [];
 
@@ -131,13 +137,6 @@ class Extension extends SimpleExtension
 
         return $globals;
     }
-
-
-
-
-
-
-
 }
 
 

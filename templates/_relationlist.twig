@@ -56,7 +56,7 @@
             <app></app>
         </div>
 
-        {% set values = context.content.get(contentkey)|default(field.default)|default({items:[]}) %}
+        {% set values = context.content.get(contentkey)|default(field.default)|default %}
 
         {% set relation = {} %}
         {% set items = [] %}
