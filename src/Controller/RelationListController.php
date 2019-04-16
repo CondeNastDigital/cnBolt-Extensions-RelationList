@@ -4,6 +4,7 @@ namespace Bolt\Extension\CND\RelationList\Controller;
 
 
 use Bolt\Application;
+use Bolt\Helpers\Excerpt;
 use Bolt\Legacy\Content;
 use Exception;
 use Silex\ControllerProviderInterface;
@@ -189,26 +190,67 @@ class RelationListController implements ControllerProviderInterface
         ));
     }
 
-    public function filterElement($cObject, $length = self::DEFAULT_EXCERPT_LENGTH){
+    /**
+     * @param $content Content
+     * @return mixed
+     */
+    private function getTitle($content){
+        return $content->getTitle();
+    }
 
-        $length = $length - mb_strlen($cObject->getTitle()) - mb_strlen($cObject->contenttype["singular_name"]) - 15;
+    /**
+     * @param $content Content
+     * @return mixed
+     */
+    private function getImage($content) {
+
+        /* imageservice */
+        if(isset($content->get('image')['items']))
+            $image = reset($content->get('image')['items']);
+
+        elseif(isset($content->get('teaserimage')['items']))
+            $image = reset($content->get('teaserimage')['items']);
+
+
+        /* vanilla image */
+        else {
+            $image = $content->getImage();
+        }
+
+        return $image;
+    }
+
+    /**
+     * @param $content Content
+     * @param $length
+     * @return null|string|string[]
+     */
+    private function getExcerpt($content, $length){
 
         if ($length > 0) {
-            // Broken utf-8 characters will break JSON encoder. This filters invalid chars
-            $excerpt = mb_convert_encoding((string) $cObject->excerpt($length), "utf-8", "utf-8");
-        } else {
-            $excerpt = '';
+
+            $excerpter = new Excerpt($content);
+            $excerpt = $excerpter->getExcerpt($length, true);
+
+            return mb_convert_encoding((string)$excerpt, "utf-8", "utf-8");
         }
+        return '';
+    }
+
+    public function filterElement($cObject, $length = self::DEFAULT_EXCERPT_LENGTH){
+
+        /** @var $cObject Content */
+        $length = $length - mb_strlen($this->getTitle($cObject)) - mb_strlen($cObject->contenttype["singular_name"]) - 15;
 
         $obj = array();
         $obj["id"] = $cObject->contenttype["slug"] . "/" . $cObject->id;
-        $obj["title"] = $cObject->getTitle();
-        $obj["excerpt"] = $excerpt;
-        $obj["thumbnail"] = $cObject->getImage();
+        $obj["title"] = $this->getTitle($cObject);
+        $obj["excerpt"] = $this->getExcerpt($cObject, $length);
+        $obj["thumbnail"] = $this->getImage($cObject);
 
         // Support for ImageService
         if($obj["thumbnail"] instanceof \Bolt\Extension\CND\ImageService\Image && $this->app->offsetExists("cnd.image-service.image")){
-            $obj["thumbnail"] = $this->app["cnd.image-service.image"]->imageUrl($obj["thumbnail"], 150);
+            $obj["thumbnail"] = $this->app["cnd.image-service.image"]->imageUrl($obj["thumbnail"], 150, 150, "fit");
         }
         // Support for Bolt Tumbnails
         else {
@@ -221,7 +263,7 @@ class RelationListController implements ControllerProviderInterface
             elseif(isset($this->app['twig.handlers']['image']))
                 $thumbservice = $this->app['twig.handlers']['image'];
 
-            $obj["thumbnail"] = $thumbservice ? $thumbservice->thumbnail($obj["thumbnail"], 150, 150, "c") : false;
+            $obj["thumbnail"] = $thumbservice ? $thumbservice->thumbnail($obj["thumbnail"], 150, 150, "r") : false;
         }
 
         $dateChanged = new \DateTime( $cObject->get("datechanged") );

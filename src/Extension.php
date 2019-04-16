@@ -105,7 +105,10 @@ class Extension extends SimpleExtension
 
         /* @var \Bolt\Application $app */
         $app = $this->getContainer();
-        $relation = json_decode($relation, true);
+
+        if (!is_array($relation))
+            $relation = json_decode($relation, true);
+
         $items = [];
 
         $elements = isset($relation['items']) ? $relation['items'] : $relation;
@@ -128,7 +131,9 @@ class Extension extends SimpleExtension
         if (!$relation || $relation === '')
             return [];
 
-        $relation = json_decode($relation, true);
+        if (!is_array($relation))
+            $relation = json_decode($relation, true);
+
         $globals = [];
 
         if (isset($relation['globals'])){

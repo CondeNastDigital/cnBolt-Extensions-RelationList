@@ -6,15 +6,15 @@
                     <b-form-group
                             v-for="(field, key) in definitions"
                             :key="key"
-                            :id="key+'-group'"
+                            :id="settingsid+'-group-'+key"
                             :label="field.label"
-                            :label-for="key"
+                            :label-for="settingsid+'key'"
                     >
                         <!-- todo dynamic compoents! -->
-                        <b-form-input v-if="isInput(field)" v-model="fields[key]" @input="updateGlobals(key, $event)" :id="key" :type="field.type"/>
-                        <b-form-textarea v-if="isTextarea(field)" v-model="fields[key]" @input="updateGlobals(key, $event)" :id="key" rows="2" max-rows="3"/>
-                        <b-form-select v-if="isSelect(field)" v-model="fields[key]" @change="updateGlobals(key, $event)" :id="key" :type="field.type" :options="field.options"></b-form-select>
-                        <b-form-checkbox v-if="isCheckbox(field)" v-model="fields[key]" @change="updateGlobals(key, $event)" :id="key" :type="field.type"></b-form-checkbox>
+                        <b-form-input v-if="isInput(field)" v-model="fields[key]" @input="updateGlobals(key, $event)" :id="settingsid+'key'" :type="field.type"/>
+                        <b-form-textarea v-if="isTextarea(field)" v-model="fields[key]" @input="updateGlobals(key, $event)" :id="settingsid+'key'" rows="2" max-rows="3"/>
+                        <b-form-select v-if="isSelect(field)" v-model="fields[key]" @change="updateGlobals(key, $event)" :id="settingsid+'key'" :type="field.type" :options="field.options"></b-form-select>
+                        <b-form-checkbox v-if="isCheckbox(field)" v-model="fields[key]" @change="updateGlobals(key, $event)" :id="settingsid+'key'" :type="field.type"></b-form-checkbox>
 
                     </b-form-group>
                 </b-card>
