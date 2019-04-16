@@ -26,8 +26,6 @@
         },
         computed: {
             definitions: function(){
-                console.log(this.$store.getters.getDefinitions);
-                console.log(Object.keys(this.$store.getters.getDefinitions).length);
                 return Object.keys(this.$store.getters.getDefinitions).length > 0;
             }
         },
