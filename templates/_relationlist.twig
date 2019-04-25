@@ -76,7 +76,7 @@
         <script type="application/javascript">
             $(function () {
 
-                let definitions = {{ field.globals|default('{}')|json_encode|raw }};
+                let definitions = '{{ field.globals|default({})|json_encode|raw }}';
                 let connector = '#connector-{{ buid }}';
                 let apiurl = "{{ paths.bolt }}relationlist/finditems/{{ context.content.contenttype.slug }}/{{ key }}/";
                 let jsonurl = "{{ paths.bolt }}relationlist/fetchJsonList";
