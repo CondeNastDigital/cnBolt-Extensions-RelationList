@@ -43,7 +43,7 @@ const clientConfig = {
             '@fortawesome/vue-fontawesome': '@fortawesome/vue-fontawesome',
 
             /* other vendor */
-            'vuedraggable': 'vuedraggable/dist/vuedraggable.js'
+            'vuedraggable': 'vuedraggable/dist/vuedraggable.common.js'
         }
     },
 
@@ -119,7 +119,7 @@ const serverConfig = {
             '@fortawesome/vue-fontawesome': '@fortawesome/vue-fontawesome',
 
             /* other vendor */
-            'vuedraggable': 'vuedraggable/dist/vuedraggable.js'
+            'vuedraggable': 'vuedraggable/dist/vuedraggable.common.js'
         }
     },
 
