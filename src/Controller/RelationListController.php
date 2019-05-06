@@ -248,22 +248,23 @@ class RelationListController implements ControllerProviderInterface
         $obj["excerpt"] = $this->getExcerpt($cObject, $length);
         $obj["thumbnail"] = $this->getImage($cObject);
 
-        // Support for ImageService
-        if($obj["thumbnail"] instanceof \Bolt\Extension\CND\ImageService\Image && $this->app->offsetExists("cnd.image-service.image")){
-            $obj["thumbnail"] = $this->app["cnd.image-service.image"]->imageUrl($obj["thumbnail"], 150, 150, "fit");
-        }
-        // Support for Bolt Tumbnails
-        else {
-            $thumbservice = false;
+        if($obj["thumbnail"]) {
+            // Support for ImageService
+            if ($obj["thumbnail"] instanceof \Bolt\Extension\CND\ImageService\Image && $this->app->offsetExists("cnd.image-service.image")) {
+                $obj["thumbnail"] = $this->app["cnd.image-service.image"]->imageUrl($obj["thumbnail"], 150, 150, "fit");
+            } // Support for Bolt Tumbnails
+            else {
+                $thumbservice = false;
 
-            // Bolt 3.3+
-            if(isset($this->app['twig.runtime.bolt_image']))
-                $thumbservice = $this->app['twig.runtime.bolt_image'];
-            // Bolt 3.0 - 3.2
-            elseif(isset($this->app['twig.handlers']['image']))
-                $thumbservice = $this->app['twig.handlers']['image'];
+                // Bolt 3.3+
+                if (isset($this->app['twig.runtime.bolt_image']))
+                    $thumbservice = $this->app['twig.runtime.bolt_image'];
+                // Bolt 3.0 - 3.2
+                elseif (isset($this->app['twig.handlers']['image']))
+                    $thumbservice = $this->app['twig.handlers']['image'];
 
-            $obj["thumbnail"] = $thumbservice ? $thumbservice->thumbnail($obj["thumbnail"], 150, 150, "r") : false;
+                $obj["thumbnail"] = $thumbservice ? $thumbservice->thumbnail($obj["thumbnail"], 150, 150, "r") : false;
+            }
         }
 
         $dateChanged = new \DateTime( $cObject->get("datechanged") );
