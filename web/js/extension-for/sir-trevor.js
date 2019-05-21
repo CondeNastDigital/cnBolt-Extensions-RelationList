@@ -38,7 +38,7 @@ var RelationlistST = function(properties) {
         },
 
         /**
-         * Sets the data form the ImageService into the Block store
+         * Sets the data form the Relationlist into the Block store
          */
         save: function(){
             var data = $(this.$('.connector')).val();
@@ -48,7 +48,7 @@ var RelationlistST = function(properties) {
         },
 
         /**
-         * Creates the new image service block
+         * Creates the new relationlist block
          */
         onBlockRender: function() {
 
@@ -64,8 +64,8 @@ var RelationlistST = function(properties) {
             $(this.$('.connector')).attr('id', 'connector-'+fieldId);
 
             let values = JSON.parse($(connector).val() || '{}');
+            let field = this.custom || {};
 
-            let field = SirTrevor.getInstance(this.instanceID).options.options.Items;
             let definitions = field.globals || '{}';
             let apiurl = this.extensionUrl + "relationlist/finditems/" + this.custom.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + this.custom.subFieldName + "/";
             let jsonurl = this.extensionUrl + "relationlist/fetchJsonList";
