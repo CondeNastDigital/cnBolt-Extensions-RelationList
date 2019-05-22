@@ -4,6 +4,14 @@ Provides a backend field where you can select one or more other content objects 
 
 Note: The field does not provide any mechanism for fetching the selected objects. It only stores a JSON string with content ids. You have to fetch them yourself in your template. See sample below.
 
+## Installation
+
+Add the RelationList to the required extensions in extension/composer.json and call composer update:
+
+```
+"cnd/relationlist": "*"
+```
+
 ## Configuration
 Add the following field for your content type (within `contenttype.yml`).
 ```
@@ -28,14 +36,22 @@ Example:
 structuredcontent:
     type: structuredcontentfield
     height: 400px
-    blocks: [Pages]
-    extend:  #block_config
-        Pages:
+    blocks: [Heading, Text, Items]
+    extend:
+        Items:
             type: relationlist
-            label: Pages
-            allowed-types: [pages]
-            min: 0
-            max: 10
+            label: Something
+            globals:
+                title:
+                    label: Title
+                    type: text
+                description:
+                    label: Description
+                    type: textarea
+            options:
+                allowed-types: [articles]
+                min: 1
+                max: 3            
 ```
 
 ## Usage
