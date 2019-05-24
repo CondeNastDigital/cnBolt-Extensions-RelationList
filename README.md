@@ -17,13 +17,7 @@ Add the following field for your content type (within `contenttype.yml`).
 ```
 myfield:
     type: relationlist
-    globals: 
-        title:
-            label: Title
-            type: text
-        description:
-            label: Description
-            type: textarea
+    label: Title
     options:
         allowed-types: [pages, otherpages, evenotherpages]
         min: 1
@@ -35,21 +29,13 @@ Example:
 ```
 structuredcontent:
     type: structuredcontentfield
-    height: 400px
     blocks: [Heading, Text, Items]
     extend:
         Items:
             type: relationlist
+            allowed-types: [articles]
             label: Something
-            globals:
-                title:
-                    label: Title
-                    type: text
-                description:
-                    label: Description
-                    type: textarea
             options:
-                allowed-types: [articles]
                 min: 1
                 max: 3            
 ```
