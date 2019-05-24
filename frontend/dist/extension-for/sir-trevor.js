@@ -67,7 +67,7 @@ var RelationlistST = function(properties) {
             let field = this.custom || {};
 
             let definitions = field.globals || '{}';
-            let apiurl = this.extensionUrl + "relationlist/finditems/" + this.custom.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + this.custom.subFieldName + "/";
+            let apiurl = this.extensionUrl + "relationlist/finditems/" + field.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + field.subFieldName + "/";
             let jsonurl = this.extensionUrl + "relationlist/fetchJsonList";
             let options = {
                 apiurl: apiurl,
@@ -75,13 +75,14 @@ var RelationlistST = function(properties) {
                 element: '#relationlist-'+fieldId,
                 validation: {}
             };
+            let fieldoptions = field.hasOwnProperty('options') ? field.options : false;
 
-            if (field.hasOwnProperty('min')){
-                options.validation.min = field.min;
+            if (fieldoptions && fieldoptions.hasOwnProperty('min')){
+                options.validation.min = fieldoptions.min;
             }
 
-            if (field.hasOwnProperty('max')){
-                options.validation.max = field.max;
+            if (fieldoptions && fieldoptions.hasOwnProperty('max')){
+                options.validation.max = fieldoptions.max;
             }
 
             values = that.migrate(values);

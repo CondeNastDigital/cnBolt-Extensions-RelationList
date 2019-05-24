@@ -59,8 +59,8 @@ class RelationListController implements ControllerProviderInterface
         $field       = preg_replace("/[^a-z0-9\\-_]+/i", "", $field);
         $subfield    = preg_replace("/[^a-z0-9\\-_]+/i", "", $subfield);
 
-        #if(!$this->app["users"]->isValidSession())
-        #    return $this->makeErrorResponse("Insufficient access rights!");
+        if(!$this->app["users"]->isValidSession())
+            return $this->makeErrorResponse("Insufficient access rights!");
 
         $config = $this->getFieldConfig($contenttype, $field, $subfield);
 
@@ -302,8 +302,9 @@ class RelationListController implements ControllerProviderInterface
         $config     = $fieldDefinition;
 
         foreach ($configPath as $path)
-            if(isset($config[$path]))
-                $config = $config[$path];
+            if(isset($config[$path])) {
+                $config = isset($config[$path][$this->contentTypeConfigs['default']]) ? $config[$path][$this->contentTypeConfigs['default']] : $config[$path];
+            }
             else
                 $config = false;
 
