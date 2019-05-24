@@ -33,7 +33,7 @@ structuredcontent:
     extend:
         Items:
             type: relationlist
-            allowed-types: [articles]
+            allowed-types: [pages, otherpages, evenotherpages]
             label: Something
             options:
                 min: 1
