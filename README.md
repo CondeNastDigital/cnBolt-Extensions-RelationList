@@ -22,6 +22,16 @@ myfield:
         allowed-types: [pages, otherpages, evenotherpages]
         min: 1
         max: 3
+    globals: 
+        title:
+            label: Title
+            type: text
+        description:
+            label: Description
+            type: textarea
+        checkit:
+            label: CheckIt
+            type: checkbox
 ```
 
 The Sir Trevor Configuration consits of adding an extended block, of type relationlist. 
@@ -33,11 +43,21 @@ structuredcontent:
     extend:
         Items:
             type: relationlist
-            allowed-types: [pages, otherpages, evenotherpages]
             label: Something
             options:
+                allowed-types: [pages, otherpages, evenotherpages]
                 min: 1
-                max: 3            
+                max: 3
+            globals: 
+                title:
+                    label: Title
+                    type: text
+                description:
+                    label: Description
+                    type: textarea
+                checkit:
+                    label: CheckIt
+                    type: checkbox
 ```
 
 ## Usage
