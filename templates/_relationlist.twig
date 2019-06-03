@@ -58,7 +58,6 @@
 
         {% set values = context.content.get(contentkey)|default(field.default)|default %}
 
-        {% set relation = {} %}
         {% set items = [] %}
 
         {% set related_globals = getRelatedGlobals(values) %}
@@ -68,10 +67,9 @@
             {% set items = items|merge([item.contenttype.slug~'/'~item.id]) %}
         {% endfor %}
 
-        {% set relation = {'globals': related_globals, 'items': items} %}
-
         <textarea style="display:none"
-                  id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>{{ relation|json_encode }}</textarea>
+                  {# json_encode(16) means JSON_FORCE_OBJECT #}
+                  id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>{"globals": {{ related_globals|json_encode(16) }}, "items": {{ items|json_encode}} }</textarea>
 
         <script type="application/javascript">
             $(function () {
@@ -89,11 +87,11 @@
                 };
 
                 {% if field.options.min is defined %}
-                    options.validation.min = "{{ field.options.min }}";
+                options.validation.min = "{{ field.options.min }}";
                 {% endif %}
 
                 {% if field.options.max is defined %}
-                    options.validation.max = "{{ field.options.max }}";
+                options.validation.max = "{{ field.options.max }}";
                 {% endif %}
 
                 let cnRelationList = new CnRelationList({

@@ -6,8 +6,6 @@
         <b-alert
                 variant="danger"
                 dismissible
-                fade
-                :show="error"
                 v-model="dismissCountDown"
                 @dismissed="dismissCountDown=0"
         >{{ error_message }}</b-alert>
