@@ -4,11 +4,24 @@ Provides a backend field where you can select one or more other content objects 
 
 Note: The field does not provide any mechanism for fetching the selected objects. It only stores a JSON string with content ids. You have to fetch them yourself in your template. See sample below.
 
+## Installation
+
+Add the RelationList to the required extensions in extension/composer.json and call composer update:
+
+```
+"cnd/relationlist": "*"
+```
+
 ## Configuration
 Add the following field for your content type (within `contenttype.yml`).
 ```
 myfield:
     type: relationlist
+    label: Title
+    options:
+        allowed-types: [pages, otherpages, evenotherpages]
+        min: 1
+        max: 3
     globals: 
         title:
             label: Title
@@ -16,10 +29,9 @@ myfield:
         description:
             label: Description
             type: textarea
-    options:
-        allowed-types: [pages, otherpages, evenotherpages]
-        min: 1
-        max: 3
+        checkit:
+            label: CheckIt
+            type: checkbox
 ```
 
 The Sir Trevor Configuration consits of adding an extended block, of type relationlist. 
@@ -27,15 +39,25 @@ Example:
 ```
 structuredcontent:
     type: structuredcontentfield
-    height: 400px
-    blocks: [Pages]
-    extend:  #block_config
-        Pages:
+    blocks: [Heading, Text, Items]
+    extend:
+        Items:
             type: relationlist
-            label: Pages
-            allowed-types: [pages]
-            min: 0
-            max: 10
+            label: Something
+            options:
+                allowed-types: [pages, otherpages, evenotherpages]
+                min: 1
+                max: 3
+            globals: 
+                title:
+                    label: Title
+                    type: text
+                description:
+                    label: Description
+                    type: textarea
+                checkit:
+                    label: CheckIt
+                    type: checkbox
 ```
 
 ## Usage
