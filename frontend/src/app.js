@@ -49,6 +49,7 @@ export class cnRelationList {
         Vue.use(BsLayout);
         Vue.use(BsAlert);
 
+        Vue.directive('focus', Focus);
         Vue.component('font-awesome-icon', FontAwesomeIcon);
 
         this.name = 'RelationList';

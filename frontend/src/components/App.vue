@@ -91,16 +91,6 @@
 
         },
 
-        directives: {
-            focus: {
-                // directive definition
-                inserted: function (el, binding) {
-                    if(binding.value)
-                        el.focus()
-                }
-            }
-        },
-
         computed: {
             loading: function () {
                 return !this.$store.getters.isReady;
