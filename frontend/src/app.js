@@ -25,6 +25,8 @@ import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
 import App from './components/App.vue'
 import Store from './store'
 
+import Focus from './directives/focus.js';
+
 library.add(
     faMinus, faUnlink, faSpinner, faCogs
 );

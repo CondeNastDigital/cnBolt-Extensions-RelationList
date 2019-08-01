@@ -66,7 +66,7 @@
             },
 
             hasDefinitions : function() {
-                return Object.keys(this.$store.getters.getDefinitions.items || {}) > 0;
+                return Object.keys(this.$store.getters.getDefinitions.items || {}).length > 0;
             },
 
             definitions: function() {
