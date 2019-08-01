@@ -7,7 +7,7 @@ const extractCSS = new ExtractTextPlugin('styles.min.css');
 
 const clientConfig = {
     target: 'web',
-    mode: 'development',
+    mode: 'production',
     // This is the "main" file which should include all other modules
     entry: './src/app.js',
     // Where should the compiled file go?
