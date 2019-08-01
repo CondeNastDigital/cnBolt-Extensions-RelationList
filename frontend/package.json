@@ -16,7 +16,9 @@
     "vue-axios": "^2.1.4",
     "vue-fontawesome": "0.0.2",
     "vuedraggable": "^2.20.0",
-    "vuex": "^3.1.0"
+    "vuex": "^3.1.0",
+    "lodash": ">=4.17.13",
+    "js-yaml": ">=3.13.1"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
