@@ -32,6 +32,14 @@ myfield:
         checkit:
             label: CheckIt
             type: checkbox
+        fieldselect:
+            label: Field select
+            type: select
+            options:
+                - value: key1
+                  text: Key 1
+                - value: key2
+                  text: Key 2
 ```
 
 The Sir Trevor Configuration consits of adding an extended block, of type relationlist. 
