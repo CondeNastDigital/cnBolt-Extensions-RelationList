@@ -44,7 +44,7 @@ For pagination that changes to a new URL, use the
           { id: 5, first_name: 'Pebbles', last_name: 'Flintstone' },
           { id: 6, first_name: 'Bamm Bamm', last_name: 'Rubble' },
           { id: 7, first_name: 'The Great', last_name: 'Gazzoo' },
-          { id: 8, first_name: 'Mr', last_name: 'Slate' },
+          { id: 8, first_name: 'Rockhead', last_name: 'Slate' },
           { id: 9, first_name: 'Pearl', last_name: 'Slaghoople' }
         ]
       }
@@ -302,12 +302,16 @@ recommended unless the content of the button textually conveys it's purpose.
 
 ### Keyboard navigation support
 
-`<b-pagination>` supports keyboard navigation out of the box.
+`<b-pagination>` supports keyboard navigation out of the box, and follows the
+[WAI-ARIA roving tabindex](https://www.w3.org/TR/wai-aria-practices-1.2/#kbd_roving_tabindex)
+pattern.
 
-- Tabbing into the pagination component will autofocus the current page button
+- Tabbing into the pagination component will autofocus the current active page button
 - <kbd>LEFT</kbd> and <kbd>RIGHT</kbd> arrow keys will focus the previous and next buttons in the
   page list, respectively, and <kbd>ENTER</kbd> or <kbd>SPACE</kbd> keys will select (click) the
   focused page button
+- Pressing <kbd>TAB</kbd> will move to the next control or link on the page, while pressing
+  <kbd>SHIFT</kbd>+<kbd>TAB</kbd> will move to the previous control or link on the page.
 
 ## See also
 

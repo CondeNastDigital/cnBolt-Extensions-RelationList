@@ -11,11 +11,11 @@
             <h5 class="mt-0">{{ title }}</h5>
             <p>{{ excerpt }}</p>
         </div>
+
     </b-row>
 </template>
 
 <script>
-
     export default {
 
         props: [
@@ -23,6 +23,7 @@
             'title',
             'thumbnail',
             'excerpt',
+            'values'
         ],
 
         data() {

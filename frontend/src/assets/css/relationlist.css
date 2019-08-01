@@ -100,3 +100,7 @@
 .itemlist button.btn svg{
     margin-top: 2px;
 }
+
+.itemlist .item .item-fields {
+    padding: 30px;
+}

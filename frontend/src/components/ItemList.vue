@@ -4,12 +4,17 @@
             <draggable v-model="items" @start="drag=true" @end="drag=false">
                 <b-card class="item" v-for="item in items" :key="item.id">
                     <b-row >
-                        <div class="col-xs-10">
+                        <div class="col-xs-10 item-preview">
                             <item
                                     v-bind="item"
                             ></item>
                         </div>
-                        <div class="col-xs-2 text-right">
+                        <div class="col-xs-2 text-right item-buttons">
+
+                            <b-button class="btn-settings" v-b-toggle="'attributes-'+item.id" variant="secondary">
+                                <font-awesome-icon icon="cogs"/>
+                            </b-button>
+
                             <b-button
                                     title="Unlinks this item from the relationlist"
                                     variant="warning"
@@ -17,7 +22,18 @@
                             >
                                 <font-awesome-icon icon="unlink" />
                             </b-button>
+
                         </div>
+                        <b-collapse :id="'attributes-'+item.id" class="col-12 col-xs-12 item-fields">
+
+                            <Fields
+                                    :settingsid="'input'+Date.now()"
+                                    :definitions="definitions"
+                                    :state="attributes[item.id]"
+                                    @input="setAttributes(item.id, $event)"
+                            ></Fields>
+
+                        </b-collapse>
                     </b-row>
                 </b-card>
             </draggable>
@@ -28,12 +44,14 @@
 <script>
     import item from './Item.vue'
     import draggable from 'vuedraggable'
+    import Fields from './Fields.vue'
 
     export default {
 
         components: {
             item,
-            draggable
+            draggable,
+            Fields
         },
 
         computed: {
@@ -45,11 +63,31 @@
                 set(list) {
                     this.$store.dispatch('updateItemList', list);
                 }
+            },
+
+            definitions: function() {
+                return this.$store.getters.getDefinitions.items || {};
+            },
+
+            attributes: {
+                get() {
+                    return this.$store.getters.getAttributes;
+                },
+                set(list) {
+                    this.$store.dispatch('setAttributes', list);
+                }
             }
 
         },
 
         methods: {
+
+            setAttributes: function(key, attributes) {
+                let state = Object.assign({}, this.attributes);
+                state[key] = attributes;
+                this.attributes = state;
+            },
+
             /**
              * removes an item from the stored list
              * @param item
@@ -69,7 +107,14 @@
                     }
                 }
 
-                this.$store.dispatch('removeItem', item);
+                this.$root.$emit('cnrl-relation-confirm', {
+                    message: 'Do you really want to remove "' + item.title + '" ?',
+                    ok: function(){
+                        this.$store.dispatch('removeItem', item);
+                    }
+                });
+
+                //this.$store.dispatch('removeItem', item);
             },
         },
 

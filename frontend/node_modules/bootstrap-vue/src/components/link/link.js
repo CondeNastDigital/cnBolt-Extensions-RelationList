@@ -1,9 +1,8 @@
 import Vue from '../../utils/vue'
-import { mergeData } from 'vue-functional-data-merge'
-import { arrayIncludes, concat } from '../../utils/array'
-import { isFunction } from '../../utils/inspect'
-import { keys } from '../../utils/object'
-import { isRouterLink, computeTag, computeRel, computeHref } from '../../utils/router'
+import normalizeSlotMixin from '../../mixins/normalize-slot'
+import { concat } from '../../utils/array'
+import { isEvent, isFunction, isUndefined } from '../../utils/inspect'
+import { computeHref, computeRel, computeTag, isRouterLink } from '../../utils/router'
 
 /**
  * The Link component is used in many other BV components.
@@ -15,163 +14,169 @@ import { isRouterLink, computeTag, computeRel, computeHref } from '../../utils/r
  * https://github.com/vuejs/vue-router/blob/dev/src/components/link.js
  * @return {{}}
  */
-export const propsFactory = () => {
-  return {
-    href: {
-      type: String,
-      default: null
-    },
-    rel: {
-      type: String,
-      default: null
-    },
-    target: {
-      type: String,
-      default: '_self'
-    },
-    active: {
-      type: Boolean,
-      default: false
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    // router-link specific props
-    to: {
-      type: [String, Object],
-      default: null
-    },
-    append: {
-      type: Boolean,
-      default: false
-    },
-    replace: {
-      type: Boolean,
-      default: false
-    },
-    event: {
-      type: [String, Array],
-      default: 'click'
-    },
-    activeClass: {
-      type: String
-      // default: undefined
-    },
-    exact: {
-      type: Boolean,
-      default: false
-    },
-    exactActiveClass: {
-      type: String
-      // default: undefined
-    },
-    routerTag: {
-      type: String,
-      default: 'a'
-    },
-    // nuxt-link specific prop(s)
-    noPrefetch: {
-      type: Boolean,
-      default: false
-    }
+export const propsFactory = () => ({
+  href: {
+    type: String,
+    default: null
+  },
+  rel: {
+    type: String,
+    default: null
+  },
+  target: {
+    type: String,
+    default: '_self'
+  },
+  active: {
+    type: Boolean,
+    default: false
+  },
+  disabled: {
+    type: Boolean,
+    default: false
+  },
+  // router-link specific props
+  to: {
+    type: [String, Object],
+    default: null
+  },
+  append: {
+    type: Boolean,
+    default: false
+  },
+  replace: {
+    type: Boolean,
+    default: false
+  },
+  event: {
+    type: [String, Array],
+    default: 'click'
+  },
+  activeClass: {
+    type: String
+    // default: undefined
+  },
+  exact: {
+    type: Boolean,
+    default: false
+  },
+  exactActiveClass: {
+    type: String
+    // default: undefined
+  },
+  routerTag: {
+    type: String,
+    default: 'a'
+  },
+  // nuxt-link specific prop(s)
+  noPrefetch: {
+    type: Boolean,
+    default: false
   }
-}
+})
 
 export const props = propsFactory()
 
-// Return a fresh copy of <b-link> props
-// Containing only the specified prop(s)
-export const pickLinkProps = propsToPick => {
-  const freshLinkProps = propsFactory()
-  // Normalize everything to array.
-  propsToPick = concat(propsToPick)
-
-  return keys(freshLinkProps).reduce((memo, prop) => {
-    if (arrayIncludes(propsToPick, prop)) {
-      memo[prop] = freshLinkProps[prop]
-    }
-
-    return memo
-  }, {})
-}
-
-// Return a fresh copy of <b-link> props
-// Keeping all but the specified omitting prop(s)
-export const omitLinkProps = propsToOmit => {
-  const freshLinkProps = propsFactory()
-  // Normalize everything to array.
-  propsToOmit = concat(propsToOmit)
-
-  return keys(props).reduce((memo, prop) => {
-    if (!arrayIncludes(propsToOmit, prop)) {
-      memo[prop] = freshLinkProps[prop]
-    }
-
-    return memo
-  }, {})
-}
-
-const clickHandlerFactory = ({ disabled, tag, href, suppliedHandler, parent }) => {
-  return function onClick(evt) {
-    if (disabled && evt instanceof Event) {
-      // Stop event from bubbling up.
-      evt.stopPropagation()
-      // Kill the event loop attached to this specific EventTarget.
-      // Needed to prevent vue-router for doing its thing
-      evt.stopImmediatePropagation()
-    } else {
-      if (isRouterLink(tag) && evt.target.__vue__) {
-        // Router links do not emit instance 'click' events, so we
-        // add in an $emit('click', evt) on it's vue instance
-        /* istanbul ignore next: difficult to test, but we know it works */
-        evt.target.__vue__.$emit('click', evt)
-      }
-      // Call the suppliedHandler(s), if any provided
-      concat(suppliedHandler)
-        .filter(h => isFunction(h))
-        .forEach(handler => {
-          handler(...arguments)
-        })
-      parent.$root.$emit('clicked::link', evt)
-    }
-
-    if ((!isRouterLink(tag) && href === '#') || disabled) {
-      // Stop scroll-to-top behavior or navigation on regular links
-      // when href is just '#'
-      evt.preventDefault()
-    }
-  }
-}
-
 // @vue/component
-export default Vue.extend({
+export const BLink = /*#__PURE__*/ Vue.extend({
   name: 'BLink',
-  functional: true,
+  mixins: [normalizeSlotMixin],
+  inheritAttrs: false,
   props: propsFactory(),
-  render(h, { props, data, parent, children }) {
-    const tag = computeTag(props, parent)
-    const rel = computeRel(props)
-    const href = computeHref(props, tag)
-    const eventType = isRouterLink(tag) ? 'nativeOn' : 'on'
-    const suppliedHandler = (data[eventType] || {}).click
-    const handlers = {
-      click: clickHandlerFactory({ tag, href, disabled: props.disabled, suppliedHandler, parent })
+  computed: {
+    computedTag() {
+      // We don't pass `this` as the first arg as we need reactivity of the props
+      return computeTag({ to: this.to, disabled: this.disabled }, this)
+    },
+    isRouterLink() {
+      return isRouterLink(this.computedTag)
+    },
+    computedRel() {
+      // We don't pass `this` as the first arg as we need reactivity of the props
+      return computeRel({ target: this.target, rel: this.rel })
+    },
+    computedHref() {
+      // We don't pass `this` as the first arg as we need reactivity of the props
+      return computeHref({ to: this.to, href: this.href }, this.computedTag)
+    },
+    computedProps() {
+      return this.isRouterLink ? { ...this.$props, tag: this.routerTag } : {}
+    }
+  },
+  methods: {
+    onClick(evt) {
+      const evtIsEvent = isEvent(evt)
+      const isRouterLink = this.isRouterLink
+      const suppliedHandler = this.$listeners.click
+      if (evtIsEvent && this.disabled) {
+        // Stop event from bubbling up
+        evt.stopPropagation()
+        // Kill the event loop attached to this specific `EventTarget`
+        // Needed to prevent `vue-router` for doing it's thing
+        evt.stopImmediatePropagation()
+      } else {
+        /* istanbul ignore next: difficult to test, but we know it works */
+        if (isRouterLink && evt.currentTarget.__vue__) {
+          // Router links do not emit instance `click` events, so we
+          // add in an $emit('click', evt) on it's vue instance
+          evt.currentTarget.__vue__.$emit('click', evt)
+        }
+        // Call the suppliedHandler(s), if any provided
+        concat(suppliedHandler)
+          .filter(h => isFunction(h))
+          .forEach(handler => {
+            handler(...arguments)
+          })
+        // Emit the global $root click event
+        this.$root.$emit('clicked::link', evt)
+      }
+      // Stop scroll-to-top behavior or navigation on
+      // regular links when href is just '#'
+      if (evtIsEvent && (this.disabled || (!isRouterLink && this.computedHref === '#'))) {
+        evt.preventDefault()
+      }
+    },
+    focus() {
+      if (this.$el && this.$el.focus) {
+        this.$el.focus()
+      }
+    },
+    blur() {
+      if (this.$el && this.$el.blur) {
+        this.$el.blur()
+      }
+    }
+  },
+  render(h) {
+    const tag = this.computedTag
+    const rel = this.computedRel
+    const href = this.computedHref
+    const isRouterLink = this.isRouterLink
+
+    // We want to overwrite any click handler since our callback
+    // will invoke the user supplied handler9s) if !props.disabled
+    const handlers = { ...this.$listeners, click: this.onClick }
+
+    const componentData = {
+      class: { active: this.active, disabled: this.disabled },
+      attrs: {
+        ...this.$attrs,
+        rel,
+        target: this.target,
+        tabindex: this.disabled
+          ? '-1'
+          : isUndefined(this.$attrs.tabindex)
+            ? null
+            : this.$attrs.tabindex,
+        'aria-disabled': this.disabled ? 'true' : null
+      },
+      props: this.computedProps,
+      on: isRouterLink ? {} : handlers,
+      nativeOn: isRouterLink ? handlers : {}
     }
 
-    const componentData = mergeData(data, {
-      class: { active: props.active, disabled: props.disabled },
-      attrs: {
-        rel,
-        target: props.target,
-        tabindex: props.disabled ? '-1' : data.attrs ? data.attrs.tabindex : null,
-        'aria-disabled': props.disabled ? 'true' : null
-      },
-      props: { ...props, tag: props.routerTag }
-    })
-
-    // If href attribute exists on router-link (even undefined or null) it fails working on SSR
-    // So we explicitly add it here if needed (i.e. if computeHref() is truthy)
+    // If href attribute exists on <router-link> (even undefined or null) it fails working on
+    // SSR, so we explicitly add it here if needed (i.e. if computedHref() is truthy)
     if (href) {
       componentData.attrs.href = href
     } else {
@@ -179,10 +184,8 @@ export default Vue.extend({
       delete componentData.props.href
     }
 
-    // We want to overwrite any click handler since our callback
-    // will invoke the user supplied handler if !props.disabled
-    componentData[eventType] = { ...(componentData[eventType] || {}), ...handlers }
-
-    return h(tag, componentData, children)
+    return h(tag, componentData, this.normalizeSlot('default'))
   }
 })
+
+export default BLink

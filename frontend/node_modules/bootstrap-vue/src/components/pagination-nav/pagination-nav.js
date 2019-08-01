@@ -72,13 +72,13 @@ const props = {
 
 // TODO: move this to an instance method in pagination mixin
 const sanitizeNumPages = value => {
-  let num = parseInt(value, 10) || 1
+  const num = parseInt(value, 10) || 1
   return num < 1 ? 1 : num
 }
 
 // Our render function is brought in via the pagination mixin
 // @vue/component
-export default Vue.extend({
+export const BPaginationNav = /*#__PURE__*/ Vue.extend({
   name: 'BPaginationNav',
   mixins: [paginationMixin],
   props,
@@ -107,10 +107,6 @@ export default Vue.extend({
   },
   created() {
     this.setNumPages()
-    // For SSR, assuming a page URL can be detected
-    this.$nextTick(() => {
-      this.guessCurrentPage()
-    })
   },
   mounted() {
     if (this.$router) {
@@ -131,6 +127,9 @@ export default Vue.extend({
       } else {
         this.localNumPages = sanitizeNumPages(this.numberOfPages)
       }
+      this.$nextTick(() => {
+        this.guessCurrentPage()
+      })
     },
     onClick(pageNum, evt) {
       // Dont do anything if clicking the current active page
@@ -288,3 +287,5 @@ export default Vue.extend({
     }
   }
 })
+
+export default BPaginationNav

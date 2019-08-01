@@ -60,8 +60,9 @@
 
         {% set items = [] %}
 
-        {% set related_globals = getRelatedGlobals(values) %}
-        {% set related_items = getRelatedItems(values) %}
+        {% set related_globals    = getRelatedGlobals(values) %}
+        {% set related_items      = getRelatedItems(values) %}
+        {% set related_attributes = getRelatedAttributes(values) %}
 
         {% for item in related_items %}
             {% set items = items|merge([item.contenttype.slug~'/'~item.id]) %}
@@ -69,12 +70,22 @@
 
         <textarea style="display:none"
                   {# json_encode(16) means JSON_FORCE_OBJECT #}
-                  id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>{"globals": {{ related_globals|json_encode(16) }}, "items": {{ items|json_encode}} }</textarea>
+                  id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>
+            {
+                "globals": {{ related_globals|json_encode(16) }},
+                "items": {{ items|json_encode}},
+                "attributes": {{ related_attributes|json_encode(16) }}
+            }
+        </textarea>
 
         <script type="application/javascript">
             $(function () {
 
-                let definitions = '{{ field.globals|default({})|json_encode|raw }}';
+                let definitions = JSON.stringify({
+                    "globals": {{ field.globals|default({})|json_encode|raw  }},
+                    "items": {{ field.items|default({})|json_encode|raw }}
+                });
+
                 let connector = '#connector-{{ buid }}';
                 let apiurl = "{{ paths.bolt }}relationlist/finditems/{{ context.content.contenttype.slug }}/{{ key }}/";
                 let jsonurl = "{{ paths.bolt }}relationlist/fetchJsonList";

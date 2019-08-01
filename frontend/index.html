@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="bundle.web.js"></script>
+    <link rel="stylesheet" href="./dist/styles.min.css" />
+    <link rel="stylesheet" href="https://www.ad-magazin.docker/bolt-public/css/lib.css?05df30316e">
+    <link rel="stylesheet" href="https://www.ad-magazin.docker/bolt-public/css/bolt.css?e7285bef53">
+
+</head>
+<body>
+
+    <div id="relationlist" class="form-control">
+        <app></app>
+    </div>
+
+    <textarea id="connector">
+        {"globals":{},"items":["articles/5030"],"attributes":{"articles/5030":{"test":"ddfsdfsfdsdf"}}}
+    </textarea>
+
+    <script type="application/javascript">
+
+        $(function () {
+
+            let definitions = JSON.stringify({
+                globals: {
+                    test: {
+                        label: 'Global Field',
+                        type: 'text'
+                    }
+                },
+                items: {
+                    test: {
+                        label: 'Item Field',
+                        type: 'text'
+                    },
+
+                    west: {
+                        label: 'Item Field WEST',
+                        type: 'text'
+                    }
+
+                }
+            });
+            let attributes = [];
+            let connector = '#connector';
+            let apiurl  = "https://www.ad-magazin.docker/bolt/relationlist/finditems/articles/text/Article/";
+            let jsonurl = "https://www.ad-magazin.docker/bolt/relationlist/fetchJsonList";
+
+            let options = {
+                apiurl: apiurl,
+                jsonurl: jsonurl,
+                element: '#relationlist',
+                validation: {}
+            };
+
+            options.validation.min = "1";
+            options.validation.max = "10";
+
+            let cnRelationList = new CnRelationList({
+                options: options,
+                value: $(connector).val() || '{}',
+                definitions: definitions,
+                attributes: attributes,
+                onRelationUpdated: function (data) {
+                    $(connector).val(JSON.stringify(data));
+                }
+            });
+        });
+
+    </script>
+
+    <div style="height: 3000px;background-color: #ffcccc">
+        Hello, I am just scrolling around!
+    </div>
+
+</body>
+</html>

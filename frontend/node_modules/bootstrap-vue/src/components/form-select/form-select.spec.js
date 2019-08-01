@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { waitNT } from '../../../tests/utils'
+import { waitNT, waitRAF } from '../../../tests/utils'
 import BFormSelect from './form-select'
 
 describe('form-select', () => {
@@ -551,5 +551,68 @@ describe('form-select', () => {
     expect(wrapper.emitted('change')[0][0]).toEqual([{ b: 2 }, { c: 3 }])
 
     wrapper.destroy()
+  })
+
+  // These tests are wrapped in a new describe to limit the scope of the getBCR Mock
+  describe('prop `autofocus`', () => {
+    const origGetBCR = Element.prototype.getBoundingClientRect
+
+    beforeEach(() => {
+      // Mock getBCR so that the isVisible(el) test returns true
+      // In our test below, all pagination buttons would normally be visible
+      Element.prototype.getBoundingClientRect = jest.fn(() => ({
+        width: 24,
+        height: 24,
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0
+      }))
+    })
+
+    afterEach(() => {
+      // Restore prototype
+      Element.prototype.getBoundingClientRect = origGetBCR
+    })
+
+    it('works when true', async () => {
+      const wrapper = mount(BFormSelect, {
+        attachToDocument: true,
+        propsData: {
+          autofocus: true,
+          options: ['a', 'b', 'c']
+        }
+      })
+      expect(wrapper.vm).toBeDefined()
+      await waitNT(wrapper.vm)
+      await waitRAF()
+
+      const input = wrapper.find('select')
+      expect(input.exists()).toBe(true)
+      expect(document).toBeDefined()
+      expect(document.activeElement).toBe(input.element)
+
+      wrapper.destroy()
+    })
+
+    it('does not autofocus when false', async () => {
+      const wrapper = mount(BFormSelect, {
+        attachToDocument: true,
+        propsData: {
+          autofocus: false,
+          options: ['a', 'b', 'c']
+        }
+      })
+      expect(wrapper.vm).toBeDefined()
+      await waitNT(wrapper.vm)
+      await waitRAF()
+
+      const input = wrapper.find('select')
+      expect(input.exists()).toBe(true)
+      expect(document).toBeDefined()
+      expect(document.activeElement).not.toBe(input.element)
+
+      wrapper.destroy()
+    })
   })
 })

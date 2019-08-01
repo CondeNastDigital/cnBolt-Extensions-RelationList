@@ -2,7 +2,8 @@ export default () => {
     return {
         // initial state
         state: {
-            definitions: {},
+            globals: {},
+            items: {}
         },
 
         // getters
@@ -13,7 +14,10 @@ export default () => {
              * @returns {default.state.definitions|{}|{state, getters, actions, mutations}|{"@fortawesome/fontawesome-svg-core"}}
              */
             getDefinitions(state) {
-                return state.definitions;
+                return {
+                    globals: state.globals,
+                    items: state.items
+                };
             }
         },
 
@@ -37,7 +41,8 @@ export default () => {
              * @param definitions
              */
             setDefinitions(state, definitions) {
-                state.definitions = definitions;
+                state.globals = definitions.globals || {};
+                state.items = definitions.items || {} ;
             },
         }
 

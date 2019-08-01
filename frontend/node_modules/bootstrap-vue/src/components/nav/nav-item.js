@@ -1,20 +1,18 @@
 import Vue from '../../utils/vue'
 import { mergeData } from 'vue-functional-data-merge'
-import BLink, { propsFactory as linkPropsFactory } from '../link/link'
+import { BLink, propsFactory as linkPropsFactory } from '../link/link'
 
 export const props = linkPropsFactory()
 
 // @vue/component
-export default Vue.extend({
+export const BNavItem = /*#__PURE__*/ Vue.extend({
   name: 'BNavItem',
   functional: true,
   props: {
     ...props,
     linkAttrs: {
       type: Object,
-      default() {
-        return {}
-      }
+      default: () => {}
     },
     linkClasses: {
       type: [String, Object, Array],
@@ -45,3 +43,5 @@ export default Vue.extend({
     )
   }
 })
+
+export default BNavItem

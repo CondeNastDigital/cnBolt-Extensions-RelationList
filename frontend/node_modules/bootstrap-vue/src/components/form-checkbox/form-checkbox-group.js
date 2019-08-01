@@ -19,7 +19,7 @@ export const props = {
 }
 
 // @vue/component
-export default Vue.extend({
+export const BFormCheckboxGroup = /*#__PURE__*/ Vue.extend({
   name: 'BFormCheckboxGroup',
   mixins: [
     idMixin,
@@ -41,8 +41,10 @@ export default Vue.extend({
     }
   },
   computed: {
-    is_RadioGroup() {
+    isRadioGroup() {
       return false
     }
   }
 })
+
+export default BFormCheckboxGroup

@@ -1,5 +1,6 @@
 import definitions from './modules/definitions'
 import globals  from './modules/globals'
+import attributes  from './modules/attributes'
 import items    from './modules/items'
 
 export default () =>  {
@@ -13,6 +14,7 @@ export default () =>  {
         modules: {
             definitions: definitions(),
             globals: globals(),
+            attributes: attributes(),
             items: items()
         },
 

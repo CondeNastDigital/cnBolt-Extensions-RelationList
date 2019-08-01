@@ -5,13 +5,13 @@ import { isVisible } from '../../utils/dom'
 const DEFAULT_PER_PAGE = 20
 const DEFAULT_TOTAL_ROWS = 0
 
-function sanitizePerPage(value) {
-  const perPage = parseInt(value, 10) || DEFAULT_PER_PAGE
+const sanitizePerPage = val => {
+  const perPage = parseInt(val, 10) || DEFAULT_PER_PAGE
   return perPage < 1 ? 1 : perPage
 }
 
-function sanitizeTotalRows(value) {
-  const totalRows = parseInt(value, 10) || DEFAULT_TOTAL_ROWS
+const sanitizeTotalRows = val => {
+  const totalRows = parseInt(val, 10) || DEFAULT_TOTAL_ROWS
   return totalRows < 0 ? 0 : totalRows
 }
 
@@ -32,7 +32,7 @@ const props = {
 
 // Our render function is brought in from the pagination mixin
 // @vue/component
-export default Vue.extend({
+export const BPagination = /*#__PURE__*/ Vue.extend({
   name: 'BPagination',
   mixins: [paginationMixin],
   props,
@@ -106,3 +106,5 @@ export default Vue.extend({
     }
   }
 })
+
+export default BPagination

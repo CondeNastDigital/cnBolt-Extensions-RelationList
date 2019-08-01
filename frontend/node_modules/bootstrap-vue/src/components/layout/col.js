@@ -6,30 +6,20 @@ import { isUndefined, isNull } from '../../utils/inspect'
 import { keys, assign, create } from '../../utils/object'
 import { getBreakpointsUpCached } from '../../utils/config'
 
-/**
- * Generates a prop object with a type of
- * [Boolean, String, Number]
- */
-function boolStrNum() {
-  return {
-    type: [Boolean, String, Number],
-    default: false
-  }
-}
+// Generates a prop object with a type of `[Boolean, String, Number]`
+const boolStrNum = () => ({
+  type: [Boolean, String, Number],
+  default: false
+})
 
-/**
- * Generates a prop object with a type of
- * [String, Number]
- */
-function strNum() {
-  return {
-    type: [String, Number],
-    default: null
-  }
-}
+// Generates a prop object with a type of `[String, Number]`
+const strNum = () => ({
+  type: [String, Number],
+  default: null
+})
 
-// Memoized function for better performance on generating class names
-const computeBkPtClass = memoize(function computeBkPt(type, breakpoint, val) {
+// Compute a breakpoint class name
+const computeBreakpoint = (type, breakpoint, val) => {
   let className = type
   if (isUndefined(val) || isNull(val) || val === false) {
     return undefined
@@ -47,7 +37,10 @@ const computeBkPtClass = memoize(function computeBkPt(type, breakpoint, val) {
   // .order-md-6
   className += `-${val}`
   return className.toLowerCase()
-})
+}
+
+// Memoized function for better performance on generating class names
+const computeBreakpointClass = memoize(computeBreakpoint)
 
 // Cached copy of the breakpoint prop names
 let breakpointPropMap = create(null)
@@ -119,7 +112,7 @@ const generateProps = () => {
 // We do not use Vue.extend here as that would evaluate the props
 // immediately, which we do not want to happen
 // @vue/component
-export default {
+export const BCol = {
   name: 'BCol',
   functional: true,
   get props() {
@@ -137,8 +130,8 @@ export default {
       // Returns colSm, offset, offsetSm, orderMd, etc.
       const keys = breakpointPropMap[type]
       for (let i = 0; i < keys.length; i++) {
-        // computeBkPt(col, colSm => Sm, value=[String, Number, Boolean])
-        const c = computeBkPtClass(type, keys[i].replace(type, ''), props[keys[i]])
+        // computeBreakpoint(col, colSm => Sm, value=[String, Number, Boolean])
+        const c = computeBreakpointClass(type, keys[i].replace(type, ''), props[keys[i]])
         // If a class is returned, push it onto the array.
         if (c) {
           classList.push(c)
@@ -160,3 +153,5 @@ export default {
     return h(props.tag, mergeData(data, { class: classList }), children)
   }
 }
+
+export default BCol

@@ -3,20 +3,12 @@
         <div class="col-xs-12">
             <b-collapse :id="settingsid">
                 <b-card>
-                    <b-form-group
-                            v-for="(field, key) in definitions"
-                            :key="key"
-                            :id="settingsid+'-group-'+key"
-                            :label="field.label"
-                            :label-for="settingsid+'key'"
-                    >
-                        <!-- todo dynamic compoents! -->
-                        <b-form-input v-if="isInput(field)" v-model="fields[key]" @input="updateGlobals(key, $event)" :id="settingsid+'key'" :type="field.type"/>
-                        <b-form-textarea v-if="isTextarea(field)" v-model="fields[key]" @input="updateGlobals(key, $event)" :id="settingsid+'key'" rows="2" max-rows="3"/>
-                        <b-form-select v-if="isSelect(field)" v-model="fields[key]" @change="updateGlobals(key, $event)" :id="settingsid+'key'" :type="field.type" :options="field.options"></b-form-select>
-                        <b-form-checkbox v-if="isCheckbox(field)" v-model="fields[key]" @change="updateGlobals(key, $event)" :id="settingsid+'key'" :type="field.type"></b-form-checkbox>
-
-                    </b-form-group>
+                    <Fields
+                        :settingsid="settingsid"
+                        :definitions="definitions"
+                        :state="fields"
+                        @input="updateGlobals($event)"
+                    ></Fields>
                 </b-card>
             </b-collapse>
         </div>
@@ -24,10 +16,17 @@
 </template>
 
 <script>
+
+    import Fields from './Fields.vue'
+
     export default {
 
         props: {
             settingsid: String
+        },
+
+        components: {
+            Fields
         },
 
         computed: {
@@ -39,7 +38,7 @@
             },
 
             definitions: function () {
-                return this.$store.getters.getDefinitions;
+                return this.$store.getters.getDefinitions.globals;
             }
         },
 
@@ -50,51 +49,12 @@
              * @param key
              * @param data
              */
-            updateGlobals: function (key, data) {
+            updateGlobals: function (data) {
 
-                let globals = this.$store.getters.getGlobals;
-
-                globals[key] = data;
-
-                this.$store.dispatch('setGlobals', globals);
+                this.$store.dispatch('setGlobals', data);
                 this.$root.$emit('cnrl-relation-updated');
             },
 
-            /**
-             *
-             * @param entry
-             * @returns {boolean}
-             */
-            isInput: function (entry) {
-                return entry.type === 'text';
-            },
-
-            /**
-             *
-             * @param entry
-             * @returns {boolean}
-             */
-            isTextarea: function (entry) {
-                return entry.type === 'textarea';
-            },
-
-            /**
-             *
-             * @param entry
-             * @returns {boolean}
-             */
-            isSelect: function (entry) {
-                return entry.type === 'select';
-            },
-
-            /**
-             *
-             * @param entry
-             * @returns {boolean}
-             */
-            isCheckbox: function (entry) {
-                return entry.type === 'checkbox';
-            },
         },
 
         data() {

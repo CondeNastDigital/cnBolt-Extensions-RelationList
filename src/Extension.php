@@ -76,8 +76,9 @@ class Extension extends SimpleExtension
     protected function registerTwigFunctions()
     {
         return [
-            'getRelatedGlobals' => 'getRelatedGlobals',
-            'getRelatedItems'   => 'getRelatedItems',
+            'getRelatedGlobals'    => 'getRelatedGlobals',
+            'getRelatedItems'      => 'getRelatedItems',
+            'getRelatedAttributes' => 'getRelatedAttributes',
         ];
     }
 
@@ -142,6 +143,27 @@ class Extension extends SimpleExtension
 
         return $globals;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRelatedAttributes($relation){
+
+        if (!$relation || $relation === '')
+            return [];
+
+        if (!is_array($relation))
+            $relation = json_decode($relation, true);
+
+        $attributes = [];
+
+        if (isset($relation['attributes'])){
+            $attributes = $relation['attributes'];
+        }
+
+        return $attributes;
+    }
+
 }
 
 

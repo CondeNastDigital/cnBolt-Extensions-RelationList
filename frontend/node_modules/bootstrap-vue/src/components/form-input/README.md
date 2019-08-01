@@ -95,7 +95,7 @@ rendered and a console warning will be issued.
 
 ### Range type input
 
-Inputs with type `range` render using Bootstrap V4's `.custom-range` class. The track (the
+Inputs with type `range` render using Bootstrap v4's `.custom-range` class. The track (the
 background) and thumb (the value) are both styled to appear the same across browsers.
 
 Range inputs have implicit values for `min` and `max` of `0` and `100` respectively. You may specify
@@ -123,7 +123,7 @@ new values for those using the `min` and `max` props.
 <!-- b-form-input-range.vue -->
 ```
 
-By default, range inputs “snap” to integer values. To change this, you can specify a `step` value.
+By default, range inputs "snap" to integer values. To change this, you can specify a `step` value.
 In the example below, we double the number of steps by using step="0.5".
 
 ```html
@@ -152,9 +152,9 @@ In the example below, we double the number of steps by using step="0.5".
 convert the value to a native number by using `Number(value)`, `parseInt(value, 10)`,
 `parseFloat(value)`, or use the `number` prop.
 
-**Note:** Bootstrap V4.1 CSS does not include styling for range inputs inside input groups, nor
+**Note:** Bootstrap v4.1 CSS does not include styling for range inputs inside input groups, nor
 validation styling on range inputs. However, BootstrapVue includes custom styling to handle these
-situations until styling is included in Bootstrap V4.
+situations until styling is included in Bootstrap v4.
 
 ## Control sizing
 
@@ -479,6 +479,14 @@ Emulation of the `.lazy` modifier is _not_ supported (listen for `change` or `bl
   events. These events will always return the string value of the content of `<textarea>` after
   optional formatting (which may not match the value returned via the `v-model` `update` event,
   which handles the modifiers).
+
+## Autofocus
+
+<span class="badge badge-info small">NEW in 2.0.0-rc.21</span>
+
+When the `autofocus` prop is set, the input will be auto-focused when it is inserted into the
+document, or re-activated when inside a Vue `<keep-alive>` component. Note that this prop **does
+not** set the `autofocus` attribute on the input.
 
 ## Native and custom events
 

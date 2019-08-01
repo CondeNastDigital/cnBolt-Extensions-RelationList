@@ -26,7 +26,7 @@
         },
         computed: {
             definitions: function(){
-                return Object.keys(this.$store.getters.getDefinitions).length > 0;
+                return Object.keys(this.$store.getters.getDefinitions.globals).length > 0;
             }
         },
         components: {

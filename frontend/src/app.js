@@ -87,18 +87,21 @@ export class cnRelationList {
      * set values to the store
      */
     initStore(config) {
+
         let _self = this;
         this.store = new Vuex.Store(Store());
 
         let data = JSON.parse(config.value);
         let definitions = JSON.parse(config.definitions);
         let globals = data.globals || {};
+        let attributes = data.attributes || [];
         let items = data.items || [];
 
         // build the store
         this.store.dispatch('setDefinitions', definitions);
         this.store.dispatch('setOptions', config.options);
         this.store.dispatch('setGlobals', globals);
+        this.store.dispatch('setAttributes', attributes);
 
         this.getFullElements(items);
 
@@ -116,6 +119,7 @@ export class cnRelationList {
         let result = {};
         result.globals = this.store.getters.getGlobals;
         result.items = this.store.getters.getSimpleItems;
+        result.attributes = this.store.getters.getAttributes;
 
         if (this.config.hasOwnProperty('onRelationUpdated') && typeof(this.config.onRelationUpdated) === 'function') {
             this.config.onRelationUpdated(result);
