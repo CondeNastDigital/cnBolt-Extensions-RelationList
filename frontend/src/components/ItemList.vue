@@ -11,7 +11,7 @@
                         </div>
                         <div class="col-xs-2 text-right item-buttons">
 
-                            <b-button class="btn-settings" v-b-toggle="'attributes-'+item.id" variant="secondary">
+                            <b-button class="btn-settings" v-b-toggle="'attributes-'+item.id" variant="secondary" v-if="hasDefinitions">
                                 <font-awesome-icon icon="cogs"/>
                             </b-button>
 
@@ -24,7 +24,7 @@
                             </b-button>
 
                         </div>
-                        <b-collapse :id="'attributes-'+item.id" class="col-12 col-xs-12 item-fields">
+                        <b-collapse :id="'attributes-'+item.id" class="col-12 col-xs-12 item-fields" v-if="hasDefinitions">
 
                             <Fields
                                     :settingsid="'input'+Date.now()"
@@ -63,6 +63,10 @@
                 set(list) {
                     this.$store.dispatch('updateItemList', list);
                 }
+            },
+
+            hasDefinitions : function() {
+                return Object.keys(this.$store.getters.getDefinitions.items || {}) > 0;
             },
 
             definitions: function() {
