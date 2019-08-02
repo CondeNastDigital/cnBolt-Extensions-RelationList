@@ -104,3 +104,21 @@
 .itemlist .item .item-fields {
     padding: 30px;
 }
+
+
+.item-field{
+    margin-bottom: 5px;
+}
+
+.col-4 {
+    width: calc(33% - 30px);
+    display: inline-block;
+}
+
+.col-8 {
+    width: calc(67% - 30px);
+    display: inline-block;
+}
+.itemlist .item-buttons button{
+    margin: 2px;
+}

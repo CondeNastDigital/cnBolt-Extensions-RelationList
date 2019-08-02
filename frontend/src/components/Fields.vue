@@ -1,19 +1,24 @@
 <template>
     <div>
-        <b-form-group
-                v-for="(field, key, index) in definitions"
+        <b-row  v-for="(field, key, index) in definitions"
                 :key="key"
                 :id="settingsid+'-group-'+key"
-                :label="field.label"
-                :label-for="settingsid+'key'"
+                class="item-field"
         >
-            <!-- todo dynamic compoents! -->
-            <b-form-input v-focus="index===0" v-if="isInput(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type"/>
-            <b-form-textarea v-focus="index===0" v-if="isTextarea(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" rows="2" max-rows="3"/>
-            <b-form-select  v-focus="index===0" v-if="isSelect(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type" :options="field.options"></b-form-select>
-            <b-form-checkbox v-focus="index===0" v-if="isCheckbox(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type"></b-form-checkbox>
 
-        </b-form-group>
+                <b-col cols="4" sm="4" lg="2">
+                    <label :for="settingsid+'key'">{{field.label}}</label>
+                </b-col>
+
+                <b-col cols="8" sm="8" lg="10">
+                    <!-- todo dynamic compoents! -->
+                    <b-form-input    size="sm" v-focus="index===0" v-if="isInput(field)" v-model="values[key]"    @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type"/>
+                    <b-form-textarea size="sm" v-focus="index===0" v-if="isTextarea(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" rows="2" max-rows="3"/>
+                    <b-form-select   size="sm" v-focus="index===0" v-if="isSelect(field)" v-model="values[key]"   @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type" :options="field.options"></b-form-select>
+                    <b-form-checkbox size="sm" v-focus="index===0" v-if="isCheckbox(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type"></b-form-checkbox>
+                </b-col>
+
+        </b-row>
     </div>
 </template>
 
