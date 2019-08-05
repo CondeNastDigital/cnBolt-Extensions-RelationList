@@ -3,7 +3,7 @@ export default () => {
         // initial state
         state: {
             globals: {},
-            items: {}
+            attributes: {}
         },
 
         // getters
@@ -16,7 +16,7 @@ export default () => {
             getDefinitions(state) {
                 return {
                     globals: state.globals,
-                    items: state.items
+                    attributes: state.attributes
                 };
             }
         },
@@ -42,7 +42,7 @@ export default () => {
              */
             setDefinitions(state, definitions) {
                 state.globals = definitions.globals || {};
-                state.items = definitions.items || {} ;
+                state.attributes = definitions.attributes || {} ;
             },
         }
 

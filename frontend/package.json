@@ -16,9 +16,7 @@
     "vue-axios": "^2.1.4",
     "vue-fontawesome": "0.0.2",
     "vuedraggable": "^2.20.0",
-    "vuex": "^3.1.0",
-    "lodash": ">=4.17.13",
-    "js-yaml": ">=3.13.1"
+    "vuex": "^3.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
@@ -39,7 +37,9 @@
     "vue-template-compiler": "^2.6.10",
     "webpack": "4.29.3",
     "webpack-cli": "^3.3.1",
-    "webpack-dev-server": "^3.3.1"
+    "webpack-dev-server": "^3.3.1",
+    "lodash": ">=4.17.13",
+    "js-yaml": ">=3.13.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

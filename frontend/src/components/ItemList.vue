@@ -66,11 +66,11 @@
             },
 
             hasDefinitions : function() {
-                return Object.keys(this.$store.getters.getDefinitions.items || {}).length > 0;
+                return Object.keys(this.$store.getters.getDefinitions.attributes || {}).length > 0;
             },
 
             definitions: function() {
-                return this.$store.getters.getDefinitions.items || {};
+                return this.$store.getters.getDefinitions.attributes || {};
             },
 
             attributes: {
@@ -111,14 +111,14 @@
                     }
                 }
 
+                const context = this;
                 this.$root.$emit('cnrl-relation-confirm', {
                     message: 'Do you really want to remove "' + item.title + '" ?',
                     ok: function(){
-                        this.$store.dispatch('removeItem', item);
+                        context.$store.dispatch('removeItem', item);
                     }
                 });
 
-                //this.$store.dispatch('removeItem', item);
             },
         },
 
