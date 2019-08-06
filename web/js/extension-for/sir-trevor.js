@@ -68,7 +68,7 @@ var RelationlistST = function(properties) {
 
             let definitions = {
                 globals: field.globals || {},
-                items: field.items || {}
+                attributes: field.attributes || {}
             };
             let apiurl = this.extensionUrl + "relationlist/finditems/" + field.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + field.subFieldName + "/";
             let jsonurl = this.extensionUrl + "relationlist/fetchJsonList";
