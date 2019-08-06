@@ -116,7 +116,7 @@ class Extension extends SimpleExtension
 
         foreach ($elements as $idx => $value){
             list($contenttype, $id) = explode('/', $value);
-            $items[] = $app["storage"]->getContent( $contenttype, ["id" => $id] );
+            $items[$value] = $app["storage"]->getContent( $contenttype, ["id" => $id] );
         }
 
         return $items;
