@@ -83,7 +83,7 @@
 
                 let definitions = JSON.stringify({
                     "globals": {{ field.globals|default({})|json_encode|raw  }},
-                    "attributes": {{ field.items|default({})|json_encode|raw }}
+                    "attributes": {{ field.attributes|default({})|json_encode|raw }}
                 });
 
                 let connector = '#connector-{{ buid }}';
