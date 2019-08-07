@@ -22,11 +22,30 @@ myfield:
         allowed-types: [pages, otherpages, evenotherpages]
         min: 1
         max: 3
+
     globals: 
         title:
             label: Title
             type: text
         description:
+            label: Description
+            type: textarea
+        checkit:
+            label: CheckIt
+            type: checkbox
+        fieldselect:
+            label: Field select
+            type: select
+            options:
+                - value: key1
+                  text: Key 1
+                - value: key2
+                  text: Key 2
+    attributes:
+        inutfield:
+            label: Title
+            type: text
+        textfield:
             label: Description
             type: textarea
         checkit:
@@ -66,6 +85,24 @@ structuredcontent:
                 checkit:
                     label: CheckIt
                     type: checkbox
+            attributes:
+                inutfield:
+                    label: Title
+                    type: text
+                textfield:
+                    label: Description
+                    type: textarea
+                checkit:
+                    label: CheckIt
+                    type: checkbox
+                fieldselect:
+                    label: Field select
+                    type: select
+                    options:
+                        - value: key1
+                          text: Key 1
+                        - value: key2
+                          text: Key 2
 ```
 
 ## Usage
