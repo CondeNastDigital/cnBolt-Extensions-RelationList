@@ -3,7 +3,8 @@
     "description": "Provides a backend field for a content type which defines a list of relations to content objects",
     "type": "bolt-extension",
     "require": {
-        "bolt/bolt": ">=3.0.0,<4.0.0"
+        "bolt/bolt": ">=3.0.0,<4.0.0",
+        "php": "^7.0"
     },
     "license": "Private",
     "authors": [

@@ -1,0 +1,6 @@
+# A list of all active relationlist sources
+
+connectors:
+
+    content:
+        class: Bolt\Extension\CND\RelationList\Connector\ContentConnector
