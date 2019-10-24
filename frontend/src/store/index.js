@@ -1,20 +1,19 @@
 import definitions from './modules/definitions'
 import globals  from './modules/globals'
-import attributes  from './modules/attributes'
 import items    from './modules/items'
 
 export default () =>  {
     return {
         // initial state
         state: {
-            ready: true
+            ready: true,
+            status: false
         },
 
         // modules
         modules: {
             definitions: definitions(),
             globals: globals(),
-            attributes: attributes(),
             items: items()
         },
 
@@ -36,6 +35,15 @@ export default () =>  {
              */
             getOptions(state) {
                 return state.options
+            },
+
+            /**
+             *
+             * @param state
+             * @return {*}
+             */
+            getStatus(state) {
+                return state.status
             }
         },
 
@@ -57,6 +65,15 @@ export default () =>  {
             //
             setOptions(context, options) {
                 context.commit('setOptions', options);
+            },
+
+            /**
+             *
+             * @param context
+             * @param status
+             */
+            setStatus(context, status) {
+                context.commit('setStatus', status)
             }
         },
 
@@ -78,6 +95,15 @@ export default () =>  {
              */
             setOptions(state, options) {
                 state.options = options;
+            },
+
+            /**
+             *
+             * @param state
+             * @param status
+             */
+            setStatus(state, status) {
+                state.status = status
             }
         }
     }

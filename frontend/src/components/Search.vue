@@ -90,7 +90,7 @@
                     this.timer = null;
                 }
                 this.timer = setTimeout(() => {
-                    let endpoint = this.$store.getters.getOptions['apiurl'] || '';
+                    let endpoint = this.$store.getters.getOptions['searchurl'] || '';
 
                     this.foundItems = this._ajaxCall(endpoint, this.search);
 
@@ -114,8 +114,8 @@
                     this.$http
                         .get(endpoint + val)
                         .then(response => {
-                            if (response.data.status !== "error") {
-                                this.foundItems = response.data.data;
+                            if (response.data.status === true) {
+                                this.foundItems = response.data.items;
                                 this.$store.dispatch('setReady', true);
                             }
                         })

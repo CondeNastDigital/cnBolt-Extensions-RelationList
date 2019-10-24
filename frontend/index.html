@@ -7,8 +7,8 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="bundle.web.js"></script>
     <link rel="stylesheet" href="./dist/styles.min.css" />
-    <link rel="stylesheet" href="https://www.ad-magazin.docker/bolt-public/css/lib.css?05df30316e">
-    <link rel="stylesheet" href="https://www.ad-magazin.docker/bolt-public/css/bolt.css?e7285bef53">
+    <link rel="stylesheet" href="http://gewinnspiele.gq.local/gewinnspiele/bolt-public/css/lib.css?05df30316e">
+    <link rel="stylesheet" href="http://gewinnspiele.gq.local/gewinnspiele/bolt-public/css/bolt.css?e7285bef53">
 
 </head>
 <body>
@@ -17,8 +17,16 @@
         <app></app>
     </div>
 
-    <textarea id="connector">
-        {"globals":{},"items":["articles/5030"],"attributes":{"articles/5030":{"test":"ddfsdfsfdsdf","west":5}}}
+    <!-- OLD STRING -->
+    <label>old</label>
+    <textarea id="connector" style="width:100%;height:150px">
+    {"globals":{},"items":["teasers/5","teasers/6","teasers/8","competitions/58","competitions/55","competitions/59","competitions/57","competitions/54"],"attributes":{"teasers/5":{"isopen":false,"number":"0"},"teasers/6":{"isopen":false,"number":"0"},"teasers/8":{},"competitions/58":{},"competitions/55":{},"competitions/59":{},"competitions/57":{},"competitions/54":{}}}
+    </textarea>
+
+    <!-- NEW STRING -->
+    <label>new</label>
+    <textarea id="connector2" style="width:100%;height:150px">
+        {"status":true,"items":[{"id":"competitions/50","service":"content","type":"competitions","attributes":{"test":"1111", "west":"2222"}}]}
     </textarea>
 
     <script type="application/javascript">
@@ -49,14 +57,14 @@
 
                 }
             });
-            let attributes = [];
-            let connector = '#connector';
-            let apiurl  = "https://www.ad-magazin.docker/bolt/relationlist/finditems/articles/text/Article/";
-            let jsonurl = "https://www.ad-magazin.docker/bolt/relationlist/fetchJsonList";
+            var connector = '#connector';
+            var searchurl  = "http://gewinnspiele.gq.local/gewinnspiele/bolt/relationlist/search/homes/teasers/";
+            var fetchurl =   "http://gewinnspiele.gq.local/gewinnspiele/bolt/relationlist/fetch";
 
-            let options = {
-                apiurl: apiurl,
-                jsonurl: jsonurl,
+            var value = $(connector).val() || '{}';
+            var options = {
+                searchurl: searchurl,
+                fetchurl: fetchurl,
                 element: '#relationlist',
                 validation: {}
             };
@@ -66,9 +74,8 @@
 
             let cnRelationList = new CnRelationList({
                 options: options,
-                value: $(connector).val() || '{}',
+                value: value,
                 definitions: definitions,
-                attributes: attributes,
                 onRelationUpdated: function (data) {
                     $(connector).val(JSON.stringify(data));
                 }

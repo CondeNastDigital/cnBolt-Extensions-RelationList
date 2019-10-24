@@ -96,17 +96,17 @@ export class cnRelationList {
 
         let data = JSON.parse(config.value);
         let definitions = JSON.parse(config.definitions);
+        let options = config.options || [];
         let globals = data.globals || {};
-        let attributes = data.attributes || [];
         let items = data.items || [];
+        let attributes = data.attributes || {};
 
         // build the store
         this.store.dispatch('setDefinitions', definitions);
-        this.store.dispatch('setOptions', config.options);
+        this.store.dispatch('setOptions', options);
         this.store.dispatch('setGlobals', globals);
-        this.store.dispatch('setAttributes', attributes);
 
-        this.getFullElements(items);
+        this.getFullElements(items, attributes);
 
         this.store.subscribe(function (mutation, state) {
             _self.relationUpdated(mutation, state);
@@ -120,9 +120,10 @@ export class cnRelationList {
      */
     relationUpdated(mutation, state) {
         let result = {};
+
+        result.status = this.store.getters.getStatus;
         result.globals = this.store.getters.getGlobals;
         result.items = this.store.getters.getSimpleItems;
-        result.attributes = this.store.getters.getAttributes;
 
         if (this.config.hasOwnProperty('onRelationUpdated') && typeof(this.config.onRelationUpdated) === 'function') {
             this.config.onRelationUpdated(result);
@@ -133,24 +134,42 @@ export class cnRelationList {
     /**
      * converts a contenttype slug to a full content element
      * @param items
+     * @param attributes
      */
     //todo: make this ajax call without jquery
-    getFullElements(items) {
+    getFullElements(items, attributes) {
 
         let elements = [];
         let _self = this;
 
+        // convert the old fashioned array string to the new relation object
+        for (let item in items){
+            if (items.hasOwnProperty(item)){
+
+                if (!items[item].hasOwnProperty('service')) {
+                    items[item] = {
+                        'id': items[item],
+                        'service': 'content',
+                        'type': (items[item]).split('/')[0],
+                        'attributes': (attributes.length > 0) ? attributes[items[item]] : {}
+                    }
+                }
+            }
+        }
+
         $.ajax({
-            url: this.store.getters.getOptions.jsonurl,
+            url: this.store.getters.getOptions.fetchurl,
             method: 'POST',
             data: {
-                "elements": items
+                "items": JSON.stringify(items)
             }
         }).done(function(data){
-            if (data.hasOwnProperty('data') && data.data.hasOwnProperty('results') && data.data.results.length > 0)
-                elements = data.data.results;
+
+            if (data.hasOwnProperty('items') && data.items.length > 0)
+                elements = data.items;
 
             _self.store.dispatch('setItems', elements);
+            _self.store.dispatch('setStatus', true);
         });
         return elements;
     }

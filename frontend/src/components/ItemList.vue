@@ -29,7 +29,7 @@
                             <Fields
                                     :settingsid="'input'+Date.now()"
                                     :definitions="definitions"
-                                    :state="attributes[item.id]"
+                                    :state="getAttributes(item.id)"
                                     @input="setAttributes(item.id, $event)"
                             ></Fields>
 
@@ -71,25 +71,18 @@
 
             definitions: function() {
                 return this.$store.getters.getDefinitions.attributes || {};
-            },
-
-            attributes: {
-                get() {
-                    return this.$store.getters.getAttributes;
-                },
-                set(list) {
-                    this.$store.dispatch('setAttributes', list);
-                }
             }
 
         },
 
         methods: {
 
-            setAttributes: function(key, attributes) {
-                let state = Object.assign({}, this.attributes);
-                state[key] = attributes;
-                this.attributes = state;
+            getAttributes: function(id){
+                return this.$store.getters.getAttributes(id) || {};
+            },
+
+            setAttributes: function(id, attributes) {
+                this.$store.dispatch('setAttributes', {attributes, id});
             },
 
             /**
@@ -129,3 +122,9 @@
     }
 
 </script>
+
+<style scoped>
+    .card.item {
+        min-height: 100px;
+    }
+</style>

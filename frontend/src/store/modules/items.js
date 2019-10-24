@@ -15,14 +15,46 @@ export default () => {
             getItems(state) {
                 return state.items;
             },
+
+            /**
+             *
+             * @param state
+             * @param getters
+             * @return {function(*): *}
+             */
+            getItem: (state, getters) => (id) => {
+                return getters.getItems.find(item => item.id === id);
+            },
+
+            /**
+             *
+             * @param state
+             * @return {[]}
+             */
             getSimpleItems(state) {
                 let items = [];
 
                  state.items.forEach(function(value){
-                     items.push(value.id)
+                     items.push({
+                         'id': value.id || false,
+                         'service': value.service || false,
+                         'type': value.type || false,
+                         'attributes': value.attributes || []
+                     })
                  });
                 return items;
-            }
+            },
+
+            /**
+             *
+             * @param state
+             * @param getters
+             * @return {function(*=): (*|{})}
+             */
+            getAttributes: (state, getters) => (id) => {
+                let item = getters.getItem(id);
+                return item.attributes || {};
+            },
         },
 
         // actions
@@ -61,6 +93,24 @@ export default () => {
              */
             updateItemList(context, list) {
                 context.commit('updateItemList', list);
+            },
+
+            /**
+             *
+             * @param context
+             * @param payload
+             */
+            setAttributes(context, payload){
+
+                //todo: find a better way to replace an item in the items store
+                let item = context.getters.getItem(payload.id);
+
+                context.dispatch('removeItem', item);
+
+                item.attributes = payload.attributes;
+
+                context.commit('addItem', item);
+
             }
         },
 
