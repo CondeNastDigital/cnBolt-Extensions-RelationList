@@ -50,6 +50,7 @@
 {% block fieldset_label_class 'col-xs-12 control-label' %}
 
 {% block fieldset_controls %}
+
     <div class="col-xs-12">
 
         <div id="relationlist-{{ buid }}">
@@ -60,21 +61,15 @@
 
         {% set items = [] %}
 
-        {% set related_globals    = getRelatedGlobals(values) %}
-        {% set related_items      = getRelatedItems(values) %}
-        {% set related_attributes = getRelatedAttributes(values) %}
+        {% set related_globals    = RelationList.getGlobals(values) %}
+        {% set related_items      = RelationList.getItems(values) %}
 
-        {% for item in related_items %}
-            {% set items = items|merge([item.contenttype.slug~'/'~item.id]) %}
-        {% endfor %}
-
-        <textarea style="display:none"
+        <textarea style="display:none;"
                   {# json_encode(16) means JSON_FORCE_OBJECT #}
                   id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>
             {
                 "globals": {{ related_globals|json_encode(16) }},
-                "items": {{ items|json_encode}},
-                "attributes": {{ related_attributes|json_encode(16) }}
+                "items": {{ related_items|json_encode}}
             }
         </textarea>
 

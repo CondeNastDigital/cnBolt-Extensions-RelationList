@@ -60,7 +60,7 @@ abstract class BaseConnector implements IConnector {
         foreach($relations as $idx => $relation){
             if(isset($results[$relation->id])){
                 $item = $this->record2Item($results[$relation->id]);
-                $item->attributes = $relation->attributes;
+                $item->attributes = $relation->attributes ?? [];
                 $items[] = $item;
             }
         }

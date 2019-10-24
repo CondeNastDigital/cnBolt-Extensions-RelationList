@@ -62,16 +62,29 @@ class LegacyService {
         foreach($value['items'] ?? [] as $idx => $item){
 
             if(!$item instanceof Relation){
-                list($contenttype) = explode('/', $item);
-                $relation = new Relation([
-                    'id' => $item,
-                    'type' => $contenttype,
-                    'service' => 'content', // Hardcoded value - This can only work if your legacy service is also called 'content'!
-                ]);
-            }
 
-            if($value['attributes'][$item] ?? false){
-                $relation->attributes = $value['attributes'][$item];
+                // new relationlist style [{id:'article/12'},{id:'article/34'}]
+                if (is_array($item)) {
+                    $id = $item['id'];
+                    $contenttype = $item['type'] ?? false;
+                    $attributes = $item['attributes'] ?? [];
+                    $service = $item['service'];
+                }
+                // old relationlist style ['article/12','article/34']
+                else{
+                    $id = $item;
+                    list($contenttype) = explode('/', $item);
+                    $attributes = $value['attributes'][$item] ?? [];
+                    $service = 'content'; // Hardcoded value - This can only work if your legacy service is also called 'content'!
+                }
+
+                $relation = new Relation([
+                    'id' => $id,
+                    'type' => $contenttype,
+                    'service' => $service,
+                    'attributes' => $attributes,
+                ]);
+
             }
 
             $result['items'][] = $relation;

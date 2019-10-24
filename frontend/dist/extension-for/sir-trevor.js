@@ -70,12 +70,11 @@ var RelationlistST = function(properties) {
                 globals: field.globals || {},
                 attributes: field.attributes || {}
             };
-            let searchurl = this.extensionUrl + "relationlist/search/" + field.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + field.subFieldName + "/";
-            let fetchurl = this.extensionUrl + "relationlist/fetch";
-
+            let apiurl = this.extensionUrl + "relationlist/finditems/" + field.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + field.subFieldName + "/";
+            let jsonurl = this.extensionUrl + "relationlist/fetchJsonList";
             let options = {
-                searchurl: searchurl,
-                fetchurl: fetchurl,
+                apiurl: apiurl,
+                jsonurl: jsonurl,
                 element: '#relationlist-'+fieldId,
                 validation: {}
             };
