@@ -30,8 +30,8 @@ class KrakenConnector extends BaseConnector {
 
         $auth = new AuthService();
 
-        $privateKeyPath = '../app/config/extensions/'.$config['auth']['key-private'];
-        $publicKeyPath  = '../app/config/extensions/'.$config['auth']['key-public'];
+        $privateKeyPath = $container['resources']->getPath('config').'/extensions/'.$config['auth']['key-private'];
+        $publicKeyPath  = $container['resources']->getPath('config').'/extensions/'.$config['auth']['key-public'];
 
         $auth->setPrivateKey($privateKeyPath);
         $auth->setPublicKey($publicKeyPath);
