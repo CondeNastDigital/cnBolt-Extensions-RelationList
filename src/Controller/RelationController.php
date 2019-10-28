@@ -89,7 +89,8 @@ class RelationController implements ControllerProviderInterface{
         // Convert items to relation objects
         $relations = [];
         foreach($items as $item){
-            $relations[] = new Relation($item);
+            if (is_array($item) && isset($item['id']))
+                $relations[] = new Relation($item);
         }
 
         $results = $this->service->updateRelations($relations);
