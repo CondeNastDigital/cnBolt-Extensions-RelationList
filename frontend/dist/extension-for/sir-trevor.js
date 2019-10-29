@@ -66,15 +66,15 @@ var RelationlistST = function(properties) {
             let values = JSON.parse($(connector).val() || '{}');
             let field = this.custom || {};
 
-            let definitions = {
+            let definitions = JSON.stringify({
                 globals: field.globals || {},
                 attributes: field.attributes || {}
-            };
-            let apiurl = this.extensionUrl + "relationlist/finditems/" + field.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + field.subFieldName + "/";
-            let jsonurl = this.extensionUrl + "relationlist/fetchJsonList";
+            });
+            let searchurl = this.extensionUrl + "relationlist/search/" + field.contenttype + "/" + SirTrevor.getInstance(this.instanceID).el.name + "/" + field.subFieldName + "/";
+            let fetchurl = this.extensionUrl + "relationlist/fetch";
             let options = {
-                apiurl: apiurl,
-                jsonurl: jsonurl,
+                searchurl: searchurl,
+                fetchurl: fetchurl,
                 element: '#relationlist-'+fieldId,
                 validation: {}
             };
@@ -94,7 +94,7 @@ var RelationlistST = function(properties) {
 
                 options: options,
                 value: JSON.stringify(values),
-                definitions: JSON.stringify(definitions),
+                definitions: definitions,
                 onRelationUpdated: function (data) {
                     $(connector).val(JSON.stringify(data));
                 }

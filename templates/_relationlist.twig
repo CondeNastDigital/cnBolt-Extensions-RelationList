@@ -65,13 +65,7 @@
         {% set related_items      = RelationList.getItems(values) %}
 
         <textarea style="display:none;"
-                  {# json_encode(16) means JSON_FORCE_OBJECT #}
-                  id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>
-            {
-                "globals": {{ related_globals|json_encode(16) }},
-                "items": {{ related_items|json_encode}}
-            }
-        </textarea>
+                  id="connector-{{ buid }}" {{ macro.attr(attributes.text) }}>{{ values|default('{}') }}</textarea>
 
         <script type="application/javascript">
             $(function () {
