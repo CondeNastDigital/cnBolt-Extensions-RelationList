@@ -30,7 +30,7 @@
                                     :settingsid="'input'+Date.now()"
                                     :definitions="definitions"
                                     :state="getAttributes(item.id)"
-                                    @input="setAttributes(item.id, $event)"
+                                    @input="setAttributes(item, $event)"
                             ></Fields>
 
                         </b-collapse>
@@ -81,8 +81,8 @@
                 return this.$store.getters.getAttributes(id) || {};
             },
 
-            setAttributes: function(id, attributes) {
-                this.$store.dispatch('setAttributes', {attributes, id});
+            setAttributes: function(item, attributes) {
+                this.$store.dispatch('setAttributes', { item, attributes });
             },
 
             /**

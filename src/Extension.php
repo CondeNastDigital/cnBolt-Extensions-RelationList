@@ -147,7 +147,7 @@ class Extension extends SimpleExtension
 
         $result = [];
         foreach($relationList->getItems($data) as $item){
-            $result[$item->id] = $item;
+                $result[$item->id] = $item->object;
         }
         return $result;
     }

@@ -62,19 +62,19 @@ export default () => {
             /**
              *
              * @param context
-             * @param item
+             * @param items
              */
-            addItem(context, item) {
-                context.commit('addItem', item);
+            setItems(context, items) {
+                context.commit('setItems', items)
             },
 
             /**
              *
              * @param context
-             * @param items
+             * @param item
              */
-            setItems(context, items) {
-                context.commit('setItems', items)
+            addItem(context, item) {
+                context.commit('addItem', item);
             },
 
             /**
@@ -92,39 +92,30 @@ export default () => {
              * @param list
              */
             updateItemList(context, list) {
-                context.commit('updateItemList', list);
+                context.commit('setItems', list);
             },
 
             /**
              *
              * @param context
-             * @param payload
+             * @param payload (item, attributes)
              */
             setAttributes(context, payload){
 
-                //todo: find a better way to replace an item in the items store
-                let item = context.getters.getItem(payload.id);
-
-                context.dispatch('removeItem', item);
+                let items = context.getters.getItems;
+                let item = payload.item;
 
                 item.attributes = payload.attributes;
 
-                context.commit('addItem', item);
+                items[items.indexOf(item)] = item;
+
+                context.commit('setItems', items);
 
             }
         },
 
         // mutations
         mutations: {
-            /**
-             * adds a new item to the store
-             * @param state
-             * @param item
-             */
-            addItem(state, item) {
-                state.items.push(item);
-            },
-
             /**
              *
              * @param state
@@ -135,21 +126,21 @@ export default () => {
             },
 
             /**
+             * adds a new item to the store
+             * @param state
+             * @param item
+             */
+            addItem(state, item) {
+                state.items.push(item);
+            },
+
+            /**
              * removes an item from the store
              * @param state
              * @param item
              */
             removeItem(state, item) {
                 state.items.splice(state.items.indexOf(item), 1);
-            },
-
-            /**
-             * updates the itemlist in the store
-             * @param state
-             * @param list
-             */
-            updateItemList(state, list) {
-                state.items = list
             }
         }
     }

@@ -83,19 +83,23 @@
             //todo refactor this function to prevent v-model and input.native
             findItems: function () {
 
-                const timeout = 800;
+                if(this.search.length > 0) {
 
-                if (this.timer) {
-                    clearTimeout(this.timer);
-                    this.timer = null;
+                    const timeout = 800;
+                    if (this.timer) {
+                        clearTimeout(this.timer);
+                        this.timer = null;
+                    }
+                    this.timer = setTimeout(() => {
+                        let endpoint = this.$store.getters.getOptions['searchurl'] || '';
+                        this.foundItems = this._ajaxCall(endpoint, this.search);
+                        this.$emit('cnrl-items-found');
+
+                    }, timeout);
                 }
-                this.timer = setTimeout(() => {
-                    let endpoint = this.$store.getters.getOptions['searchurl'] || '';
-
-                    this.foundItems = this._ajaxCall(endpoint, this.search);
-
-                    this.$emit('cnrl-items-found');
-                }, timeout);
+                else{
+                    this.reset();
+                }
 
             },
 
