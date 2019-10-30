@@ -78,14 +78,13 @@ var RelationlistST = function(properties) {
                 element: '#relationlist-'+fieldId,
                 validation: {}
             };
-            let fieldoptions = field.hasOwnProperty('options') ? field.options : false;
 
-            if (fieldoptions && fieldoptions.hasOwnProperty('min')){
-                options.validation.min = fieldoptions.min;
+            if (field.hasOwnProperty('min')){
+                options.validation.min = field.min;
             }
 
-            if (fieldoptions && fieldoptions.hasOwnProperty('max')){
-                options.validation.max = fieldoptions.max;
+            if (field.hasOwnProperty('max')){
+                options.validation.max = field.max;
             }
 
             values = that.migrate(values);
