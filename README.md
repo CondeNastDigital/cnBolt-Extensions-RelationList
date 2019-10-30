@@ -194,3 +194,5 @@ used in any new projects!
     {{ dump(item) }}
 {% endfor %}
 ```
+**Important:** When using the old legacy configuration, don't add any additional connectors to the configuration
+execpt of content. Otherwise, it will break the frontend of the website!
