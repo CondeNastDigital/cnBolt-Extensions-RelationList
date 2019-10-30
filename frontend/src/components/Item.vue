@@ -67,5 +67,8 @@
 </script>
 
 <style scoped>
-
+    img {
+        max-width: 150px;
+        width: 100%;
+    }
 </style>
