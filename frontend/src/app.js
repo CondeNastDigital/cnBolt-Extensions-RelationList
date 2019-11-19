@@ -98,12 +98,10 @@ export class cnRelationList {
         let definitions = JSON.parse(config.definitions);
         let options = config.options || [];
 
-        let globals = data.globals || {};
         let attributes = data.attributes || {};
         let items = data.items || [];
 
-        if (Object.keys(globals).length <= 0)
-            globals = this.getDefaultFields(definitions.globals);
+        let globals = this.setDefaultFields(data.globals || {}, definitions.globals || {});
 
         // todo add the defaults for the attributes as well
         //if (Object.keys(attributes).length <= 0)
@@ -141,9 +139,10 @@ export class cnRelationList {
 
     /**
      * converts the default value of a field into a proper value
+     * @param values
      * @param fields
      */
-    getDefaultFields(fields) {
+    setDefaultFields(values = {}, fields = {}) {
         let results = {};
 
         for (let i in fields){
@@ -151,7 +150,7 @@ export class cnRelationList {
                 let field = fields[i];
 
                 if (field.hasOwnProperty('default')){
-                    results[i] = field.default;
+                    Object.assign(results, {[i]: field.default}, values)
                 }
             }
         }
