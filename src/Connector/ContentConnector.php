@@ -10,38 +10,47 @@ class ContentConnector extends BaseConnector {
 
     /**
      * @inheritdoc
+     * @throws \Exception
      */
-    public function searchRelations($config, $text): array{
-
-        $allowedTypes = $config['source'] ?? [];
+    public function searchRecords($config, $text, $parameters = []): array{
         $results = [];
 
         // VERSION A - CND Storage Library
         if($this->container->offsetExists('cnd-library.storage')){
-            $parameters = [
+
+            if(isset($config['query']['filter']['title']) || isset($config['query']['operator']['title']))
+                throw new \Exception('RelationList: Query for content connector specifies conflicting title filter or operator');
+
+            // Basic Query
+            $query = ($config['query'] ?? []) + [
+                'contenttypes' => [],
+                'filter' => [],
+                'operator' => [],
                 'limit' => 20,
-                'contenttypes' => $allowedTypes,
                 'order' => ['datepublish' => true],
-                'filter' => [ 'title' => $text ],
-                'operator' => [ 'title' => \Bolt\Extension\CND\Library\Services\StorageService::OPERATOR_CONTAINS ],
                 // "options" => ["showquery" => true, "showparams" => true]
             ];
+
+            // Add search filter
+            $query['filter']['title'] = $text;
+            $query['operator']['title'] = \Bolt\Extension\CND\Library\Services\StorageService::OPERATOR_CONTAINS;
+
+            // Apply parameters
+            $parameters += ($config['defaults'] ?? []);
+            $query = $this->applyQueryParameters($query, $parameters);
+
             $content = [
-                'results' => $this->container['cnd-library.storage']->selectContent($parameters)
+                'results' => $this->container['cnd-library.storage']->selectContent($query)
             ];
         }
         // VERSION B - Bolt native search
+        // This version is unable to handle more complex parametrized searches!
         else {
+            $allowedTypes = $config['query']['contenttypes'] ?? [];
             $content = $this->container['storage']->searchContent($text, $allowedTypes, null, 20, 0);
         }
 
-        if ($content['results']) {
-            foreach ($content['results'] as $entry) {
-                $results[] = $this->record2Relation($entry);
-            }
-        }
-
-        return $results;
+        return $content['results'] ?? [];
     }
 
     // ----------------------------------------------------------------------------------------------
@@ -68,6 +77,13 @@ class ContentConnector extends BaseConnector {
         $item->type = $record->contenttype['singular_slug'];
         $item->service = $this->key;
         $item->object = $record;
+        $item->teaser = [
+            'title' => $record->get('title'),
+            'image' => $this->getImage($record),
+            'description' => (string)$record->getExcerpt(200),
+            'date' => date('c', strtotime($record->get('datechanged'))),
+            'link' => $record->editlink(),
+        ];
 
         return $item;
     }
@@ -76,7 +92,7 @@ class ContentConnector extends BaseConnector {
      * @param Content $record
      * @return mixed
      */
-    private function getImage($record) {
+    protected function getImage($record) {
         // ImageService
         if(isset($record->get('image')['items']) && $record->get('image')['items']) {
             $image = reset($record->get('image')['items']);
@@ -140,5 +156,39 @@ class ContentConnector extends BaseConnector {
         }
 
         return $results;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \Exception
+     */
+    protected function fillRecords($config, $count, $parameters = [], $exclude = []): array{
+        $results = [];
+
+        if(!$this->container->offsetExists('cnd-library.storage')) {
+            throw new \Exception('RelationList: FillService requires cnd/library extension');
+        }
+
+        if(isset($config['query']['filter']['contentslug']) || isset($config['query']['operator']['contentslug']))
+            throw new \Exception('RelationList: FillService query for content connector specifies conflicting contentslug filter or operator');
+
+        // Basic Query
+        $query = ($config['query'] ?? []) + [
+            'contenttypes' => [],
+            'filter' => [],
+            'operator' => [],
+            'limit' => min($count, 50),
+            'order' => ['datepublish' => true],
+            // "options" => ["showquery" => true, "showparams" => true]
+        ];
+
+        $query['filter']['contentslug'] = $exclude;
+        $query['operator']['contentslug'] = 'notin';
+
+        // Apply parameters
+        $parameters += ($config['defaults'] ?? []);
+        $query = $this->applyQueryParameters($query, $parameters);
+
+        return $this->container['cnd-library.storage']->selectContent($query);
     }
 }

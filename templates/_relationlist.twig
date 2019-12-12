@@ -87,12 +87,12 @@
                     validation: {}
                 };
 
-                {% if field.options.min is defined %}
-                options.validation.min = "{{ field.options.min }}";
+                {% if field.min is defined %}
+                options.validation.min = "{{ field.min }}";
                 {% endif %}
 
-                {% if field.options.max is defined %}
-                options.validation.max = "{{ field.options.max }}";
+                {% if field.max is defined %}
+                options.validation.max = "{{ field.max }}";
                 {% endif %}
 
                 let cnRelationList = new CnRelationList({

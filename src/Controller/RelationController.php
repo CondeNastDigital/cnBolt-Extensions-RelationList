@@ -23,7 +23,7 @@ class RelationController implements ControllerProviderInterface{
         $this->app = $app;
         $this->config = $config;
 
-        $this->service = $this->app['cnd.relationlist.service'];
+        $this->service = $this->app['cnd.relationlist.relation'];
     }
 
     public function connect(\Silex\Application $app){
@@ -45,6 +45,7 @@ class RelationController implements ControllerProviderInterface{
      * @param string $search
      *
      * @return JsonResponse
+     * @throws Exception
      */
     public function search($contenttype, $field, $subfield = null, $search = null){
         $contenttype = preg_replace('/[^a-z0-9\\-_]+/i', '', $contenttype);
