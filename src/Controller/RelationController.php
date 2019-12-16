@@ -56,7 +56,9 @@ class RelationController implements ControllerProviderInterface{
         $subfield = preg_replace('/[^a-z0-9\\-_]+/i', '', $subfield);
         $parameters = json_decode($request->get('params'), true) ?? [];
 
-        // FIXME: needs multi dimensional input filtering for $parameters
+        array_walk_recursive($parameters, function(&$value, $key){
+            $value = preg_replace('/[^a-z0-9\\-_ .,]+/i', '', $value);
+        });
 
         if(!$this->app['users']->isValidSession()) {
             return new JsonResponse([
