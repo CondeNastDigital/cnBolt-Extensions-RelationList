@@ -32,7 +32,7 @@ class FillService {
      */
     public function addShownItems($items, $bucket = 'default'){
 
-        $items = is_array($items) ? $items : [$items];
+        $items = \is_array($items) ? $items : [$items];
 
         self::$alreadyShown[$bucket] = self::$alreadyShown[$bucket] ?? [];
 
@@ -71,7 +71,7 @@ class FillService {
      * @return Item[]
      * @throws \Exception
      */
-    public function getItems($poolKey, $count, $parameters = [], $fixedItems = []){
+    public function getItems($poolKey, $count, $parameters = [], $fixedItems = [], $bucket = 'default'){
 
         $pool = $this->config['pools'][$poolKey] ?? false;
 
@@ -79,11 +79,8 @@ class FillService {
             throw new \Exception('Pool configuration for field "' . $poolKey . '" invalid');
         }
 
-        // Split fixed items by connector
-        $itemsByConnector = [];
-        foreach($fixedItems as $item){
-            $itemsByConnector[$item->service][] = $item->id;
-        }
+        // add fixed items to shown
+        $this->addShownItems($fixedItems, $bucket);
 
         $resultsByConnector = [];
         foreach($pool['sources'] as $sourceKey => $source) {
@@ -93,7 +90,8 @@ class FillService {
                 throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
             }
 
-            $resultsByConnector[] = $connector->fillItems($source, $count, $parameters, $itemsByConnector[$sourceKey] ?? []);
+            $exclusion = self::$alreadyShown[$bucket][$sourceKey];
+            $resultsByConnector[] = $connector->fillItems($source, $count, $parameters, $exclusion);
         }
         // merge all sub arrays (by split by connector) into one large array
         $results = array_merge([], ...$resultsByConnector);

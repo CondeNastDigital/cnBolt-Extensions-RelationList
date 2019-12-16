@@ -1,8 +1,8 @@
 # cnBolt-Extensions-RelationList
 
-Provides a backend field where you can select one or more other content objects from different contenttypes. The field 
+Provides a backend field where you can select one or more content objects from different contenttypes. The field 
 is similar to bolt's select field but can select more than one contenttype at the same time and provides a better 
-preview.
+preview. This extension also allows to connect to multiple content sources at the same time.
 
 ## Installation
 
@@ -15,7 +15,12 @@ kraken content connector.
 ```
 
 ## Configuration
-Add the following field for your content type (within `contenttype.yml`).
+You need to configure three settings in two differen files.
+
+### Contenttypes
+To use a relationlist field, add the required configuration to a field for your content type (within `contenttype.yml`).
+The main difference to older versions of relationlist is the `pool` property. This property specifies, from which
+content sources this field can select content. 
 ```
 myfield:
     type: relationlist
@@ -25,7 +30,7 @@ myfield:
     max: 3
 
     globals: 
-        title:
+        title: 
             label: Title
             type: text
         description:
@@ -114,6 +119,7 @@ pools:
 
     mypool:
         order: !date
+        position: order
         sources:
 
             content:
@@ -134,12 +140,26 @@ the pools key contains a list of pools that can be used in your contenttypes.yml
 can specify a list of sources. Each source contains the reference to the connector class to use, a query
 and a set or default parameters if no parameter was given during execution (see template).
 
-The order key specifies how the various results should be ordered. You can specify any
-of the fields below an items teaser object. The default is `!date` where the leading `!`
-inverses the order. 
+- `order` order all resulting items by this teaser attribute. Available attributes are title, description, date. Prefix
+   the key with `!` to reverse order. Default's to `!date`
+- `position` all fixed items will be injected at a numeric position stored in an attribute with this name. Otherwise,
+   all will be prepended to the beginning of the list. 
+- `sources` a list of connectors and their configuration (see below)
+
+A source has a key that serves as it's service id and the following properties:
+
+- `connector` a reference to the connector configurationm top use for this source
+- `query` a storage query as required by the connector class to use. Most use a couple of filter and order attributes. 
+   The query can also contain `%placeholders%` that refer to values inside the 
+- `defaults` This is a key/value list of values to replace the placeholders above (the keys needs to be the placeholder 
+   without the `%` characters). Dynamic values will be specified while templating, these values are used when nothing 
+   was specified.. See twig section below.
 
 ### Connector
-Each pool uses one or more sources, which need a connector configuration.
+Each pool uses one or more sources, which need a connector configuration. A connector configuration needs a key
+that is also used insode the pool configurations. The connector config has these properties:
+
+- `connector`
 
 #### Content
 This is the old Bolt internal relation. It allows relations to any record stored in this bolt instance.
@@ -221,14 +241,15 @@ field in the backend. This service fills the results with additional content up 
 
 {# You can use global attributes in your field to let an editor modify the query #}
 {% set parameters = RelationList.getGlobals(record.myfield) %}
-{% set filled_items = RelationFill.getItems('mypool', 10, parameters, related_items, {position: 'order'}) %}
+{% set filled_items = RelationFill.getItems('mypool', 10, parameters, related_items, 'mybucket') %}
 ```
 
 Function parameters for `RelationFill.getItems`:
  - poolname
  - total number of items
  - parameter array to inject into query (Optional)
- - array or manually selected items to inject into the results (Optional)   
+ - array or manually selected items to inject into the results (Optional)
+ - name of a bucket that contains all your already shown items that will be excluded. (Optional - defaults to 'default')   
 
 Also note, that you can specify a `position` attribute in your pool's configuration. If your manually selected
 items have a numeric attribute with this name, the contents will be used as a position to inject this item into the

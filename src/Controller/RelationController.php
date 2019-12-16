@@ -40,17 +40,23 @@ class RelationController implements ControllerProviderInterface{
     /**
      * Get a list of matching contents per type
      *
+     * @param Request $request
      * @param string $contenttype
      * @param string $field
+     * @param string $subfield
      * @param string $search
      *
      * @return JsonResponse
      * @throws Exception
      */
-    public function search($contenttype, $field, $subfield = null, $search = null){
+    public function search(Request $request, $contenttype, $field, $subfield = null, $search = null)
+    {
         $contenttype = preg_replace('/[^a-z0-9\\-_]+/i', '', $contenttype);
-        $field       = preg_replace('/[^a-z0-9\\-_]+/i', '', $field);
-        $subfield    = preg_replace('/[^a-z0-9\\-_]+/i', '', $subfield);
+        $field = preg_replace('/[^a-z0-9\\-_]+/i', '', $field);
+        $subfield = preg_replace('/[^a-z0-9\\-_]+/i', '', $subfield);
+        $parameters = json_decode($request->get('params'), true) ?? [];
+
+        // FIXME: needs multi dimensional input filtering for $parameters
 
         if(!$this->app['users']->isValidSession()) {
             return new JsonResponse([
@@ -59,7 +65,7 @@ class RelationController implements ControllerProviderInterface{
             ]);
         }
 
-        $items = $this->service->searchRelations($search, $contenttype, $field, $subfield);
+        $items = $this->service->searchRelations($search, $contenttype, $field, $subfield, $parameters);
 
         return new JsonResponse([
             'status' => true,
