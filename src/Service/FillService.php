@@ -90,7 +90,7 @@ class FillService {
                 throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
             }
 
-            $exclusion = self::$alreadyShown[$bucket][$sourceKey];
+            $exclusion = self::$alreadyShown[$bucket][$sourceKey] ?? [];
             $resultsByConnector[] = $connector->fillItems($source, $count, $parameters, $exclusion);
         }
         // merge all sub arrays (by split by connector) into one large array
@@ -118,16 +118,15 @@ class FillService {
             $results = array_values($sorted);
         }
 
-        // merge with positioned items
+        // merge with positioned items (Use reversed fixed items for injection otherwise they will push each other around!)
         $positionKey = $pool['position'] ?? false;
-        foreach($fixedItems as $item){
+        foreach(array_reverse($fixedItems) as $item){
             $position = $positionKey ? ($item->attributes[$positionKey] ?? 0) : 0;
             array_splice($results, $position, 0, [$item]);
         }
 
         // cut to requested size
         $results = \array_slice($results, 0, $count);
-
         return $results;
     }
 
