@@ -97,9 +97,15 @@ export class cnRelationList {
         let data = JSON.parse(config.value);
         let definitions = JSON.parse(config.definitions);
         let options = config.options || [];
-        let globals = data.globals || {};
-        let items = data.items || [];
+
         let attributes = data.attributes || {};
+        let items = data.items || [];
+
+        let globals = this.setDefaultFields(data.globals || {}, definitions.globals || {});
+
+        // todo add the defaults for the attributes as well
+        //if (Object.keys(attributes).length <= 0)
+        //    attributes = this.getDefaultFields(definitions.attributes);
 
         // build the store
         this.store.dispatch('setDefinitions', definitions);
@@ -130,6 +136,26 @@ export class cnRelationList {
         }
 
     };
+
+    /**
+     * converts the default value of a field into a proper value
+     * @param values
+     * @param fields
+     */
+    setDefaultFields(values = {}, fields = {}) {
+        let results = {};
+
+        for (let i in fields){
+            if(fields.hasOwnProperty(i)){
+                let field = fields[i];
+
+                if (field.hasOwnProperty('default')){
+                    Object.assign(results, {[i]: field.default}, values)
+                }
+            }
+        }
+        return results;
+    }
 
     /**
      * converts a contenttype slug to a full content element
