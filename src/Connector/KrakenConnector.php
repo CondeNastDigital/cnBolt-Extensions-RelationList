@@ -95,13 +95,13 @@ class KrakenConnector extends BaseConnector {
     protected function fillRecords($config, $count, $parameters = [], $exclude = []): array {
         // Basic Query
         $query = ($config['query'] ?? []) + [
-                'filter' => [],
-                'limit' => min($count, 50),
-                'offset' => 0,
-                'order' => ['datepublish' => true],
-            ];
+            'filter' => [],
+            'limit' => min($count, 50),
+            'offset' => 0,
+            'order' => ['control.publishDate' => false],
+        ];
 
-        $query['filter']['id'] = ['$nin' => $exclude];
+        $query['filter']['control.uid'] = ['$nin' => $exclude];
 
         // Apply parameters
         $parameters += ($config['defaults'] ?? []);
