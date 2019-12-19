@@ -115,8 +115,13 @@
                 if (typeof(endpoint) !== 'undefined' && typeof(val) !== 'undefined') {
                     this.$store.dispatch('setReady', false);
 
+                    let uri = endpoint + val;
+                    let globals = this.$store.getters.getGlobals;
+
                     this.$http
-                        .get(endpoint + val)
+                        .get(uri, { params: {
+                                params: globals
+                            }})
                         .then(response => {
                             if (response.data.status === true) {
                                 this.foundItems = response.data.items;
