@@ -156,8 +156,8 @@ abstract class BaseConnector implements IConnector {
         });
 
         array_walk_recursive($query, function(&$value, $key) use ($replacements){
-            if(isset($replacements[$value])) {
-                $value = $replacements[$value];
+            if(is_string($value) && array_key_exists($value,$replacements)) {
+                $value = (string)$replacements[$value];
             }
         });
 

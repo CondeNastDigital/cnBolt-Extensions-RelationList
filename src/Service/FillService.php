@@ -74,7 +74,6 @@ class FillService {
     public function getItems($poolKey, $count, $parameters = [], $fixedItems = [], $bucket = 'default'){
 
         $pool = $this->config['pools'][$poolKey] ?? false;
-
         if(!$pool) {
             throw new \Exception('Pool configuration for field "' . $poolKey . '" invalid');
         }
@@ -82,20 +81,24 @@ class FillService {
         // add fixed items to shown
         $this->addShownItems($fixedItems, $bucket);
 
-        $resultsByConnector = [];
-        foreach($pool['sources'] as $sourceKey => $source) {
-            $connector = $this->connectors[$source['connector'] ?? false] ?? false;
+        $results = [];
+        // Load additional items from connectors
+        if($count > count($fixedItems)) {
+            $resultsByConnector = [];
+            foreach ($pool['sources'] as $sourceKey => $source) {
+                $connector = $this->connectors[$source['connector'] ?? false] ?? false;
 
-            if(!$connector) {
-                throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
+                if (!$connector) {
+                    throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
+                }
+
+                $exclusion = self::$alreadyShown[$bucket][$sourceKey] ?? [];
+                $resultsByConnector[] = $connector->fillItems($source, $count, $parameters, $exclusion);
             }
-
-            $exclusion = self::$alreadyShown[$bucket][$sourceKey] ?? [];
-            $resultsByConnector[] = $connector->fillItems($source, $count, $parameters, $exclusion);
+            // merge all sub arrays (by split by connector) into one large array
+            $results = array_merge([], ...$resultsByConnector);
+            unset($resultsByConnector);
         }
-        // merge all sub arrays (by split by connector) into one large array
-        $results = array_merge([], ...$resultsByConnector);
-        unset($resultsByConnector);
 
         // merge all records into one array and sort
         $sortKey = $pool['order'] ?? '!date';
