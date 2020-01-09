@@ -157,11 +157,27 @@ abstract class BaseConnector implements IConnector {
 
         array_walk_recursive($query, function(&$value, $key) use ($replacements){
             if(is_string($value) && array_key_exists($value,$replacements)) {
-                $value = (string)$replacements[$value];
+                $value = $replacements[$value];
             }
         });
 
         return $query;
+    }
+
+    /**
+     * Generate a list of parameters from given and default values
+     * @param $defaults
+     * @param $parameters
+     * @return array
+     */
+    protected function getQueryParameters($defaults, $parameters): array {
+        // remove any empty strings from given parameters. These should fallback to defaults.
+        // (Reason: Empty values from Input-Fields in forms have empty strings when nothing is specified instead of false/null)
+        $filtered = array_filter($parameters, function($value,$key) {
+            return (bool)$value;
+        }, ARRAY_FILTER_USE_BOTH);
+
+        return $filtered + $defaults;
     }
 
 }

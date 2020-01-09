@@ -36,7 +36,7 @@ class ContentConnector extends BaseConnector {
             $query['operator']['title'] = \Bolt\Extension\CND\Library\Services\StorageService::OPERATOR_CONTAINS;
 
             // Apply parameters
-            $parameters += ($config['defaults'] ?? []);
+            $parameters = $this->getQueryParameters($config['defaults'], $parameters);
             $query = $this->applyQueryParameters($query, $parameters);
 
             $content = [
@@ -186,7 +186,7 @@ class ContentConnector extends BaseConnector {
         $query['operator']['contentslug'] = 'notin';
 
         // Apply parameters
-        $parameters += ($config['defaults'] ?? []);
+        $parameters = $this->getQueryParameters($config['defaults'], $parameters);
         $query = $this->applyQueryParameters($query, $parameters);
 
         return $this->container['cnd-library.storage']->selectContent($query);

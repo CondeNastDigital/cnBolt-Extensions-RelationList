@@ -60,7 +60,7 @@ class KrakenConnector extends BaseConnector {
         $query['filter']['$text'] = ['$search' => $text];
 
         // Apply parameters
-        $parameters += ($config['defaults'] ?? []);
+        $parameters = $this->getQueryParameters($config['defaults'], $parameters);
         $query = $this->applyQueryParameters($query, $parameters);
 
         return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']);
@@ -104,7 +104,7 @@ class KrakenConnector extends BaseConnector {
         $query['filter']['control.uid'] = ['$nin' => $exclude];
 
         // Apply parameters
-        $parameters += ($config['defaults'] ?? []);
+        $parameters = $this->getQueryParameters($config['defaults'], $parameters);
         $query = $this->applyQueryParameters($query, $parameters);
 
         return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']);
