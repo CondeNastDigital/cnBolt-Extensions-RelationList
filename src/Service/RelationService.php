@@ -16,41 +16,11 @@ class RelationService {
     protected $config = [];
     /* @var IConnector[] $connectors */
     protected $connectors = array();
-    /* @var LegacyService $legacy */
-    protected $legacy;
 
-    public function __construct(Application $container, $config, LegacyService $legacy){
+    public function __construct(Application $container, $config, array $connectors){
         $this->container = $container;
         $this->config = $config;
-        $this->legacy = $legacy;
-
-        // Init service connectors
-        foreach($this->config['connectors'] as $key => $connectorConfig){
-
-            if(!isset($connectorConfig['class'])) {
-                continue;
-            }
-
-            if(!class_exists($connectorConfig['class'])) {
-                continue;
-            }
-
-            $connector = new $connectorConfig['class']($key, $container, $connectorConfig);
-            if(!$connector instanceof IConnector) {
-                continue;
-            }
-
-            $this->connectors[$key] = $connector;
-        }
-    }
-
-    /**
-     * Correct data from older versions of relationlist to new data
-     * @param array|string $data
-     * @return array
-     */
-    public function prepare($data): array {
-        return $this->legacy->convertLegacyValue($data);
+        $this->connectors = $connectors;
     }
 
     /**
@@ -58,16 +28,30 @@ class RelationService {
      * @param string $contenttype
      * @param string $field
      * @param string|false $subfield
+     * @param array $parameters
      * @return Relation[]
+     * @throws \Exception
      */
-    public function searchRelations($text, $contenttype, $field, $subfield = false): array {
+    public function searchRelations($text, $contenttype, $field, $subfield = false, $parameters = []): array {
 
-        $config = $this->getFieldConfig($contenttype, $field, $subfield);
+        $fieldConfig = $this->getFieldConfig($contenttype, $field, $subfield);
+
+        $poolKey = $fieldConfig['pool'] ?? false;
+        $pool = $this->config['pools'][$poolKey] ?? false;
+
+        if(!$pool) {
+            throw new \Exception('Pool configuration for field "' . $field . '" invalid');
+        }
 
         $results = [];
-        foreach($this->connectors as $key => $connector) {
-            $fieldConfig = $this->getConnectorFieldConfig($key, $config);
-            $results[] =  $connector->searchRelations($fieldConfig, $text);
+        foreach($pool['sources'] as $sourceKey => $source) {
+            $connector = $this->connectors[$source['connector'] ?? false] ?? false;
+
+            if(!$connector) {
+                throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
+            }
+
+            $results[] =  $connector->searchRelations($source, $text, $parameters);
         }
         return $results ? array_merge(...$results) : [];
     }
@@ -79,17 +63,17 @@ class RelationService {
      */
     public function updateRelations($relations): array{
 
-        // Split by service
-        $connectors = [];
+        // Split items by connector
+        $itemsByConnector = [];
         foreach($relations as $relation){
-            $connectors[$relation->service][] = $relation;
+            $itemsByConnector[$relation->service][] = $relation;
         }
 
         // get relations from connectors
         $results = [];
         foreach($this->connectors as $key => $connector) {
-            if($connectors[$key] ?? false) {
-                $results[] = $connector->updateRelations($connectors[$key]);
+            if($itemsByConnector[$key] ?? false) {
+                $results[] = $connector->updateRelations($itemsByConnector[$key]);
             }
         }
         $results = $results ? array_merge(...$results) : [];
@@ -104,18 +88,17 @@ class RelationService {
      * @return Item[]
      */
     public function getItems($relations): array{
-
-        // Split by service
-        $connectors = [];
+        // Split items by connector
+        $itemsByConnector = [];
         foreach($relations as $relation){
-            $connectors[$relation->service][] = $relation;
+            $itemsByConnector[$relation->service][] = $relation;
         }
 
         /* @var IConnector $connector */
         $results = [];
         foreach($this->connectors as $key => $connector) {
-            if($connectors[$key] ?? false) {
-                $results[] = $connector->getItems($connectors[$key]);
+            if($itemsByConnector[$key] ?? false) {
+                $results[] = $connector->getItems($itemsByConnector[$key]);
             }
         }
         $results = $results ? array_merge(...$results) : [];
@@ -146,37 +129,13 @@ class RelationService {
             $fieldDefinition = $fieldDefinition['extend'][$subfield] ?? false;
         }
 
-        // is it a legacy style configuration?
-        if(isset($fieldDefinition['options']) || isset($fieldDefinition['allowed-types'])) {
-            $fieldDefinition = $this->legacy->getLegacyFieldConfig($fieldDefinition);
-        }
-
-        if(!$fieldDefinition) {
-            return false;
-        }
-
         return $fieldDefinition + [
             'attributes' => [],
             'globals' =>  [],
             'min' => 0,
-            'max' => 50,
-            'sources' => []
+            'max' => 20,
+            'pool' => false
         ];
-    }
-
-    /**
-     * Reduce the field config containing all sources to only containing one source
-     * @param string $source
-     * @param array $config
-     * @return array
-     */
-    protected function getConnectorFieldConfig($source, $config): array{
-
-        $config['source'] = $config['sources'][$source] ?? [];
-
-        unset($config['sources']);
-
-        return $config;
     }
 
     /**
@@ -184,18 +143,19 @@ class RelationService {
      * @param Base[] $unordered
      * @return Base[]
      */
-    protected function orderByList($ordered, $unordered){
+    protected function orderByList($ordered, $unordered): array
+    {
         $orderedKeys = [];
         foreach ($ordered as $item){
-            $orderedKeys[$item->service."/".$item->id] = $item;
+            $orderedKeys[$item->service.'/'.$item->id] = $item;
         }
 
         $unorderedKeys = [];
         foreach ($unordered as $item){
-            $unorderedKeys[$item->service."/".$item->id] = $item;
+            $unorderedKeys[$item->service.'/'.$item->id] = $item;
         }
 
         return array_values(array_merge(array_intersect_key($orderedKeys, $unorderedKeys), $unorderedKeys));
     }
-
+    
 }

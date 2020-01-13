@@ -7,7 +7,7 @@ use JsonSerializable;
  * Class Item
  * @package Bolt\Extension\CND\RelationList
  */
-class Item extends Base implements JsonSerializable {
+class Item extends Relation implements JsonSerializable {
 
     public $object = null;
 

@@ -20,9 +20,10 @@ interface IConnector {
      * search for text and return matching relation objects
      * @param array $config
      * @param string $text
+     * @param array $parameters
      * @return Relation[]
      */
-    public function searchRelations($config, $text);
+    public function searchRelations($config, $text, $parameters = []);
 
     /**
      * Update teaser info on requested relation objects
@@ -38,4 +39,14 @@ interface IConnector {
      * @return Item[]
      */
     public function getItems($relations);
+
+    /**
+     * Return a list of items matching a query
+     * @param array $config
+     * @param int $count
+     * @param array $parameters
+     * @param array $exclude
+     * @return Item[]
+     */
+    public function fillItems($config, $count, $parameters = [], $exclude = []);
 }
