@@ -32,7 +32,8 @@ class RelationTwig {
      * @return array
      */
     public function getGlobals($data): array {
-        return $data['globals'] ?? [];
+        $value = !is_array($data) ? json_decode($data, true) : $data;
+        return $value['globals'] ?? [];
     }
 
 }
