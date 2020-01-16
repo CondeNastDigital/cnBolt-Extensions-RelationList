@@ -26,41 +26,11 @@ class Extension extends SimpleExtension
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function registerServices(Application $app){
-        $config = $this->getConfig();
-
-        $app['cnd.relationlist.legacy'] = $app->share(
-            function ($app) {
-                return new LegacyService($app);
-            }
-        );
-
-        /* @var \Bolt\Application $app */
-        $app['cnd.relationlist.service'] = $app->share(
-            function ($app) use ($config) {
-                return new RelationService($app, $config, $app['cnd.relationlist.legacy']);
-            }
-        );
-
-        $app['cnd.relationlist.twig'] = $app->share(
-            function ($app) use ($config) {
-                return new TwigService($app, $app['cnd.relationlist.service']);
-            }
-        );
-
-        /* @var \Bolt\Application $app */
-        $container['twig'] = $app->share(
-            $app->extend(
-                'twig',
-                function (\Twig_Environment $twig) use ($app){
-                    $twig->addGlobal('RelationList', $app['cnd.relationlist.twig']);
-                    return $twig;
-                }
-            )
-        );
+    public function getServiceProviders(){
+        return [
+            $this,
+            new Provider\RelationListProvider($this->getConfig()),
+        ];
     }
 
     /**
@@ -115,18 +85,6 @@ class Extension extends SimpleExtension
     /**
      * {@inheritdoc}
      */
-    protected function registerTwigFunctions() {
-        return [
-            // @deprecated
-            'getRelatedGlobals'    => 'getRelatedGlobals',
-            'getRelatedItems'      => 'getRelatedItems',
-            'getRelatedAttributes' => 'getRelatedAttributes',
-        ];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function registerBackendControllers(){
         /* @var \Bolt\Application $app */
         $app = $this->getContainer();
@@ -135,46 +93,6 @@ class Extension extends SimpleExtension
         return [
             '/relationlist' => new RelationController($app, $config),
         ];
-    }
-
-    /**
-     * Return the related objects within  attributes of a stored relationlist field
-     * @deprecated use RelationList.getGlobals( value )
-     */
-    public function getRelatedItems($data){
-        /* @var TwigService $relationList */
-        $relationList = $this->getContainer()['cnd.relationlist.twig'];
-
-        $result = [];
-        foreach($relationList->getItems($data) as $item){
-                $result[$item->id] = $item->object;
-        }
-        return $result;
-    }
-
-
-    /**
-     * Return the global attributes of a stored relationlist field
-     * @deprecated use RelationList.getGlobals( value )
-     */
-    public function getRelatedGlobals($data){
-        /* @var TwigService $relationList */
-        $relationList = $this->getContainer()['cnd.relationlist.twig'];
-        return $relationList->getGlobals($data);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getRelatedAttributes($data){
-        /* @var TwigService $relationList */
-        $relationList = $this->getContainer()['cnd.relationlist.twig'];
-
-        $result = [];
-        foreach($relationList->prepare($data)['items'] ?? [] as $relation){
-            $result[$relation->id] = $relation->attributes;
-        }
-        return $result;
     }
 
 }

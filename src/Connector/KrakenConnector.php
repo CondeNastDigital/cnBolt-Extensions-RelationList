@@ -44,32 +44,26 @@ class KrakenConnector extends BaseConnector {
     /**
      * @inheritdoc
      * @throws \CND\KrakenSDK\Exception
+     * @throws \Exception
      */
-    public function searchRelations($config, $text): array{
+    public function searchRecords($config, $text, $parameters = []): array{
 
-        $filters = $config['api']['search-filter'] ?? [];
-        $allowedTypes = $config['source'] ?? [];
-        $results = [];
-
-        $filters += [
-            '$text' => ['$search' => $text],
-            'type' => ['$in' => $allowedTypes]
-        ];
-        $order = [
-            'control.publishDate' => false
-        ];
-        // FIXME: $options currently not supported by kraken find api
-        $options = [
-            'projection' => ['score' => ['$meta' => 'textScore']],
-            'sort' => ['score' => ['$meta' => 'textScore']],
+        // Basic Query
+        $query = ($config['query'] ?? []) + [
+            'filter' => [],
+            'limit' => 20,
+            'offset' => 0,
+            'order' => [],// ['control.publishDate' => true],
         ];
 
-        $result = $this->requestKraken($filters, 20, 0, $order);
-        foreach($result as $item) {
-            $results[] = $this->record2Relation($item);
-        }
+        // Add search filter
+        $query['filter']['$text'] = ['$search' => $text];
 
-        return $results;
+        // Apply parameters
+        $parameters = $this->getQueryParameters($config['defaults'], $parameters);
+        $query = $this->applyQueryParameters($query, $parameters);
+
+        return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']);
     }
 
 
@@ -92,6 +86,28 @@ class KrakenConnector extends BaseConnector {
         }
 
         return $results ?? [];
+    }
+
+    /**
+     * @inheritdoc
+     * @throws \Exception
+     */
+    protected function fillRecords($config, $count, $parameters = [], $exclude = []): array {
+        // Basic Query
+        $query = ($config['query'] ?? []) + [
+            'filter' => [],
+            'limit' => min($count, 50),
+            'offset' => 0,
+            'order' => ['control.publishDate' => false],
+        ];
+
+        $query['filter']['control.uid'] = ['$nin' => $exclude];
+
+        // Apply parameters
+        $parameters = $this->getQueryParameters($config['defaults'], $parameters);
+        $query = $this->applyQueryParameters($query, $parameters);
+
+        return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']);
     }
 
     // ----------------------------------------------------------------------------------------------
@@ -118,6 +134,13 @@ class KrakenConnector extends BaseConnector {
         $item->type = $record['type'];
         $item->service = $this->key;
         $item->object = $record;
+        $item->teaser = [
+            'title' => strtoupper($record['source']['name']).' - '.$record['content']['title'],
+            'image' => $this->getImage($record),
+            'description' => $record['content']['abstract'],
+            'date' => date('c', strtotime($record['control']['publishDate'])),
+            'link' => $record['teaser']['url'],
+        ];
 
         return $item;
     }
@@ -162,7 +185,6 @@ class KrakenConnector extends BaseConnector {
      * @throws \CND\KrakenSDK\Exception
      */
     protected function requestKraken($filters, $limit = 20, $offset = 0, $order = []){
-
         $cacheKey = md5(serialize([$filters,$limit,$offset,$order]));
 
         /* @var \Doctrine\Common\Cache\Cache $cache */
@@ -171,11 +193,10 @@ class KrakenConnector extends BaseConnector {
         if($cache->contains($cacheKey))
             return $cache->fetch($cacheKey);
 
-        $result = $this->store->findBy($filters, 20, 0, []);
+        $result = $this->store->findBy($filters, $limit, $offset, $order);
 
         $cache->save($cacheKey, $result, self::TTL);
 
         return $result;
     }
-
 }

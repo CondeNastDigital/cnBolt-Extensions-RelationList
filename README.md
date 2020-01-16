@@ -1,31 +1,36 @@
 # cnBolt-Extensions-RelationList
 
-Provides a backend field where you can select one or more other content objects from different contenttypes. The field is similar to bolt's select field but can select more than one contenttype at the same time and provides a better preview.
-
-Note: The field does not provide any mechanism for fetching the selected objects. It only stores a JSON string with content ids. You have to fetch them yourself in your template. See sample below.
+Provides a backend field where you can select one or more content objects from different contenttypes. The field 
+is similar to bolt's select field but can select more than one contenttype at the same time and provides a better 
+preview. This extension also allows to connect to multiple content sources at the same time.
 
 ## Installation
 
-Add the RelationList to the required extensions in extension/composer.json and call composer update:
+Add the RelationList to the required extensions in extension/composer.json and call composer update. You may also need
+the `cnd/library` extension for improved selection of bolt content and/or the `cnd/kraken-sdk` if you want to use the 
+kraken content connector.
 
 ```
 "cnd/relationlist": "*"
 ```
 
 ## Configuration
-Add the following field for your content type (within `contenttype.yml`).
+You need to configure three settings in two differen files.
+
+### Contenttypes
+To use a relationlist field, add the required configuration to a field for your content type (within `contenttype.yml`).
+The main difference to older versions of relationlist is the `pool` property. This property specifies, from which
+content sources this field can select content. 
 ```
 myfield:
     type: relationlist
     label: Title
-    sources:
-        content: [pages, otherpages, evenotherpages]
-        kraken: [article]
+    pool: mypool
     min: 1
     max: 3
 
     globals: 
-        title:
+        title: 
             label: Title
             type: text
         description:
@@ -62,7 +67,7 @@ myfield:
                   text: Key 2
 ```
 
-The Sir Trevor Configuration consits of adding an extended block, of type relationlist. 
+The Sir Trevor Configuration consists of adding an extended block, of type relationlist. 
 Example:
 ```
 structuredcontent:
@@ -72,9 +77,7 @@ structuredcontent:
         Items:
             type: relationlist
             label: Something
-            sources:
-                content: [pages, otherpages, evenotherpages]
-                kraken: [article]
+            pool: mypool
             min: 1
             max: 3
             globals: 
@@ -107,15 +110,60 @@ structuredcontent:
                           text: Key 2
 ```
 
-### Sources
-The Relationlist extension needs one or more sources for the content it can link to. You need to specify one source
-configuration for each source later used in field configurations.
+### Pool
+The Relationlist extension needs a pool for the content it can link to. You need to specify one pool
+that is present within the extensions configuration file`relationlist.cnd.yml`.
+
+```
+pools:
+
+    mypool:
+        order: !date
+        position: order
+        sources:
+
+            content:
+                connector: content
+                query:
+                    contenttypes: [teasers]
+
+            kraken:
+                connector: kraken
+                query:
+                    filter:
+                        source.name: {"$in": %site%}
+                defaults:
+                    site: ['mysite']
+```
+
+the pools key contains a list of pools that can be used in your contenttypes.yml. Within a pool, you 
+can specify a list of sources. Each source contains the reference to the connector class to use, a query
+and a set or default parameters if no parameter was given during execution (see template).
+
+- `order` order all resulting items by this teaser attribute. Available attributes are title, description, date. Prefix
+   the key with `!` to reverse order. Default's to `!date`
+- `position` all fixed items will be injected at a numeric position stored in an attribute with this name. Otherwise,
+   all will be prepended to the beginning of the list. 
+- `sources` a list of connectors and their configuration (see below)
+
+A source has a key that serves as it's service id and the following properties:
+
+- `connector` a reference to the connector configurationm top use for this source
+- `query` a storage query as required by the connector class to use. Most use a couple of filter and order attributes. 
+   The query can also contain `%placeholders%` that refer to values inside the 
+- `defaults` This is a key/value list of values to replace the placeholders above (the keys needs to be the placeholder 
+   without the `%` characters). Dynamic values will be specified while templating, these values are used when nothing 
+   was specified.. See twig section below.
+
+### Connector
+Each pool uses one or more sources, which need a connector configuration. A connector configuration needs a key
+that is also used insode the pool configurations. The connector config has these properties:
+
+- `connector`
 
 #### Content
 This is the old Bolt internal relation. It allows relations to any record stored in this bolt instance.
 This is the source used in all older versions of the extension.
-
-**Note** The Kraken Connector caches it's content for 60 seconds by default!
 
 ``` 
 connectors:
@@ -136,8 +184,6 @@ connectors:
             key-private: bolt-private.key
             key-public: bolt-public.key
         api:
-            search-filter:
-                source.name: {'$in': ['gq','glamour']}
             client-uid: 1234567890abcdefghijklm
             url: https://kraken.condenastdigital.de/
             verify-cert: false
@@ -157,13 +203,16 @@ You also need to add a new client in Kraken's administration ui. You will need t
 key there. Kraken will then create a UID for this client which you can use for the configuration of
 this extension
 
-**Search Filters**
-
-You can optionally add additional filters for the Kraken api that will be added to any search
-for content. In this sample, search is restricted to content of GQ and GLAMOUR.
+**Note** The Kraken Connector caches it's content for 60 seconds by default!
 
 ## Usage
-Within your twig template, you may get your related items by using the custom twig function, which returns the items as a record directly. Here is an example, how to use the function within a twig template:
+
+### RelationList
+This service returns the selected content items from your pool according to the settings in your record's 
+field.
+
+Within your twig template, you may get your related items by using the custom twig function, which returns 
+the items as a record directly. Here is an example, how to use the function within a twig template:
 
 ```
 {% set value = record.myfield %}
@@ -180,19 +229,32 @@ Within your twig template, you may get your related items by using the custom tw
 {% endfor %}
 ```
 
-## Legacy - Do not use
-The old configurations for fields and the old twig functions (see below) are still supported, but should net be
-used in any new projects!
+### RelationFill
+This service can select other content according to the searches specified in it's pool.
+Sample: You want to show a list of 10 teasers. An editor selected 3 teasers manually via the relationlist
+field in the backend. This service fills the results with additional content up to the requested 10 items.
+
 ```
 {% set value = record.myfield %}
+{% set related_globals = RelationList.getGlobals(value) %}
+{% set related_items = RelationList.getItems(value) %}
 
-{% set related_globals = getRelatedGlobals(value) %}
-{{ dump(related_globals) }}
-
-{% set related_items = getRelatedItems(value) %}
-{% for item in related_items %}
-    {{ dump(item) }}
-{% endfor %}
+{# You can use global attributes in your field to let an editor modify the query #}
+{% set parameters = RelationList.getGlobals(record.myfield) %}
+{% set filled_items = RelationFill.getItems('mypool', 10, parameters, related_items, 'mybucket') %}
 ```
-**Important:** When using the old legacy configuration, don't add any additional connectors to the configuration
-execpt of content. Otherwise, it will break the frontend of the website!
+
+Function parameters for `RelationFill.getItems`:
+ - poolname
+ - total number of items
+ - parameter array to inject into query (Optional)
+ - array or manually selected items to inject into the results (Optional)
+ - name of a bucket that contains all your already shown items that will be excluded. (Optional - defaults to 'default')   
+
+Also note, that you can specify a `position` attribute in your pool's configuration. If your manually selected
+items have a numeric attribute with this name, the contents will be used as a position to inject this item into the
+list. If not, all manually selected items will be added to the beginning of the results.
+
+## Legacy - Do not use
+**This version does not support older configurations**. It can auto convert old data in your database, but everything 
+else needs to be changed to fit the new mechanics.
