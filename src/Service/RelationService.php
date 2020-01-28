@@ -98,7 +98,13 @@ class RelationService {
         $results = [];
         foreach($this->connectors as $key => $connector) {
             if($itemsByConnector[$key] ?? false) {
-                $results[] = $connector->getItems($itemsByConnector[$key]);
+
+                try {
+                    $results[] = $connector->getItems($itemsByConnector[$key]);
+                } catch (\Exception $e) {
+                    $this->container['logger']->error('RelationList - Exception in connector '.$key, ['exception' => $e]);
+                }
+
             }
         }
         $results = $results ? array_merge(...$results) : [];

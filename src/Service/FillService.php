@@ -93,7 +93,13 @@ class FillService {
                 }
 
                 $exclusion = self::$alreadyShown[$bucket][$sourceKey] ?? [];
-                $resultsByConnector[] = $connector->fillItems($source, $count, $parameters, $exclusion);
+
+                try {
+                    $resultsByConnector[] = $connector->fillItems($source, $count, $parameters, $exclusion);
+                } catch (\Exception $e) {
+                    $this->container['logger']->error('RelationFill - Exception in connector '.$sourceKey, ['exception' => $e]);
+                }
+
             }
             // merge all sub arrays (by split by connector) into one large array
             $results = array_merge([], ...$resultsByConnector);
