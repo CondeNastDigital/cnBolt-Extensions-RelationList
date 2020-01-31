@@ -12,10 +12,11 @@
 
                 <b-col cols="8" sm="8" lg="10">
                     <!-- todo dynamic compoents! -->
-                    <b-form-input    size="sm" v-focus="index===0" v-if="isInput(field)"    v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type"/>
-                    <b-form-textarea size="sm" v-focus="index===0" v-if="isTextarea(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" rows="2" max-rows="3"/>
-                    <b-form-select   size="sm" v-focus="index===0" v-if="isSelect(field)"   v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type" :options="field.options"></b-form-select>
-                    <b-form-checkbox size="sm" v-focus="index===0" v-if="isCheckbox(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type"></b-form-checkbox>
+                    <b-form-input    size="sm" v-focus="index===0" v-if="isInput(field)"        v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type"/>
+                    <b-form-textarea size="sm" v-focus="index===0" v-if="isTextarea(field)"     v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" rows="2" max-rows="3"/>
+                    <b-form-select   size="sm" v-focus="index===0" v-if="isSelect(field)"       v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type" :options="field.options"></b-form-select>
+                    <b-form-checkbox size="sm" v-focus="index===0" v-if="isCheckbox(field)"     v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type"></b-form-checkbox>
+                    <autocomplete    size="sm" v-focus="index===0" v-if="isAutocomplete(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="settingsid+'key'" :type="field.type" :value="values[key]" :endpoints="getEndpoints(field)" :multiple="isMultiple(field)" :taggable="isTaggable(field)"></autocomplete>
                 </b-col>
 
         </b-row>
@@ -23,7 +24,12 @@
 </template>
 
 <script>
+    import vAutocomplete from './Autocomplete.vue';
     export default {
+
+        components: {
+            'autocomplete': vAutocomplete
+        },
 
         props: {
             settingsid: String,
@@ -45,7 +51,6 @@
 
                         ret[index] = !this.state || !this.state.hasOwnProperty(index) ?  def : this.state[index] ;
                     }
-
                     return ret;
                 }
             }
@@ -53,15 +58,29 @@
 
         methods: {
 
+            getEndpoints(entry){
+                return entry.endpoints || [];
+            },
+
+            isAutocomplete(entry){
+                return entry.type === 'autocomplete';
+            },
+
+            isTaggable(entry){
+                return entry.taggable || false;
+            },
+
+            isMultiple(entry){
+                return entry.multiple || false;
+            },
+
             /**
              *
              * @param key
              * @param data
              */
             updateStore: function (key, data) {
-
                 let model = this.values;
-
                 model[key] = data;
 
                 this.$emit('input', model);

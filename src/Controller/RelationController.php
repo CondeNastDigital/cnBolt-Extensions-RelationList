@@ -31,6 +31,7 @@ class RelationController implements ControllerProviderInterface{
 
         $ctr->get('/search/{contenttype}/{field}/{search}', array($this, 'search'));
         $ctr->get('/search/{contenttype}/{field}/{subfield}/{search}', array($this, 'search'));
+        $ctr->get('/autocomplete/{type}/{slug}', array($this, 'autocomplete'));
 
         $ctr->match('/fetch', array($this, 'fetch'));
 
@@ -72,6 +73,27 @@ class RelationController implements ControllerProviderInterface{
         return new JsonResponse([
             'status' => true,
             'items' => $items
+        ]);
+    }
+
+    /**
+     * Get a list of matching items based on the pool
+     *
+     * @param Request $request
+     * @param $type
+     * @param $slug
+     * @return JsonResponse
+     * @throws Exception
+     */
+    public function autocomplete( Request $request, $type, $slug ){
+
+        $search = $request->get('search') ?: false;
+        $results = $this->service->autocomplete($type, $slug, $search);
+
+        return new JsonResponse([
+            'items' => $results['items'],
+            'stats' => $results['stats'],
+            'status' => true,
         ]);
     }
 

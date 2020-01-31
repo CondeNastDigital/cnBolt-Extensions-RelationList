@@ -15,6 +15,7 @@
     "vue": "^2.6.10",
     "vue-axios": "^2.1.4",
     "vue-fontawesome": "0.0.2",
+    "vue-select": "3.4.0",
     "vuedraggable": "^2.20.0",
     "vuex": "^3.1.0"
   },

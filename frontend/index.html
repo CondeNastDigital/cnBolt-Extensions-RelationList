@@ -27,7 +27,7 @@
     <!-- OLD STRING -->
     <label>old</label>
     <textarea id="connector" style="width:100%;height:150px">
-    {"globals":{},"items":["teasers/5","teasers/6","teasers/8","competitions/58","competitions/55","competitions/59","competitions/57","competitions/54"],"attributes":{"teasers/5":{"isopen":false,"number":"0"},"teasers/6":{"isopen":false,"number":"0"},"teasers/8":{},"competitions/58":{},"competitions/55":{},"competitions/59":{},"competitions/57":{},"competitions/54":{}}}
+    {"globals":{"best":"Bademode"},"items":["teasers/5","teasers/6","competitions/58"],"attributes":{"teasers/5":{"isopen":false,"number":"0"},"teasers/6":{"isopen":false,"number":"0"},"competitions/58":{}}}
     </textarea>
 
     <!-- NEW STRING -->
@@ -48,7 +48,13 @@
                     },
                     best: {
                         label: 'Global Field 2',
-                        type: 'text'
+                        type: 'autocomplete',
+                        multiple: true,
+                        taggable: true,
+                        endpoints: [
+                            'https://kraken.condenastdigital.de/api/content/tags?search={{query}}',
+                            'http://newsletters.local/bolt/relationlist/autocomplete/taxonomies/tag?search={{query}}'
+                        ]
                     }
                 },
                 attributes: {

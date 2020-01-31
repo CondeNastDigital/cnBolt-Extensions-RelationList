@@ -57,6 +57,51 @@ class RelationService {
     }
 
     /**
+     * @param $type
+     * @param $slug
+     * @param $search
+     * @return array
+     */
+    public function autocomplete($type, $slug, $search): array {
+
+        $items = [];
+        $results = [];
+        $count = 0;
+
+        $StorageService = $this->container["cnd-library.storage"];
+
+        switch ($type){
+            case 'taxonomies':
+            case 'taxonomy':
+                $taxonomies = $StorageService->selectTaxonomy(['name'=>[$slug]]);
+
+                foreach ($taxonomies as $key => $value){
+
+                    // checks if the search pattern is found in the array
+
+                    if(!$search || stripos($value['name'], $search) !== false) {
+                        $items[] = [
+                            "value" => $value['name'] ?? false,
+                            "label" => $value['name'] ?? false,
+                            "info" => isset($value['count']) ? (int) $value['count'] : null
+                        ];
+                        $count += $value['count'] ?? 0;
+                    }
+
+                }
+
+                $results['items'] = $items;
+                $results['stats']['total'] = $count;
+
+                break;
+        }
+
+        return $results;
+
+
+    }
+
+    /**
      * Update a list of Relation objects
      * @param Relation[] $relations
      * @return Relation[]
@@ -163,5 +208,5 @@ class RelationService {
 
         return array_values(array_merge(array_intersect_key($orderedKeys, $unorderedKeys), $unorderedKeys));
     }
-    
+
 }

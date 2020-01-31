@@ -50,7 +50,6 @@
              * @param data
              */
             updateGlobals: function (data) {
-
                 this.$store.dispatch('setGlobals', data);
                 this.$root.$emit('cnrl-relation-updated');
             },

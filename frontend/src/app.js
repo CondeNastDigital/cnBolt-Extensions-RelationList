@@ -16,6 +16,7 @@ import BsAlert from 'bootstrap-vue/es/components/alert'
 
 //import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-vue/dist/bootstrap-vue.min.css'
+import 'vue-select/dist/vue-select.css'
 import './assets/css/relationlist.css'
 
 import {library} from '@fortawesome/fontawesome-svg-core'
@@ -143,14 +144,14 @@ export class cnRelationList {
      * @param fields
      */
     setDefaultFields(values = {}, fields = {}) {
-        let results = {};
+        let results = values;
 
         for (let i in fields){
             if(fields.hasOwnProperty(i)){
                 let field = fields[i];
 
                 if (field.hasOwnProperty('default')){
-                    Object.assign(results, {[i]: field.default}, values)
+                    Object.assign(results, {[i]: field.default})
                 }
             }
         }
