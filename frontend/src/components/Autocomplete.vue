@@ -108,7 +108,7 @@
             },
 
             founds: function(){
-                this.values = Object.assign([], this.founds, this.values);
+                this.values = [...this.founds, ...this.values];
             }
         },
 
