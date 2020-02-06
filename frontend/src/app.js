@@ -150,9 +150,12 @@ export class cnRelationList {
             if(fields.hasOwnProperty(i)){
                 let field = fields[i];
 
-                if (field.hasOwnProperty('default')){
+                if (field.hasOwnProperty('default') &&
+                    (!values.hasOwnProperty(i) || values[i] === '')) {
+
                     Object.assign(results, {[i]: field.default})
                 }
+
             }
         }
         return results;
