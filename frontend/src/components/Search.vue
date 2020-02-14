@@ -83,21 +83,23 @@
             //todo refactor this function to prevent v-model and input.native
             findItems: function () {
 
-                if(this.search.length > 0) {
+                const search = this.search.trim();
 
-                    const timeout = 800;
+                if(search.length > 0) {
+
                     if (this.timer) {
                         clearTimeout(this.timer);
                         this.timer = null;
                     }
                     this.timer = setTimeout(() => {
-                        let endpoint = this.$store.getters.getOptions['searchurl'] || '';
-                        this.foundItems = this._ajaxCall(endpoint, this.search);
+                        let endpoint = this.$store.getters.getOptions['searchurl'] || false;
+                        this.foundItems = this._ajaxCall(endpoint, search);
                         this.$emit('cnrl-items-found');
 
-                    }, timeout);
+                    }, 800);
                 }
                 else{
+                    clearTimeout(this.timer);
                     this.reset();
                 }
 
@@ -112,7 +114,7 @@
              */
             _ajaxCall: function (endpoint, val) {
 
-                if (typeof(endpoint) !== 'undefined' && typeof(val) !== 'undefined') {
+                if (endpoint && typeof(val) !== 'undefined') {
                     this.$store.dispatch('setReady', false);
 
                     let uri = endpoint + val;

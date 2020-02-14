@@ -187,8 +187,9 @@ export class cnRelationList {
             }
         }
 
+        _self.store.dispatch('setReady', false);
         $.ajax({
-            url: this.store.getters.getOptions.fetchurl,
+            url: _self.store.getters.getOptions.fetchurl,
             method: 'POST',
             data: {
                 "items": JSON.stringify(items)
@@ -200,6 +201,9 @@ export class cnRelationList {
 
             _self.store.dispatch('setItems', elements);
             _self.store.dispatch('setStatus', true);
+
+        }).always(function(){
+            _self.store.dispatch('setReady', true);
         });
         return elements;
     }
