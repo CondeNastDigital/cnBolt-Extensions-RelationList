@@ -1,8 +1,19 @@
 <template>
     <b-row class="itemlist">
         <div class="col-xs-12">
-            <draggable v-model="items" @start="drag=true" @end="drag=false">
-                <b-card class="item" v-for="item in items" :key="item.id">
+            <draggable
+                    v-model="items"
+                    v-bind="dragOptions"
+                    @start="drag=true"
+                    @end="drag=false"
+            >
+                <transition-group type="transition" :name="!drag ? 'flip-list' : null">
+                <b-card
+                        class="item"
+                        v-for="item in items"
+                        v-on:drop.stop.prevent
+                        :key="item.id"
+                >
                     <b-row >
                         <div class="col-xs-10 item-preview">
                             <item
@@ -36,6 +47,7 @@
                         </b-collapse>
                     </b-row>
                 </b-card>
+                </transition-group>
             </draggable>
         </div>
     </b-row>
@@ -71,6 +83,12 @@
 
             definitions: function() {
                 return this.$store.getters.getDefinitions.attributes || {};
+            },
+
+            dragOptions: function() {
+                return {
+                  animation: 200
+                };
             }
 
         },
@@ -116,7 +134,9 @@
         },
 
         data() {
-            return {}
+            return {
+              drag: false
+            }
         }
 
     }
@@ -124,6 +144,9 @@
 </script>
 
 <style scoped>
+    button {
+        width: 40px;
+    }
     .card.item {
         min-height: 100px;
     }

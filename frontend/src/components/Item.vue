@@ -15,8 +15,16 @@
                     :badge="badge"
             ></Badge>
 
-            <h5 class="mt-0">{{ teaser.title }}</h5>
-            <p>{{ teaser.description }}</p>
+            <h5 class="mt-0">
+                <a
+                    :href="teaser.link"
+                    v-if="teaser.link.length > 0"
+                    target="_blank"
+                >
+                    {{ teaser.title }}
+                </a>
+            </h5>
+            <p>{{ truncate(teaser.description, 120) }}</p>
         </div>
     </b-row>
 </template>
@@ -36,6 +44,12 @@
 
         components: {
             Badge
+        },
+
+        methods: {
+          truncate: function(string, length, clamp = '...'){
+            return string.length > length ? string.slice(0, length) + clamp : string;
+          }
         },
 
         computed: {
@@ -67,8 +81,24 @@
 </script>
 
 <style scoped>
+    a,
+    a:link,
+    a:hover,
+    a:active,
+    a:visited,
+    a:focus {
+        color: inherit;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    a:hover{
+        text-decoration: underline;
+    }
     img {
         max-width: 150px;
         width: 100%;
+    }
+    p {
+        font-size: 11px;
     }
 </style>

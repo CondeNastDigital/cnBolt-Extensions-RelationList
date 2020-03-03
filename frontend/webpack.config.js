@@ -26,17 +26,6 @@ const clientConfig = {
             'axios': 'axios/dist/axios.min.js',
             'VueAxios': 'vue-axios/dist/vue-axios.min.js',
 
-            /* bootstrap */
-            'bootstrap-vue/es/components/form-group': 'bootstrap-vue/es/components/form-group',
-            'bootstrap-vue/es/components/form-select': 'bootstrap-vue/es/components/form-select',
-            'bootstrap-vue/es/components/form-input': 'bootstrap-vue/es/components/form-input',
-            'bootstrap-vue/es/components/form-checkbox': 'bootstrap-vue/es/components/form-checkbox',
-            'bootstrap-vue/es/components/form-textarea': 'bootstrap-vue/es/components/form-textarea',
-            'bootstrap-vue/es/components/card': 'bootstrap-vue/es/components/card',
-            'bootstrap-vue/es/components/collapse': 'bootstrap-vue/es/components/collapse',
-            'bootstrap-vue/es/components/button': 'bootstrap-vue/es/components/button',
-            'bootstrap-vue/es/components/layout': 'bootstrap-vue/es/components/layout',
-
             /* fontawesome */
             '@fortawesome/fontawesome-svg-core': '@fortawesome/fontawesome-svg-core',
             '@fortawesome/free-solid-svg-icons': '@fortawesome/free-solid-svg-icons',
@@ -105,17 +94,6 @@ const serverConfig = {
             'vuex': 'vuex/dist/vuex.min.js',
             'axios': 'axios/dist/axios.min.js',
             'VueAxios': 'vue-axios/dist/vue-axios.min.js',
-
-            /* bootstrap */
-            'bootstrap-vue/es/components/form-group': 'bootstrap-vue/es/components/form-group',
-            'bootstrap-vue/es/components/form-select': 'bootstrap-vue/es/components/form-select',
-            'bootstrap-vue/es/components/form-input': 'bootstrap-vue/es/components/form-input',
-            'bootstrap-vue/es/components/form-checkbox': 'bootstrap-vue/es/components/form-checkbox',
-            'bootstrap-vue/es/components/form-textarea': 'bootstrap-vue/es/components/form-textarea',
-            'bootstrap-vue/es/components/button': 'bootstrap-vue/es/components/button',
-            'bootstrap-vue/es/components/layout': 'bootstrap-vue/es/components/layout',
-            'bootstrap-vue/es/components/card': 'bootstrap-vue/es/components/card',
-            'bootstrap-vue/es/components/collapse': 'bootstrap-vue/es/components/collapse',
 
             /* fontawesome */
             '@fortawesome/fontawesome-svg-core': '@fortawesome/fontawesome-svg-core',

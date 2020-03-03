@@ -8,7 +8,7 @@
             <error-handler confirm-event="cnrl-relation-confirm" error-event="cnrl-relation-error" />
         </div>
 
-        <div>
+        <div class="container-fluid">
             <toolbar :settingsid="settingsId" />
             <settings v-if="definitions" :settingsid="settingsId" />
             <list />

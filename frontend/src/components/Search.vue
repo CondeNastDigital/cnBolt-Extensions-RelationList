@@ -1,12 +1,21 @@
 <template>
     <div class="search">
         <div class="searchbar">
-            <b-input
+            <b-form-input
                     type="text"
                     placeholder="Search..."
                     v-model="search"
-                    @input.native="findItems"
-            ></b-input>
+                    trim
+                    @input="findItems"
+            ></b-form-input>
+            <div
+                @click="reset"
+                title="Clear the search query"
+                class="clear"
+                v-if="showclear"
+            >
+                <font-awesome-icon icon="times"/>
+            </div>
         </div>
         <div class="results" v-if="foundItems.length > 0">
             <b-card class="item" v-for="item in foundItems" :key="item.id">
@@ -87,6 +96,8 @@
 
                 if(search.length > 0) {
 
+                    this.showclear = true;
+
                     if (this.timer) {
                         clearTimeout(this.timer);
                         this.timer = null;
@@ -148,6 +159,7 @@
             reset: function () {
                 this.search = '';
                 this.foundItems = [];
+                this.showclear = false;
             },
         },
 
@@ -156,7 +168,8 @@
         data() {
             return {
                 search: '',
-                foundItems: []
+                foundItems: [],
+                showclear: false,
             }
         },
 
@@ -164,3 +177,13 @@
     }
 
 </script>
+
+<style scoped>
+    .clear {
+        position: absolute;
+        top: 6px;
+        right: 25px;
+        color: #d4d4d4;
+        cursor: pointer;
+    }
+</style>

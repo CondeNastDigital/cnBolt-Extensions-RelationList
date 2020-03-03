@@ -3,24 +3,28 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 
-import BsFormGroup from 'bootstrap-vue/es/components/form-group'
-import BsFormSelect from 'bootstrap-vue/es/components/form-select'
-import BsFormInput from 'bootstrap-vue/es/components/form-input'
-import BsFormCheckbox from 'bootstrap-vue/es/components/form-checkbox'
-import BsTextarea from 'bootstrap-vue/es/components/form-textarea'
-import BsCard from 'bootstrap-vue/es/components/card'
-import BsCollapse from 'bootstrap-vue/es/components/collapse'
-import BsButton from 'bootstrap-vue/es/components/button'
-import BsLayout from 'bootstrap-vue/es/components/layout'
-import BsAlert from 'bootstrap-vue/es/components/alert'
+import {
+
+    LayoutPlugin,
+    CardPlugin,
+    FormGroupPlugin,
+    FormSelectPlugin,
+    FormInputPlugin,
+    FormCheckboxPlugin,
+    FormTextareaPlugin,
+    CollapsePlugin,
+    ButtonPlugin,
+    AlertPlugin
+} from 'bootstrap-vue'
 
 //import 'bootstrap/dist/css/bootstrap.min.css'
+
 import 'bootstrap-vue/dist/bootstrap-vue.min.css'
 import 'vue-select/dist/vue-select.css'
 import './assets/css/relationlist.css'
 
 import {library} from '@fortawesome/fontawesome-svg-core'
-import {faMinus, faUnlink, faSpinner, faCogs} from '@fortawesome/free-solid-svg-icons'
+import {faMinus, faUnlink, faSpinner, faCogs, faTimes} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
 
 import App from './components/App.vue'
@@ -29,7 +33,7 @@ import Store from './store'
 import Focus from './directives/focus.js';
 
 library.add(
-    faMinus, faUnlink, faSpinner, faCogs
+    faMinus, faUnlink, faSpinner, faCogs, faTimes
 );
 
 
@@ -39,16 +43,16 @@ export class cnRelationList {
         Vue.use(Vuex);
         Vue.use(VueAxios, axios);
 
-        Vue.use(BsFormGroup);
-        Vue.use(BsFormSelect);
-        Vue.use(BsFormInput);
-        Vue.use(BsFormCheckbox);
-        Vue.use(BsTextarea);
-        Vue.use(BsCard);
-        Vue.use(BsCollapse);
-        Vue.use(BsButton);
-        Vue.use(BsLayout);
-        Vue.use(BsAlert);
+        Vue.use(LayoutPlugin);
+        Vue.use(CardPlugin);
+        Vue.use(FormGroupPlugin);
+        Vue.use(FormSelectPlugin);
+        Vue.use(FormInputPlugin);
+        Vue.use(FormCheckboxPlugin);
+        Vue.use(FormTextareaPlugin);
+        Vue.use(CollapsePlugin);
+        Vue.use(ButtonPlugin);
+        Vue.use(AlertPlugin);
 
         Vue.directive('focus', Focus);
         Vue.component('font-awesome-icon', FontAwesomeIcon);
