@@ -14,9 +14,17 @@ class ContentConnector extends BaseConnector {
      */
     public function searchRecords($config, $text, $parameters = []): array{
         $results = [];
+        $StorageService = false;
+
+        if ($this->container->offsetExists('cnd-library.storage')) {
+            $StorageService = $this->container['cnd-library.storage'];
+        }
+        elseif ($this->container->offsetExists('cnd-basics.storage')) {
+            $StorageService = $this->container['cnd-basics.storage'];
+        }
 
         // VERSION A - CND Storage Library
-        if($this->container->offsetExists('cnd-library.storage')){
+        if($StorageService){
 
             if(isset($config['query']['filter']['title']) || isset($config['query']['operator']['title']))
                 throw new \Exception('RelationList: Query for content connector specifies conflicting title filter or operator');
@@ -33,14 +41,14 @@ class ContentConnector extends BaseConnector {
 
             // Add search filter
             $query['filter']['title'] = $text;
-            $query['operator']['title'] = \Bolt\Extension\CND\Library\Services\StorageService::OPERATOR_CONTAINS;
+            $query['operator']['title'] = get_class($StorageService)::OPERATOR_CONTAINS;
 
             // Apply parameters
             $parameters = $this->getQueryParameters($config['defaults'], $parameters);
             $query = $this->applyQueryParameters($query, $parameters);
 
             $content = [
-                'results' => $this->container['cnd-library.storage']->selectContent($query)
+                'results' => $StorageService->selectContent($query)
             ];
         }
         // VERSION B - Bolt native search
@@ -165,8 +173,14 @@ class ContentConnector extends BaseConnector {
     protected function fillRecords($config, $count, $parameters = [], $exclude = []): array{
         $results = [];
 
-        if(!$this->container->offsetExists('cnd-library.storage')) {
-            throw new \Exception('RelationList: FillService requires cnd/library extension');
+        if ($this->container->offsetExists('cnd-library.storage')) {
+            $StorageService = $this->container['cnd-library.storage'];
+        }
+        elseif ($this->container->offsetExists('cnd-basics.storage')) {
+            $StorageService = $this->container['cnd-basics.storage'];
+        }
+        else {
+            throw new \Exception('RelationList: FillService requires either cnd/basics or cnd/library extension');
         }
 
         if(isset($config['query']['filter']['contentslug']) || isset($config['query']['operator']['contentslug']))
@@ -189,6 +203,6 @@ class ContentConnector extends BaseConnector {
         $parameters = $this->getQueryParameters($config['defaults'], $parameters);
         $query = $this->applyQueryParameters($query, $parameters);
 
-        return $this->container['cnd-library.storage']->selectContent($query);
+        return $StorageService->selectContent($query);
     }
 }

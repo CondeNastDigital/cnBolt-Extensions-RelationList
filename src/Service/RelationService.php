@@ -61,6 +61,7 @@ class RelationService {
      * @param $slug
      * @param $search
      * @return array
+     * @throws \Exception
      */
     public function autocomplete($type, $slug, $search): array {
 
@@ -68,7 +69,15 @@ class RelationService {
         $results = [];
         $count = 0;
 
-        $StorageService = $this->container["cnd-library.storage"];
+        if ($this->container->offsetExists('cnd-library.storage')) {
+            $StorageService = $this->container['cnd-library.storage'];
+        }
+        elseif ($this->container->offsetExists('cnd-basics.storage')) {
+            $StorageService = $this->container['cnd-basics.storage'];
+        }
+        else {
+            throw new \Exception('RelationList requires either cnd/basics or cnd/library extension');
+        }
 
         switch ($type){
             case 'taxonomies':
