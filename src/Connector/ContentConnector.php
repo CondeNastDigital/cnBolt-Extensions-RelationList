@@ -123,7 +123,7 @@ class ContentConnector extends BaseConnector {
             try {
                 $url = $this->container['cnd.image-service.image']->imageUrl($image, 150, 150, 'fit');
             } catch (\Exception $e) {
-                return $this->container['twig.runtime.bolt_image']->thumbnail('unknown', 150, 150, 'fit');
+                return $this->container['twig.runtime.bolt_image']->thumbnail('unknown', 150, 100, 'crop');
             }
         }
 
