@@ -120,7 +120,11 @@ class ContentConnector extends BaseConnector {
 
         // Render via ImageService
         if ($image instanceof \Bolt\Extension\CND\ImageService\Image && $this->container->offsetExists('cnd.image-service.image')) {
-            $url = $this->container['cnd.image-service.image']->imageUrl($image, 150, 150, 'fit');
+            try {
+                $url = $this->container['cnd.image-service.image']->imageUrl($image, 150, 150, 'fit');
+            } catch (\Exception $e) {
+                return $this->container['twig.runtime.bolt_image']->thumbnail('unknown', 150, 150, 'fit');
+            }
         }
 
         // Render via Bolt Tumbnails
