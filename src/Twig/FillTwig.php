@@ -16,5 +16,9 @@ class FillTwig {
     public function getItems($poolKey, $count, $parameters = [], $fixedItems = [], $positionField = false){
         return $this->container['cnd.relationlist.fill']->getItems($poolKey, $count, $parameters, $fixedItems, $positionField);
     }
+    
+    public function addShownItems($items, $bucket = 'default'){
+        return $this->container['cnd.relationlist.fill']->addShownItems($items, $bucket);
+    }
 
 }
