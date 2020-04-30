@@ -30,7 +30,7 @@
     "css-loader": "^0.28.4",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^0.11.2",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "js-yaml": ">=3.13.1",
     "lodash": ">=4.17.13",
     "path": "^0.12.7",
