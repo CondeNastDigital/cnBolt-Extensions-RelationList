@@ -55,8 +55,8 @@ class LegacyService {
                     'service' => $service,
                     'attributes' => $attributes,
                 ]);
+                $result['items'][] = $relation;
             }
-            $result['items'][] = $relation;
         }
         return $result;
     }
