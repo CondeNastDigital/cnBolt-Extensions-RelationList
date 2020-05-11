@@ -10,6 +10,7 @@ use Bolt\Extension\CND\RelationList\Controller\RelationController;
 use Bolt\Extension\CND\RelationList\Service\LegacyService;
 use Bolt\Extension\CND\RelationList\Service\TwigService;
 use Bolt\Extension\SimpleExtension;
+use Pimple as Container;
 use Silex\Application;
 use Bolt\Extension\CND\RelationList\Service\RelationService;
 
@@ -95,6 +96,15 @@ class Extension extends SimpleExtension
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    protected function registerNutCommands(Container $container)
+    {
+        return [
+            new Nut\MigrateCommand($container),
+        ];
+    }
 }
 
 

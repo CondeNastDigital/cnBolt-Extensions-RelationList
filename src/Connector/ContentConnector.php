@@ -196,7 +196,7 @@ class ContentConnector extends BaseConnector {
             'filter' => [],
             'operator' => [],
             'limit' => min($count, 50),
-            'order' => ['datepublish' => true],
+            'order' => ['datepublish' => false],
             // "options" => ["showquery" => true, "showparams" => true]
         ];
 
