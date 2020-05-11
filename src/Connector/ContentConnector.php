@@ -89,7 +89,7 @@ class ContentConnector extends BaseConnector {
             'title' => $record->get('title'),
             'image' => $this->getImage($record),
             'description' => (string)$record->getExcerpt(200),
-            'date' => date('c', strtotime($record->get('datechanged'))),
+            'date' => date('c', strtotime($record->get('datepublish'))),
             'link' => $record->editlink(),
         ];
 
