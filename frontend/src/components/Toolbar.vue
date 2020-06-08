@@ -5,14 +5,14 @@
         <div class="col-xs-12 meta"
              v-if="hasValues"
         >
-            <b-card>
+            <div class="inner">
                 <span v-for="(field, key, index) in definitions"
                       v-if="hasValue(key)"
                       :key="key"
                 >
                     <label>{{field.label}}</label>: {{ Array.isArray(values[key]) ? values[key].join(', ') : values[key] }}
                 </span>
-            </b-card>
+            </div>
         </div>
         <!-- end meta -->
 
@@ -158,33 +158,34 @@
     .toolbar .btn-settings{
         float: right;
     }
-    .meta .card {
-        background-color: #f5f5f5;
-    }
     .meta {
         font-size: 11px;
         line-height: 14px;
+    }
+    .meta .inner {
+        padding-left: 15px;
+        padding-right: 15px;
+        border-bottom: 1px solid #ccc;
     }
     .meta label {
         font-weight: 700;
         font-size: 11px;
         display: inline-block;
     }
-    .meta .card-body {
-        padding: 5px 1.25rem;
-    }
-    .meta .card span{
+
+    .meta span{
+        color: #888;
         padding-right: 10px;
         margin-right: 8px;
         position: relative;
     }
-    .meta .card span:after{
+    .meta span:after{
         display: inline-block;
         content: '//';
         position: absolute;
         right: 0;
     }
-    .meta .card span:last-child:after{
+    .meta span:last-child:after{
         display: none;
     }
 </style>
