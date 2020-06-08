@@ -12,8 +12,8 @@
 
                 <b-col cols="8" sm="8" lg="10">
                     <!-- todo dynamic compoents! -->
-                    <b-form-input    size="sm" v-focus="index===0" v-if="isInput(field)"        v-model="values[key]" @change="updateStore(key, $event)" :id="uid+'key'" :type="field.type"/>
-                    <b-form-textarea size="sm" v-focus="index===0" v-if="isTextarea(field)"     v-model="values[key]" @change="updateStore(key, $event)" :id="uid+'key'" rows="2" max-rows="3"/>
+                    <b-form-input    size="sm" v-focus="index===0" v-if="isInput(field)"        v-model="values[key]" @input="updateStore(key, $event)" :id="uid+'key'" :type="field.type"/>
+                    <b-form-textarea size="sm" v-focus="index===0" v-if="isTextarea(field)"     v-model="values[key]" @input="updateStore(key, $event)" :id="uid+'key'" rows="2" max-rows="3"/>
                     <b-form-select   size="sm" v-focus="index===0" v-if="isSelect(field)"       v-model="values[key]" @change="updateStore(key, $event)" :id="uid+'key'" :type="field.type" :options="field.options"></b-form-select>
                     <b-form-checkbox size="sm" v-focus="index===0" v-if="isCheckbox(field)"     v-model="values[key]" @change="updateStore(key, $event)" :id="uid+'key'" :type="field.type"></b-form-checkbox>
                     <autocomplete    size="sm" v-focus="index===0" v-if="isAutocomplete(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="uid+'key'" :type="field.type" :value="values[key]" :endpoints="getEndpoints(field)" :multiple="isMultiple(field)" :taggable="isTaggable(field)"></autocomplete>
@@ -49,7 +49,7 @@
                         let el = this.definitions[index];
                         let def = el.default || null;
 
-                        ret[index] = !this.state || !this.state.hasOwnProperty(index) ?  def : this.state[index] ;
+                        ret[index] = !this.state || !this.state.hasOwnProperty(index) ?  def : this.state[index];
                     }
                     return ret;
                 }

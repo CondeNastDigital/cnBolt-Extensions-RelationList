@@ -7,13 +7,16 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="bundle.web.js"></script>
     <link rel="stylesheet" href="./dist/styles.min.css" />
-    <link rel="stylesheet" href="http://gewinnspiele.gq.local/gewinnspiele/bolt-public/css/lib.css?05df30316e">
-    <link rel="stylesheet" href="http://gewinnspiele.gq.local/gewinnspiele/bolt-public/css/bolt.css?e7285bef53">
+    <link rel="stylesheet" href="https://gewinnspiele.gq.local/gewinnspiele/bolt-public/css/lib.css?05df30316e">
+    <link rel="stylesheet" href="https://gewinnspiele.gq.local/gewinnspiele/bolt-public/css/bolt.css?e7285bef53">
 
     <style>
-        .row.itemlist{
-            height: 600px;
-            max-height: none;
+        body {
+            margin: 100px auto;
+            max-width: 1000px;
+            padding: 5px 0;
+            border-radius: 3px;
+            border: 1px solid #ccc;
         }
     </style>
 
@@ -27,7 +30,7 @@
     <!-- OLD STRING -->
     <label>old</label>
     <textarea id="connector" style="width:100%;height:150px">
-    {"globals":{"best":"Bademode"},"items":["teasers/5","teasers/6","competitions/58"],"attributes":{"teasers/5":{"isopen":false,"number":"0"},"teasers/6":{"isopen":false,"number":"0"},"competitions/58":{}}}
+    {"globals":{"best":"", "test": null, "rest": true},"items":["teasers/5","teasers/6","competitions/58"],"attributes":{"teasers/5":{"isopen":false,"number":"0"},"teasers/6":{"isopen":false,"number":"0"},"competitions/58":{}}}
     </textarea>
 
     <!-- NEW STRING -->
@@ -45,6 +48,10 @@
                     test: {
                         label: 'Global Field',
                         type: 'text'
+                    },
+                    rest: {
+                      label: 'check',
+                      type: 'checkbox'
                     },
                     best: {
                         label: 'Global Field 2',
@@ -71,8 +78,8 @@
                 }
             });
             var connector = '#connector';
-            var searchurl  = "http://gewinnspiele.gq.local/gewinnspiele/bolt/relationlist/search/homes/teasers/";
-            var fetchurl =   "http://gewinnspiele.gq.local/gewinnspiele/bolt/relationlist/fetch";
+            var searchurl  = "https://gewinnspiele.gq.local/gewinnspiele/bolt/relationlist/search/homes/teasers/";
+            var fetchurl =   "https://gewinnspiele.gq.local/gewinnspiele/bolt/relationlist/fetch";
 
             var value = $(connector).val() || '{}';
             var options = {

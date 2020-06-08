@@ -10,16 +10,14 @@
 
         <div class="container-fluid">
             <toolbar :settingsid="settingsId" />
-            <settings v-if="definitions" :settingsid="settingsId" />
             <list />
         </div>
     </div>
 </template>
 
 <script>
-    import toolbar from './Toolbar.vue';
-    import settings from './Settings.vue';
-    import list from './ItemList.vue';
+    import toolbar      from './Toolbar.vue';
+    import list         from './ItemList.vue';
     import errorHandler from './ErrorHandler.vue';
 
     export default {
@@ -32,15 +30,11 @@
             loading: function () {
                 return !this.$store.getters.isReady;
             },
-            definitions: function(){
-                return Object.keys(this.$store.getters.getDefinitions.globals).length > 0;
-            }
 
         },
 
         components: {
             toolbar,
-            settings,
             list,
             errorHandler
         },
@@ -53,3 +47,22 @@
 
     }
 </script>
+
+<style scoped>
+    .loading{
+        position: absolute;
+        z-index: 1000;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(50,50,50,.3);
+    }
+    .loading-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-size: 36px;
+        color: #555;
+    }
+</style>

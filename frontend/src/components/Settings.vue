@@ -1,18 +1,16 @@
 <template>
-    <b-row class="settings">
-        <div class="col-xs-12">
-            <b-collapse :id="settingsid">
-                <b-card>
-                    <Fields
-                        :settingsid="settingsid"
-                        :definitions="definitions"
-                        :state="fields"
-                        @input="updateGlobals($event)"
-                    ></Fields>
-                </b-card>
-            </b-collapse>
-        </div>
-    </b-row>
+    <div class="settings">
+        <b-collapse :id="settingsid">
+            <b-card>
+                <Fields
+                    :settingsid="settingsid"
+                    :definitions="definitions"
+                    :state="fields"
+                    @input="updateGlobals($event)"
+                ></Fields>
+            </b-card>
+        </b-collapse>
+    </div>
 </template>
 
 <script>
@@ -22,7 +20,9 @@
     export default {
 
         props: {
-            settingsid: String
+            settingsid: String,
+            definitions: Object,
+            fields: Object,
         },
 
         components: {
@@ -30,16 +30,6 @@
         },
 
         computed: {
-
-            fields: {
-                get: function () {
-                    return this.$store.getters.getGlobals;
-                }
-            },
-
-            definitions: function () {
-                return this.$store.getters.getDefinitions.globals;
-            }
         },
 
         methods: {
@@ -61,3 +51,12 @@
         }
     }
 </script>
+
+<style scoped>
+    .settings .card{
+        background-color: #f5f5f5;
+    }
+    .settings .form-group {
+        margin: 0;
+    }
+</style>

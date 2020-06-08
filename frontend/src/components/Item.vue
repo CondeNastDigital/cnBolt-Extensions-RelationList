@@ -15,15 +15,13 @@
                     :badge="badge"
             ></Badge>
 
-            <h5 class="mt-0">
-                <a
-                    :href="teaser.link"
-                    v-if="teaser.link.length > 0"
-                    target="_blank"
-                >
-                    {{ teaser.title }}
-                </a>
+            <h5 class="mt-0" v-if="this.teaser.link">
+                <a :href="this.teaser.link" target="_blank">{{ this.teaser.title }}</a>
             </h5>
+            <h5 class="mt-b" v-else>
+                {{ this.teaser.title }}
+            </h5>
+
             <p>{{ truncate(teaser.description, 120) }}</p>
         </div>
     </b-row>
@@ -101,4 +99,5 @@
     p {
         font-size: 11px;
     }
+
 </style>

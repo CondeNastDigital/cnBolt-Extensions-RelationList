@@ -1,54 +1,56 @@
 <template>
     <b-row class="itemlist">
         <div class="col-xs-12">
-            <draggable
-                    v-model="items"
-                    v-bind="dragOptions"
-                    @start="drag=true"
-                    @end="drag=false"
-            >
-                <transition-group type="transition" :name="!drag ? 'flip-list' : null">
-                <b-card
-                        class="item"
-                        v-for="item in items"
-                        v-on:drop.stop.prevent
-                        :key="item.id"
+            <div class="inner">
+                <draggable
+                        v-model="items"
+                        v-bind="dragOptions"
+                        @start="drag=true"
+                        @end="drag=false"
                 >
-                    <b-row >
-                        <div class="col-xs-10 item-preview">
-                            <item
-                                    v-bind="item"
-                            ></item>
-                        </div>
-                        <div class="col-xs-2 text-right item-buttons">
+                    <transition-group type="transition" :name="!drag ? 'flip-list' : null">
+                    <b-card
+                            class="item"
+                            v-for="item in items"
+                            v-on:drop.stop.prevent
+                            :key="item.id"
+                    >
+                        <b-row >
+                            <div class="col-xs-10 item-preview">
+                                <item
+                                        v-bind="item"
+                                ></item>
+                            </div>
+                            <div class="col-xs-2 text-right item-buttons">
 
-                            <b-button class="btn-settings" v-b-toggle="'attributes-'+item.id" variant="secondary" v-if="hasDefinitions">
-                                <font-awesome-icon icon="cogs"/>
-                            </b-button>
+                                <b-button class="btn-settings" v-b-toggle="'attributes-'+item.id" variant="secondary" v-if="hasDefinitions">
+                                    <font-awesome-icon icon="cogs"/>
+                                </b-button>
 
-                            <b-button
-                                    title="Unlinks this item from the relationlist"
-                                    variant="warning"
-                                    @click="removeItem(item)"
-                            >
-                                <font-awesome-icon icon="unlink" />
-                            </b-button>
+                                <b-button
+                                        title="Unlinks this item from the relationlist"
+                                        variant="warning"
+                                        @click="removeItem(item)"
+                                >
+                                    <font-awesome-icon icon="unlink" />
+                                </b-button>
 
-                        </div>
-                        <b-collapse :id="'attributes-'+item.id" class="col-12 col-xs-12 item-fields" v-if="hasDefinitions">
+                            </div>
+                            <b-collapse :id="'attributes-'+item.id" class="col-12 col-xs-12 item-fields" v-if="hasDefinitions">
 
-                            <Fields
-                                    :settingsid="'input'+Date.now()"
-                                    :definitions="definitions"
-                                    :state="getAttributes(item.id)"
-                                    @input="setAttributes(item, $event)"
-                            ></Fields>
+                                <Fields
+                                        :settingsid="'input'+Date.now()"
+                                        :definitions="definitions"
+                                        :state="getAttributes(item.id)"
+                                        @input="setAttributes(item, $event)"
+                                ></Fields>
 
-                        </b-collapse>
-                    </b-row>
-                </b-card>
-                </transition-group>
-            </draggable>
+                            </b-collapse>
+                        </b-row>
+                    </b-card>
+                    </transition-group>
+                </draggable>
+            </div>
         </div>
     </b-row>
 </template>
@@ -150,4 +152,34 @@
     .card.item {
         min-height: 100px;
     }
+    .itemlist button.btn svg{
+        margin-top: 2px;
+    }
+
+    .itemlist .item .item-fields {
+        padding: 30px;
+    }
+    .itemlist .item-buttons button{
+         margin: 2px;
+    }
+    .itemlist .inner {
+        max-height: 300px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .item-field{
+        margin-bottom: 5px;
+    }
+
+    .col-4 {
+        width: calc(33% - 30px);
+        display: inline-block;
+    }
+
+    .col-8 {
+        width: calc(67% - 30px);
+        display: inline-block;
+    }
+
 </style>

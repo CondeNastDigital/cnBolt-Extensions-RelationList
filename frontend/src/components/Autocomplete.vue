@@ -184,7 +184,7 @@
     }
 </script>
 
-<style>
+<style scoped>
     div.v-select input.vs__search{
         border: none;
     }

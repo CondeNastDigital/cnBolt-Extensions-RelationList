@@ -179,6 +179,18 @@
 </script>
 
 <style scoped>
+    .search {}
+    .search .results {
+        position: absolute;
+        height: 275px;
+        width: 100%;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        z-index: 500;
+        border-radius: 0.25rem;
+        background-color: #fff;
+        box-shadow: 0 2px 2px #ccc;
+    }
     .clear {
         position: absolute;
         top: 6px;
