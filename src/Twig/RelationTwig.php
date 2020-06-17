@@ -36,4 +36,13 @@ class RelationTwig {
         return $value['globals'] ?? [];
     }
 
+    /**
+     * Get valid config from a array of options from either a contenttype>field or a structuredcontent>extend>section config
+     * @param $data
+     * @return mixed
+     */
+    public function getConfig($data){
+        return $this->container['cnd.relationlist.relation']->parseConfig($data);
+    }
+
 }

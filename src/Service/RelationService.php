@@ -189,7 +189,15 @@ class RelationService {
             $fieldDefinition = $fieldDefinition['extend'][$subfield] ?? false;
         }
 
-        return $fieldDefinition + [
+        return $this->parseConfig($fieldDefinition);
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    public function parseConfig(array $data){
+        return $data + [
             'attributes' => [],
             'globals' =>  [],
             'min' => 0,
