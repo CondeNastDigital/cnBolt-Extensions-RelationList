@@ -63,15 +63,16 @@ class FillService {
 
     /**
      * Collect items from a pool and merge/sort them with given items
-     * @param string $poolKey              name of pool from pools configuration
-     * @param int $count                   number of items to return in total
-     * @param array $parameters            parameters to insert into search query (see pool configuration)
-     * @param Item[] $fixedItems           array of fixed items to merge
-     * @param bool|string $positionField   fixed items contain an attribute with a position number
+     * @param string $poolKey name of pool from pools configuration
+     * @param int $count number of items to return in total
+     * @param array $parameters parameters to insert into search query (see pool configuration)
+     * @param Item[] $fixedItems array of fixed items to merge
+     * @param string $bucket bucket for already shown items
+     * @param bool $addShown auto add new items to the bucket of shown items (default true)
      * @return Item[]
      * @throws \Exception
      */
-    public function getItems($poolKey, $count, $parameters = [], $fixedItems = [], $bucket = 'default'){
+    public function getItems($poolKey, $count, $parameters = [], $fixedItems = [], $bucket = 'default', $addShown = true){
 
         $pool = $this->config['pools'][$poolKey] ?? false;
         if(!$pool) {
@@ -136,6 +137,11 @@ class FillService {
 
         // cut to requested size
         $results = \array_slice($results, 0, $count);
+
+        // Add to already shown
+        if($addShown)
+            $this->addShownItems($results, $bucket);
+
         return $results;
     }
 
