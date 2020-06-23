@@ -145,4 +145,8 @@ class FillService {
         return $results;
     }
 
+    public function getShownIds($bucket = 'default'){
+        return self::$alreadyShown[$bucket] ?? [];
+    }
+
 }

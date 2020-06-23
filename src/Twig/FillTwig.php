@@ -31,4 +31,8 @@ class FillTwig {
         $this->addShownItems($stub, $bucket);
     }
 
+    public function getShownIds($bucket = 'default'){
+        return $this->container['cnd.relationlist.fill']->getShownIds($bucket);
+    }
+
 }
