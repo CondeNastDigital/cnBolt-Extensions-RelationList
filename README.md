@@ -77,7 +77,14 @@ structuredcontent:
         Items:
             type: relationlist
             label: Something
+            
+            # Options 1 - Only one pool for everything
             pool: mypool
+            # Option 2 - One pool for manually searched items and one pool for auto fill
+            pool: 
+                search: mysearchpool
+                fill: myfillpool
+
             min: 1
             max: 3
             globals: 

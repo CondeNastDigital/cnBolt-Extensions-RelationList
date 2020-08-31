@@ -72,7 +72,10 @@ class FillService {
      * @return Item[]
      * @throws \Exception
      */
-    public function getItems($poolKey, $count, $parameters = [], $fixedItems = [], $bucket = 'default', $addShown = true){
+    public function getItems($poolKeys, $count, $parameters = [], $fixedItems = [], $bucket = 'default', $addShown = true){
+
+        $poolKey = $poolKeys['fill']    // seperate pools per type
+                ?? $poolKeys;            // one pool for everything
 
         $pool = $this->config['pools'][$poolKey] ?? false;
         if(!$pool) {

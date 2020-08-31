@@ -36,9 +36,7 @@ class RelationService {
 
         $fieldConfig = $this->getFieldConfig($contenttype, $field, $subfield);
 
-        $poolKey = $fieldConfig['pool'] ?? false;
-        $pool = $this->config['pools'][$poolKey] ?? false;
-
+        $pool = $this->getPool($fieldConfig);
         if(!$pool) {
             throw new \Exception('Pool configuration for field "' . $field . '" invalid');
         }
@@ -48,7 +46,7 @@ class RelationService {
             $connector = $this->connectors[$source['connector'] ?? false] ?? false;
 
             if(!$connector) {
-                throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
+                throw new \Exception('Connector configuration for pool with source "' . $sourceKey . '" invalid');
             }
 
             $results[] =  $connector->searchRelations($source, $text, $parameters);
@@ -211,8 +209,7 @@ class RelationService {
      * @param Base[] $unordered
      * @return Base[]
      */
-    protected function orderByList($ordered, $unordered): array
-    {
+    protected function orderByList($ordered, $unordered): array {
         $orderedKeys = [];
         foreach ($ordered as $item){
             $orderedKeys[$item->service.'/'.$item->id] = $item;
@@ -224,6 +221,15 @@ class RelationService {
         }
 
         return array_values(array_merge(array_intersect_key($orderedKeys, $unorderedKeys), $unorderedKeys));
+    }
+
+    protected function getPool($fieldConfig){
+
+        $poolkey = $fieldConfig['pool']['search'] // seperate pools per type
+                ?? $fieldConfig['pool']           // one pool for everything
+                ?? false;                         // no pool found
+
+        return $this->config['pools'][$poolkey] ?? false;
     }
 
 }
