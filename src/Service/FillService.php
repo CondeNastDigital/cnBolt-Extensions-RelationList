@@ -96,7 +96,7 @@ class FillService {
                     throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
                 }
 
-                $exclusion = self::$alreadyShown[$bucket][$sourceKey] ?? [];
+                $exclusion = self::$alreadyShown[$bucket][$source['connector']] ?? [];
 
                 try {
                     $resultsByConnector[] = $connector->fillItems($source, $count, $parameters, $exclusion);
