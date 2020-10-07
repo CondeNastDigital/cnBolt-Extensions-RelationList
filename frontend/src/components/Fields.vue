@@ -16,7 +16,7 @@
                     <b-form-textarea size="sm" v-focus="index===0" v-if="isTextarea(field)"     v-model="values[key]" @input="updateStore(key, $event)" :id="uid+'key'" rows="2" max-rows="3"/>
                     <b-form-select   size="sm" v-focus="index===0" v-if="isSelect(field)"       v-model="values[key]" @change="updateStore(key, $event)" :id="uid+'key'" :type="field.type" :options="field.options"></b-form-select>
                     <b-form-checkbox size="sm" v-focus="index===0" v-if="isCheckbox(field)"     v-model="values[key]" @change="updateStore(key, $event)" :id="uid+'key'" :type="field.type"></b-form-checkbox>
-                    <autocomplete    size="sm" v-focus="index===0" v-if="isAutocomplete(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="uid+'key'" :type="field.type" :value="values[key]" :endpoints="getEndpoints(field)" :multiple="isMultiple(field)" :taggable="isTaggable(field)"></autocomplete>
+                    <autocomplete    size="sm" v-focus="index===0" v-if="isAutocomplete(field)" v-model="values[key]" @change="updateStore(key, $event)" :id="uid+'key'" :type="field.type" :value="values[key]" :endpoints="getEndpoints(field)" :multiple="isMultiple(field)" :taggable="isTaggable(field)" :options="field.options"></autocomplete>
                 </b-col>
 
         </b-row>

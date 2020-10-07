@@ -7,8 +7,8 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="bundle.web.js"></script>
     <link rel="stylesheet" href="./dist/styles.min.css" />
-    <link rel="stylesheet" href="https://gewinnspiele.gq.local/gewinnspiele/bolt-public/css/lib.css?05df30316e">
-    <link rel="stylesheet" href="https://gewinnspiele.gq.local/gewinnspiele/bolt-public/css/bolt.css?e7285bef53">
+    <link rel="stylesheet" href="https://www.gq-magazin.de/gewinnspiele/bolt-public/css/lib.css?05df30316e">
+    <link rel="stylesheet" href="https://www.gq-magazin.de/gewinnspiele/bolt-public/css/bolt.css?e7285bef53">
 
     <style>
         body {
@@ -45,6 +45,22 @@
 
             let definitions = JSON.stringify({
                 globals: {
+                    multi: {
+                        label: 'Global Field 1',
+                        type: 'autocomplete',
+                        multiple: true,
+                        options: [
+                            {
+                                value: 'a',
+                                label: 'AA'
+                            },
+                            {
+                                value: 'b',
+                                label: 'BB'
+                            }
+                        ]
+
+                    },
                     test: {
                         label: 'Global Field',
                         type: 'text'

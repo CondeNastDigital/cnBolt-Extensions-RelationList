@@ -1,5 +1,5 @@
 <template>
-    <v-select :multiple="multiple" v-model="computed" :options="computedValues" :taggable="taggable" @search="onSearch" @input="reset">
+    <v-select :multiple="multiple" label="label" searchable="true" v-model="computed" :options="computedValues" :taggable="taggable" @search="onSearch" @input="reset">
         <!-- Template is fixed, as we don't have an usecase for dynamic previews -->
         <template slot="option" slot-scope="option">
             {{ option.label }}
@@ -24,7 +24,8 @@
             "class",
             "endpoints",
             "taggable",
-            "multiple"
+            "multiple",
+            "options"
         ],
 
         data: function() {
@@ -42,7 +43,7 @@
              * @returns {Array}
              */
             computedValues: function() {
-                return this.values;
+                return  (this.options || []).concat(this.values);
             },
 
             computed: {
@@ -55,20 +56,32 @@
                         return null;
 
                     // converts the string values to an array - needed by the plugin
-                    if(!(this.value instanceof Array) )
-                        this.value = [this.value];
+                    if(!(this.value instanceof Array) ) {
+                      this.value = [this.value];
+                    }
+
+                    let options = this.options || [];
+                    options = options.concat(this.values || []);
 
                     this.value.forEach(function(el){
+                        if(!el)
+                          return;
+
                         // assume that the current value is not present in the options.
                         // only the option value is saved in the json. That is why we set the label to the value.
                         let found = {
-                            value: el,
-                            label: el
+                            value: el.value || el,
+                            label: el.label || el
                         };
+
+                        options.forEach((op)=>{
+                          console.log(found.value + ' ' + op.value);
+                          found.label = found.value == op.value ? op.label : found.label
+                        });
 
                         ret.push(found);
                     });
-
+                  console.log(ret);
                     return ret;
 
                 },
