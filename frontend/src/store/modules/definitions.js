@@ -13,12 +13,17 @@ export default () => {
              * @param state
              * @returns {default.state.definitions|{}|{state, getters, actions, mutations}|{"@fortawesome/fontawesome-svg-core"}}
              */
-            getDefinitions(state) {
-                return {
-                    globals: state.globals,
-                    attributes: state.attributes
-                };
-            }
+            getDefinitionGlobals(state) {
+                return state.globals
+            },
+            /**
+             * returns the attributes
+             * @param state
+             * @returns {default.state.definitions|{}|{state, getters, actions, mutations}|{"@fortawesome/fontawesome-svg-core"}}
+             */
+            getDefinitionAttributes(state) {
+                return state.attributes
+            },
         },
 
         // actions
@@ -28,8 +33,16 @@ export default () => {
              * @param context
              * @param data
              */
-            setDefinitions(context, data) {
-                context.commit('setDefinitions', data)
+            setDefinitionGlobals(context, data) {
+                context.commit('setDefinitionGlobals', data)
+            },
+            /**
+             *
+             * @param context
+             * @param data
+             */
+            setDefinitionAttributes(context, data) {
+                context.commit('setDefinitionAttributes', data)
             },
         },
 
@@ -40,8 +53,15 @@ export default () => {
              * @param state
              * @param definitions
              */
-            setDefinitions(state, definitions) {
+            setDefinitionGlobals(state, definitions) {
                 state.globals = definitions.globals || {};
+            },
+            /**
+             * sets the definitions
+             * @param state
+             * @param definitions
+             */
+            setDefinitionAttributes(state, definitions) {
                 state.attributes = definitions.attributes || {} ;
             },
         }

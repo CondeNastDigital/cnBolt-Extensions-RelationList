@@ -71,8 +71,8 @@ class RelationListProvider implements ServiceProviderInterface {
         $container['twig'] = $app->share(
             $app->extend(
                 'twig',
-                function (\Twig_Environment $twig) use ($app){
-                    $twig->addGlobal('RelationList', new RelationTwig($app));
+                function (\Twig_Environment $twig) use ($app, $config){
+                    $twig->addGlobal('RelationList', new RelationTwig($app, $config));
                     $twig->addGlobal('RelationFill', new FillTwig($app));
                     return $twig;
                 }

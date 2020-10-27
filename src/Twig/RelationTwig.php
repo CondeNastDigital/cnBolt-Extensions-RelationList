@@ -10,8 +10,9 @@ class RelationTwig {
     /* @var Application $container */
     protected $container;
 
-    public function __construct(Application $container){
+    public function __construct(Application $container, $config){
         $this->container = $container;
+        $this->config = $config;
     }
 
     /**
@@ -43,6 +44,10 @@ class RelationTwig {
      */
     public function getConfig($data){
         return $this->container['cnd.relationlist.relation']->parseConfig($data);
+    }
+
+    public function getExtensionConfig(){
+        return $this->config;
     }
 
 }

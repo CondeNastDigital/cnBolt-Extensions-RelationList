@@ -56,7 +56,7 @@
            * @return {*}
            */
             definitions: function(){
-                return this.$store.getters.getDefinitions.globals;
+                return this.$store.getters.getDefinitionGlobals
             },
 
           /**
@@ -64,7 +64,7 @@
            * @return {boolean}
            */
             hasDefinitions: function(){
-                return Object.keys(this.$store.getters.getDefinitions.globals).length > 0;
+                return Object.keys(this.$store.getters.getDefinitionGlobals).length > 0;
             },
 
           /**

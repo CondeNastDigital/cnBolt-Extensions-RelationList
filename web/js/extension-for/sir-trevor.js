@@ -24,10 +24,10 @@ var RelationlistST = function(properties) {
             contenttype: ''
         },
         editorHTML:
-            '<div class="frontend-target relationlist scontent">'+
-            '    <div class="relationlistApp" id=""></div>'+
-            '    <textarea style="display:none" class="connector" id=""></textarea>'+
-            '</div>',
+          '<div class="frontend-target relationlist scontent">'+
+          '    <div class="relationlistApp" id=""></div>'+
+          '    <textarea style="display:none" class="connector" id=""></textarea>'+
+          '</div>',
 
         /**
          * Loads the json data in to the field
@@ -65,7 +65,7 @@ var RelationlistST = function(properties) {
 
             let values = JSON.parse($(connector).val() || '{}');
             let field = this.custom || {};
-
+            let pool = JSON.stringify(field.pool || {})
             let definitions = JSON.stringify({
                 globals: field.globals || {},
                 attributes: field.attributes || {}
@@ -75,6 +75,8 @@ var RelationlistST = function(properties) {
             let options = {
                 searchurl: searchurl,
                 fetchurl: fetchurl,
+                config: this.extensionOptions || '{}',
+                pools: pool,
                 element: '#relationlist-'+fieldId,
                 validation: {}
             };

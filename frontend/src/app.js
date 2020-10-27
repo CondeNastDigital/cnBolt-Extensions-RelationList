@@ -113,7 +113,8 @@ export class cnRelationList {
         //    attributes = this.getDefaultFields(definitions.attributes);
 
         // build the store
-        this.store.dispatch('setDefinitions', definitions);
+        this.store.dispatch('setDefinitionGlobals', definitions);
+        this.store.dispatch('setDefinitionAttributes', definitions);
         this.store.dispatch('setOptions', options);
         this.store.dispatch('setGlobals', globals);
 

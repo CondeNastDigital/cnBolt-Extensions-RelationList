@@ -1,5 +1,6 @@
 import definitions from './modules/definitions'
 import globals  from './modules/globals'
+import pools  from './modules/pools'
 import items    from './modules/items'
 
 export default () =>  {
@@ -14,6 +15,7 @@ export default () =>  {
         modules: {
             definitions: definitions(),
             globals: globals(),
+            pools: pools(),
             items: items()
         },
 
@@ -44,7 +46,19 @@ export default () =>  {
              */
             getStatus(state) {
                 return state.status
-            }
+            },
+
+            /**
+             *
+             * @param state
+             * @returns {*}
+             */
+            getConfig(state) {
+
+                let jsonString = state.options.config || '{}'
+                //return (jsonString)
+                return JSON.parse(jsonString)
+            },
         },
 
         // actions

@@ -80,11 +80,11 @@
             },
 
             hasDefinitions : function() {
-                return Object.keys(this.$store.getters.getDefinitions.attributes || {}).length > 0;
+                return Object.keys(this.$store.getters.getDefinitionAttributes || {}).length > 0;
             },
 
             definitions: function() {
-                return this.$store.getters.getDefinitions.attributes || {};
+                return this.$store.getters.getDefinitionAttributes || {};
             },
 
             dragOptions: function() {

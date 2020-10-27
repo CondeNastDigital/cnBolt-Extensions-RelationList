@@ -78,21 +78,23 @@
                 var connector = '#connector-{{ buid }}';
                 var searchurl = "{{ paths.bolt }}relationlist/search/{{ context.content.contenttype.slug }}/{{ key }}/";
                 var fetchurl = "{{ paths.bolt }}relationlist/fetch";
-
+                var pool = JSON.stringify({{ field.pool|default({})|json_encode|raw }})
                 var value = $(connector).val() || '{}';
                 var options = {
                     searchurl: searchurl,
                     fetchurl: fetchurl,
+                    config: JSON.stringify({{ RelationList.getExtensionConfig()|default({})|json_encode|raw }}),
+                    pools: pool,
                     element: '#relationlist-{{ buid }}',
                     validation: {}
                 };
 
                 {% if field.min is defined %}
-                options.validation.min = "{{ field.min }}";
+                options.validation.min = '{{ field.min|default }}';
                 {% endif %}
 
                 {% if field.max is defined %}
-                options.validation.max = "{{ field.max }}";
+                options.validation.max = '{{ field.max|default }}';
                 {% endif %}
 
                 let cnRelationList = new CnRelationList({

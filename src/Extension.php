@@ -47,12 +47,11 @@ class Extension extends SimpleExtension
         $extensionWebPath = $resources->getUrl('root');
         $extensionDefinitions = '{}';
 
-
         return [
             (new JavaScript('js/bundle.web.js'))
                 ->setZone(Zone::BACKEND)
                 ->setAttributes([
-                    'data-extension-relationlist-config='.$config,
+                    "data-extension-relationlist-config='".$config."'",
                     'data-root-url='.$extensionWebPath,
                     'data-extension-url='.$extensionUrl,
                     'data-extension-definitions='.$extensionDefinitions,
@@ -61,7 +60,7 @@ class Extension extends SimpleExtension
             (new JavaScript('js/extension-for/sir-trevor.js'))
                 ->setZone(Zone::BACKEND)
                 ->setAttributes([
-                    'data-extension-relationlist-config='.$config,
+                    "data-extension-relationlist-config='".$config."'",
                     'data-root-url='.$extensionWebPath,
                     'data-extension-url='.$extensionUrl,
                     'data-extension-definitions='.$extensionDefinitions,
