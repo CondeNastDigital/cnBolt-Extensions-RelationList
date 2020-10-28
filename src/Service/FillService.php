@@ -90,6 +90,10 @@ class FillService {
         if($count > count($fixedItems)) {
             $resultsByConnector = [];
             foreach ($pool['sources'] as $sourceKey => $source) {
+
+                if (isset($parameters['pools']) && !in_array($sourceKey, $parameters['pools']))
+                    continue;
+
                 $connector = $this->connectors[$source['connector'] ?? false] ?? false;
 
                 if (!$connector) {
