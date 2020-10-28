@@ -44,7 +44,7 @@ export default {
     },
 
     getFields() {
-      return this.setAllToInitialField(this.fields, 'pools')
+      return this.setAllToInitialField(this.fields, 'pool_sources')
     },
 
     setAllToInitialField(fields, field){
@@ -54,7 +54,7 @@ export default {
         let value = []
 
         switch (field){
-          case 'pools':
+          case 'pool_sources':
             for (let option in this.getPoolOptions()){
               value.push(this.getPoolOptions()[option].value)
             }
@@ -124,7 +124,7 @@ export default {
 
     if (this.getPoolOptions().length > 0) {
       this.addAdditionalField({
-        pools: {
+        pool_sources: {
           label: 'Quellen',
           type: 'checkboxgroup',
           options: this.getPoolOptions()
