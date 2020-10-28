@@ -189,6 +189,8 @@ export default {
 
   .checkboxgroup .custom-checkbox {
     display: inline-block;
+    padding-left: 0;
+    padding-right: 1.3125rem;
   }
   .checkboxgroup .custom-checkbox:first-child {
     padding-left: 0;
