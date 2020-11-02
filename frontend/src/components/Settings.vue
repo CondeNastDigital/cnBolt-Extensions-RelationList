@@ -55,9 +55,7 @@ export default {
 
         switch (field){
           case 'pool_sources':
-            for (let option in this.getPoolOptions()){
-              value.push(this.getPoolOptions()[option].value)
-            }
+            value = this.$store.getters.getDefaultSources();
             break
 
           default:

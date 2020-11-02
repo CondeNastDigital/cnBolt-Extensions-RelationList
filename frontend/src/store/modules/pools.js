@@ -32,6 +32,11 @@ export default () => {
 
       getPoolSourcesFor: (state, getters) => (pool) => {
         return getters.getPoolFor(pool).sources || false
+      },
+
+      getDefaultSources: (state, getters) => (pool) => {
+        let config = getters.getConfig || {};
+        return config.sources_default || [];
       }
     },
 

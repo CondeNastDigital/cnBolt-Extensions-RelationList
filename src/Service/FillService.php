@@ -85,13 +85,15 @@ class FillService {
         // add fixed items to shown
         $this->addShownItems($fixedItems, $bucket);
 
+        $activeSources = $parameters['pool_sources'] ?? $pool['sources-default'] ?? array_keys($pool['sources']);
+
         $results = [];
         // Load additional items from connectors
         if($count > count($fixedItems)) {
             $resultsByConnector = [];
             foreach ($pool['sources'] as $sourceKey => $source) {
 
-                if (isset($parameters['pool_sources']) && !in_array($sourceKey, $parameters['pool_sources']))
+                if (!in_array($activeSources, $activeSources))
                     continue;
 
                 $connector = $this->connectors[$source['connector'] ?? false] ?? false;
