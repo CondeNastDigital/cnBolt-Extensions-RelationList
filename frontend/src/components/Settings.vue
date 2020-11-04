@@ -55,7 +55,7 @@ export default {
 
         switch (field){
           case 'pool_sources':
-            value = this.$store.getters.getDefaultSources();
+            value = this.$store.getters.getDefaultSourcesFor('fill');
             break
 
           default:
