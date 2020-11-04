@@ -66,3 +66,48 @@
         color: #555;
     }
 </style>
+<style>
+/* globals */
+.relationlist {
+  position: relative;
+  min-height: 350px;
+}
+.relationlist.scontent{
+  min-height: auto;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  padding: 5px 0;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+}
+
+/* card */
+.card {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: border-box;
+  border: 1px solid rgba(0,0,0,.125);
+  border-radius: .25rem;
+}
+
+.card.item:nth-child(even) {
+  background-color: #eeeeee;
+}
+
+.card-body {
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+  padding: 1.25rem;
+}
+
+.card-title {
+  margin-bottom: .75rem;
+}
+
+</style>
