@@ -2,8 +2,8 @@
 const Vue = require('vue');
 const path = require('path');
 
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const extractCSS = new ExtractTextPlugin('styles.min.css');
+// const ExtractTextPlugin = require('extract-text-webpack-plugin');
+// const extractCSS = new ExtractTextPlugin('styles.min.css');
 
 const clientConfig = {
     target: 'web',
@@ -58,10 +58,10 @@ const clientConfig = {
             },
             {
                 test: /\.css$/,
-                use: extractCSS.extract([
-                    'css-loader',
-                    'postcss-loader'
-                ])
+                use: [
+                    'vue-style-loader',
+                    'css-loader'
+                ]
             },
             {
                 test: /\.(jpe?g|png|gif|woff|woff2|eot|ttf|svg)(\?[a-z0-9=.]+)?$/,
@@ -70,7 +70,7 @@ const clientConfig = {
         ]
     },
     plugins: [
-        extractCSS
+        // extractCSS
     ]
 };
 
@@ -127,10 +127,10 @@ const serverConfig = {
             },
             {
                 test: /\.css$/,
-                use: extractCSS.extract([
+                use: [
+                    'vue-style-loader',
                     'css-loader',
-                    'postcss-loader'
-                ])
+                ]
             },
             {
                 test: /\.(jpe?g|png|gif|woff|woff2|eot|ttf|svg)(\?[a-z0-9=.]+)?$/,
@@ -139,7 +139,7 @@ const serverConfig = {
         ]
     },
     plugins: [
-        extractCSS
+        // extractCSS
     ],
     devServer: {
         port: 3000
