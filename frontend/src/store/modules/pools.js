@@ -35,7 +35,7 @@ export default () => {
       },
 
       getDefaultSourcesFor: (state, getters) => (pool) => {
-        let defaults = getters.getPoolFor(pool).sources_default || Object.keys(getters.getPoolFor(pool).sources);
+        let defaults = getters.getPoolFor(pool).sources_default || Object.keys(getters.getPoolFor(pool).sources || {});
         return defaults || [];
       }
     },
