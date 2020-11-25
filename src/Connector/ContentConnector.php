@@ -40,8 +40,13 @@ class ContentConnector extends BaseConnector {
             ];
 
             // Add search filter
-            $query['filter']['title'] = $text;
-            $query['operator']['title'] = get_class($StorageService)::OPERATOR_CONTAINS;
+            if(is_numeric($text)){
+                $query['filter']['id'] = (int)$text;
+                $query['operator']['id'] = get_class($StorageService)::OPERATOR_EQUALS;
+            } else {
+                $query['filter']['title'] = $text;
+                $query['operator']['title'] = get_class($StorageService)::OPERATOR_CONTAINS;
+            }
 
             // Apply parameters
             $parameters = $this->getQueryParameters($config['defaults'], $parameters);
