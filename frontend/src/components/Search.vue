@@ -128,7 +128,7 @@
                 if (endpoint && typeof(val) !== 'undefined') {
                     this.$store.dispatch('setReady', false);
 
-                    let uri = endpoint + val;
+                    let uri = endpoint + encodeURIComponent(val);
                     let globals = this.$store.getters.getGlobals;
 
                     this.$http
