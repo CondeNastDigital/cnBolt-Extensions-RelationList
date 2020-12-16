@@ -153,7 +153,7 @@ abstract class BaseConnector implements IConnector {
             $toSet = &$target;
 
             $value = array_reduce($path, function($array, $key) {
-                return $array[$key] ?? false;
+                return is_array($array) && isset($array[$key]) ? $array[$key] : false;
             }, $source);
 
             $toSet = array_reduce($field, function(&$array, $key) {
