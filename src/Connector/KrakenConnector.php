@@ -60,8 +60,8 @@ class KrakenConnector extends BaseConnector {
         $query['filter']['$text'] = ['$search' => $text];
 
         // Apply parameters
-        $parameters = $this->getQueryParameters($config['defaults'], $parameters);
-        $query = $this->applyQueryParameters($query, $parameters);
+        $parameters = $this->getQueryParameters($config['defaults'] , $parameters);
+        $query = $this->applyQueryParameters($query, $parameters + $config['custom-fields']);
 
         return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']);
     }
@@ -105,42 +105,46 @@ class KrakenConnector extends BaseConnector {
 
         // Apply parameters
         $parameters = $this->getQueryParameters($config['defaults'], $parameters);
-        $query = $this->applyQueryParameters($query, $parameters);
+        $query = $this->applyQueryParameters($query, $parameters + $config['custom-fields']);
 
         return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']);
     }
 
     // ----------------------------------------------------------------------------------------------
 
-    protected function record2Relation($record): Relation {
+    protected function record2Relation($record, $customFields=[]): Relation {
         $item = new Relation();
         $item->id = $record['control']['uid'];
         $item->type = $record['type'];
         $item->service = $this->key;
         $item->teaser = [
-            'title' => strtoupper($record['source']['name']).' - '.$record['content']['title'],
-            'image' => $this->getImage($record),
+            'title'       => strtoupper($record['source']['name']).' - '.$record['content']['title'],
+            'image'       => $this->getImage($record),
             'description' => $record['content']['abstract'],
-            'date' => date('c', strtotime($record['control']['publishDate'])),
-            'link' => $record['teaser']['url'],
+            'date'        => date('c', strtotime($record['control']['publishDate'])),
+            'link'        => $record['teaser']['url']
         ];
+
+        $this->applyCustomFields($customFields, $record, $item->teaser);
 
         return $item;
     }
 
-    protected function record2Item($record): Item {
+    protected function record2Item($record, $customFields=[]): Item {
         $item = new Item();
         $item->id = $record['control']['uid'];
         $item->type = $record['type'];
         $item->service = $this->key;
         $item->object = $record;
         $item->teaser = [
-            'title' => strtoupper($record['source']['name']).' - '.$record['content']['title'],
-            'image' => $this->getImage($record),
+            'title'       => strtoupper($record['source']['name']).' - '.$record['content']['title'],
+            'image'       => $this->getImage($record),
             'description' => $record['content']['abstract'],
-            'date' => date('c', strtotime($record['control']['publishDate'])),
-            'link' => $record['teaser']['url'],
+            'date'        => date('c', strtotime($record['control']['publishDate'])),
+            'link'        => $record['teaser']['url']
         ];
+
+        $this->applyCustomFields($customFields, $record, $item->teaser);
 
         return $item;
     }

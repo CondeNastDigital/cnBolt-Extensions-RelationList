@@ -49,7 +49,7 @@ class ContentConnector extends BaseConnector {
             }
 
             // Apply parameters
-            $parameters = $this->getQueryParameters($config['defaults'], $parameters);
+            $parameters = $this->getQueryParameters( $config['defaults'] + $config['custom-fields'], $parameters);
             $query = $this->applyQueryParameters($query, $parameters);
 
             $content = [

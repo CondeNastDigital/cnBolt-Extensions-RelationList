@@ -32,7 +32,7 @@ abstract class BaseConnector implements IConnector {
 
         // Create item list
         foreach($results as $result){
-            $item = $this->record2Item($result);
+            $item = $this->record2Item($result, $this->config['custom-fields'] ?? []);
             if($item instanceof Item) {
                 $items[] = $item;
             }
@@ -51,7 +51,7 @@ abstract class BaseConnector implements IConnector {
         foreach($relations as $idx => $relation){
 
             if(isset($results[$relation->id])){
-                $updated = $this->record2Relation($results[$relation->id]);
+                $updated = $this->record2Relation($results[$relation->id], $this->config['custom-fields'] ?? []);
                 $updated->attributes = $relation->attributes;
                 $relations[$idx] = $updated;
             } else {
@@ -72,7 +72,7 @@ abstract class BaseConnector implements IConnector {
         // Create item list and remove objects not found
         foreach($relations as $idx => $relation){
             if(isset($results[$relation->id])){
-                $item = $this->record2Item($results[$relation->id]);
+                $item = $this->record2Item($results[$relation->id], $this->config['custom-fields'] ?? []);
                 if($item instanceof Item) {
                     $item->attributes = $relation->attributes ?? [];
                     $items[] = $item;
@@ -92,7 +92,7 @@ abstract class BaseConnector implements IConnector {
 
         // Create item list
         foreach($results as $result){
-            $item = $this->record2Item($result);
+            $item = $this->record2Item($result, $config['custom-fields'] ?? []);
             if($item instanceof Item) {
                 $items[] = $item;
             }
@@ -143,6 +143,34 @@ abstract class BaseConnector implements IConnector {
     // ------------------------------------------------------------------------------------------------
     // Utility functions
 
+    protected function applyCustomFields($fields, $source, &$target) {
+
+        // get all the strign paths
+        foreach($fields as $field => $path) {
+            $path  = explode('.', $path);
+            $field = explode('.', $field);
+            $last  = array_pop($field);
+            $toSet = &$target;
+
+            $value = array_reduce($path, function($array, $key) {
+                return $array[$key] ?? false;
+            }, $source);
+
+            $toSet = array_reduce($field, function(&$array, $key) {
+                if(!array_key_exists($key, $array)) {
+                    $array[$key] = [];
+                }
+
+                $ret = &$array[$key];
+                return $ret;
+
+            }, $toSet);
+
+            $toSet[$last] = $value;
+        }
+
+    }
+
     /**
      * Replace placeholders '%sample-key%' from array of replacements ['sample-key' => 'sample value']
      * @param $query
@@ -151,15 +179,36 @@ abstract class BaseConnector implements IConnector {
      */
     protected function applyQueryParameters($query, $parameters){
         $replacements = [];
-        array_walk($parameters, function($value, $key) use (&$replacements){
+        array_walk($parameters, function($value, $key) use (&$replacements, $parameters){
             $replacements['%'.$key.'%'] = $value;
+            $link = is_string($value) && isset($parameters[$value]) ? $parameters[$value] : null;
+            $replacements['%%'.$key.'%%'] = $link;
         });
 
-        array_walk_recursive($query, function(&$value, $key) use ($replacements){
-            if(is_string($value) && array_key_exists($value,$replacements)) {
-                $value = $replacements[$value];
+        $path = [&$query];
+        $i = 0;
+
+        while($i<count($path) && $i<10000) {
+            $current = &$path[$i++];
+
+            foreach($current as $key => &$val) {
+                // Replace a key placeholder
+                if(array_key_exists($key, $replacements)) {
+                    $current[$replacements[$key]] = $val;
+                    unset($current[$key]);
+                }
+
+                // Replace a value placeholder
+                if(is_string($val) && array_key_exists($val,$replacements)) {
+                    $val = $replacements[$val];
+                }
+
+                // Add to the process $path $path
+                if(is_array($val)) {
+                    $path[] = &$val;
+                }
             }
-        });
+        }
 
         return $query;
     }
