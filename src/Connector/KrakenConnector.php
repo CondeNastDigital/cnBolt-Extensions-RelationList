@@ -46,7 +46,7 @@ class KrakenConnector extends BaseConnector {
      * @throws \CND\KrakenSDK\Exception
      * @throws \Exception
      */
-    public function searchRecords($config, $text, $parameters = []): array{
+    public function searchRecords($config, $text): array{
 
         // Basic Query
         $query = ($config['query'] ?? []) + [
@@ -58,10 +58,6 @@ class KrakenConnector extends BaseConnector {
 
         // Add search filter
         $query['filter']['$text'] = ['$search' => $text];
-
-        // Apply parameters
-        $parameters = $this->getQueryParameters($config['defaults'] , $parameters);
-        $query = $this->applyQueryParameters($query, $parameters + $config['custom-fields']);
 
         return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']);
     }
@@ -92,7 +88,7 @@ class KrakenConnector extends BaseConnector {
      * @inheritdoc
      * @throws \Exception
      */
-    protected function fillRecords($config, $count, $parameters = [], $exclude = []): array {
+    protected function fillRecords($config, $count, $exclude = []): array {
         // Basic Query
         $query = ($config['query'] ?? []) + [
             'filter' => [],
@@ -102,10 +98,6 @@ class KrakenConnector extends BaseConnector {
         ];
 
         $query['filter']['control.uid'] = ['$nin' => $exclude];
-
-        // Apply parameters
-        $parameters = $this->getQueryParameters($config['defaults'], $parameters);
-        $query = $this->applyQueryParameters($query, $parameters + $config['custom-fields']);
 
         return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']);
     }

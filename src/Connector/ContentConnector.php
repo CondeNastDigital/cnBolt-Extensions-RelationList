@@ -12,7 +12,7 @@ class ContentConnector extends BaseConnector {
      * @inheritdoc
      * @throws \Exception
      */
-    public function searchRecords($config, $text, $parameters = []): array{
+    public function searchRecords($config, $text): array{
         $results = [];
         $StorageService = false;
 
@@ -48,10 +48,6 @@ class ContentConnector extends BaseConnector {
                 $query['operator']['title'] = get_class($StorageService)::OPERATOR_CONTAINS;
             }
 
-            // Apply parameters
-            $parameters = $this->getQueryParameters( $config['defaults'] + $config['custom-fields'], $parameters);
-            $query = $this->applyQueryParameters($query, $parameters);
-
             $content = [
                 'results' => $StorageService->selectContent($query)
             ];
@@ -68,7 +64,7 @@ class ContentConnector extends BaseConnector {
 
     // ----------------------------------------------------------------------------------------------
 
-    protected function record2Relation($record): Relation {
+    protected function record2Relation($record, $customFields=[]): Relation {
         $item = new Relation();
         $item->id = $record->contenttype['slug'] . '/' . $record->id;
         $item->type = $record->contenttype['singular_slug'];
@@ -81,10 +77,12 @@ class ContentConnector extends BaseConnector {
             'link' => $record->editlink(),
         ];
 
+        $this->applyCustomFields($customFields, $record, $item->teaser);
+
         return $item;
     }
 
-    protected function record2Item($record): Item {
+    protected function record2Item($record, $customFields=[]): Item {
         $item = new Item();
         $item->id = $record->contenttype['slug'] . '/' . $record->id;
         $item->type = $record->contenttype['singular_slug'];
@@ -97,6 +95,8 @@ class ContentConnector extends BaseConnector {
             'date' => date('c', strtotime($record->get('datepublish'))),
             'link' => $record->editlink(),
         ];
+
+        $this->applyCustomFields($customFields, $record, $item->teaser);
 
         return $item;
     }
@@ -179,7 +179,7 @@ class ContentConnector extends BaseConnector {
      * @inheritdoc
      * @throws \Exception
      */
-    protected function fillRecords($config, $count, $parameters = [], $exclude = []): array{
+    protected function fillRecords($config, $count, $exclude = []): array{
         $results = [];
 
         if ($this->container->offsetExists('cnd-library.storage')) {
@@ -207,10 +207,6 @@ class ContentConnector extends BaseConnector {
 
         $query['filter']['contentslug'] = $exclude;
         $query['operator']['contentslug'] = 'notin';
-
-        // Apply parameters
-        $parameters = $this->getQueryParameters($config['defaults'], $parameters);
-        $query = $this->applyQueryParameters($query, $parameters);
 
         return $StorageService->selectContent($query);
     }

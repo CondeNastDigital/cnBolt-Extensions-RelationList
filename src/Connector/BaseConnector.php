@@ -26,8 +26,8 @@ abstract class BaseConnector implements IConnector {
     /**
      * @inheritdoc
      */
-    public function searchRelations($config, $text, $parameters = []): array{
-        $results = $this->searchRecords($config, $text, $parameters);
+    public function searchRelations($config, $text): array{
+        $results = $this->searchRecords($config, $text);
         $items = [];
 
         // Create item list
@@ -86,8 +86,8 @@ abstract class BaseConnector implements IConnector {
     /**
      * @inheritdoc
      */
-    public function fillItems($config, $count, $parameters = [], $exclude = []): array {
-        $results = $this->fillRecords($config, $count, $parameters, $exclude);
+    public function fillItems($config, $count, $exclude = []): array {
+        $results = $this->fillRecords($config, $count, $exclude);
         $items = [];
 
         // Create item list
@@ -123,7 +123,7 @@ abstract class BaseConnector implements IConnector {
      * @param array $parameters
      * @return array
      */
-    abstract protected function searchRecords($config, $text, $parameters = []): array;
+    abstract protected function searchRecords($config, $text): array;
 
     /**
      * @param Relation[] $relations
@@ -138,20 +138,33 @@ abstract class BaseConnector implements IConnector {
      * @param array $exclude
      * @return array
      */
-    abstract protected function fillRecords($config, $count, $parameters = [], $exclude = []): array;
+    abstract protected function fillRecords($config, $count, $exclude = []): array;
 
     // ------------------------------------------------------------------------------------------------
     // Utility functions
-    protected function applyCustomFields($fields, $source, &$target) {
-        // get all the strign paths
+
+    /**
+     * Transfers fields and their values from a source array to a target array.
+     * Not moved to the Utility Class as the data may need to be adapted to fit the local logic.
+     * @param array $fields Array of mappings. The key is the path in the target array, the value if the path in the source array
+     * @param $source
+     * @param $target
+     * @return mixed
+     */
+    protected function applyCustomFields(array $fields, $source, &$target) {
+        // get all the string paths
         foreach($fields as $field => $path) {
             $path  = explode('.', $path);
             $field = explode('.', $field);
             $last  = array_pop($field);
             $toSet = &$target;
+
+            // Read the Value from the source array
             $value = array_reduce($path, function($array, $key) {
                 return is_array($array) && isset($array[$key]) ? $array[$key] : false;
             }, $source);
+
+            // Set the Value into the Target array
             $toSet = array_reduce($field, function(&$array, $key) {
                 if(!array_key_exists($key, $array)) {
                     $array[$key] = [];
@@ -161,59 +174,10 @@ abstract class BaseConnector implements IConnector {
             }, $toSet);
             $toSet[$last] = $value;
         }
-    }
-    /**
-     * Replace search > replacement from array of replacements
-     * @param $query
-     * @param $parameters
-     * @return mixed
-     */
-    protected function applyQueryParameters($query, $replacements){
-        $path = [&$query]; // Helper variable for recursive replacements in below loop
-        $i = 0;
-        while($i<count($path) && $i<10000) {
-            $current = &$path[$i++];
-            foreach($current as $key => &$val) {
-                // Replace a key placeholder in $query
-                if(array_key_exists($key, $replacements)) {
-                    $current[$replacements[$key]] = $val;
-                    unset($current[$key]);
-                }
-                // Replace a value placeholder in $query
-                if(is_string($val) && array_key_exists($val,$replacements)) {
-                    $val = $replacements[$val];
-                }
-                // Add to the process $path $path
-                if(is_array($val)) {
-                    $path[] = &$val;
-                }
-            }
-        }
-        return $query;
+
+        return $target;
     }
 
-    /**
-     * Generate a list of replacements from given and default values
-     * @param $defaults
-     * @param $parameters
-     * @return array
-     */
-    protected function getQueryParameters($defaults, $parameters, $customfields = []): array {
-        // Remove any empty strings from given parameters. These should fallback to defaults.
-        // (Reason: Empty values from Input-Fields in forms have empty strings when nothing is specified instead of false/null)
-        $filtered = array_filter($parameters, function($value,$key) {
-            return (bool)$value;
-        }, ARRAY_FILTER_USE_BOTH);
-        $parameters = $filtered + $defaults;
-        // Prepare replacements array with proper key/values for string replacement
-        array_walk($parameters, function($value, $key) use (&$replacements, $customfields){
-            // Syntax 1 - '%<key>%' - Normale values from parameters (relationlist global attrributes) array
-            $replacements['%'.$key.'%'] = $value;
-            // Syntax 2 - '%customfields%<key>%' - Values from $customfields (mapping of custom fields in teaser object)
-            $mapped = is_string($value) && isset($customfields[$value]) ? $customfields[$value] : null;
-            $replacements['%customfields%'.$key.'%'] = $mapped;
-        });
-        return $replacements;
-    }
+
 
 }

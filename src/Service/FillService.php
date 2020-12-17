@@ -6,6 +6,7 @@ use Bolt\Application;
 use Bolt\Extension\CND\RelationList\Entity\Item;
 use Bolt\Extension\CND\RelationList\Entity\Relation;
 use Bolt\Extension\CND\RelationList\IConnector;
+use Bolt\Extension\CND\RelationList\Utility\ConfigUtility;
 
 class FillService {
 
@@ -74,6 +75,7 @@ class FillService {
      */
     public function getItems($poolKeys, $count, $parameters = [], $fixedItems = [], $bucket = 'default', $addShown = true){
 
+        $poolDefaults = [];
         $poolKey = $poolKeys['fill']    // seperate pools per type
                 ?? $poolKeys;            // one pool for everything
 
@@ -91,7 +93,7 @@ class FillService {
         // Load additional items from connectors
         if($count > count($fixedItems)) {
             $resultsByConnector = [];
-            foreach ($pool['sources'] as $sourceKey => $source) {
+            foreach ($pool['sources'] as $sourceKey => &$source) {
 
                 if (!in_array($sourceKey, $activeSources))
                     continue;
@@ -102,10 +104,21 @@ class FillService {
                     throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
                 }
 
+                // Merge the Defaults
+                $defaults = $pool['defaults'] ?? [];
+                $defaults += $source['defaults'] ?? [];
+
+                $placeholders = ConfigUtility::getQueryParameters(
+                    $defaults,
+                    $parameters,
+                    $source['customfields'] ?? []
+                );
+                $source = ConfigUtility::applyQueryParameters($source, $placeholders);
+
                 $exclusion = self::$alreadyShown[$bucket][$source['connector']] ?? [];
 
                 try {
-                    $resultsByConnector[] = $connector->fillItems($source, $count, $parameters, $exclusion);
+                    $resultsByConnector[] = $connector->fillItems($source, $count, $exclusion);
                 } catch (\Exception $e) {
                     $this->container['logger']->error('RelationFill - Exception in connector '.$sourceKey, ['exception' => $e]);
                 }
@@ -116,9 +129,14 @@ class FillService {
             unset($resultsByConnector);
         }
 
+        $pool = ConfigUtility::getQueryParameters(
+            $pool['defaults'] ?? [],
+            $parameters
+        );
+
         // merge all records into one array and sort
-        $sortKey = $pool['order'] ?? '!date';
-        $sortDir = strpos($sortKey, '!') !== 0;
+        $sortKey = trim($pool['order'], "!") ?? 'date';
+        $sortDir = $pool['order-direction'] ?? false;
 
         if($sortKey){
             $sorted = [];

@@ -7,6 +7,7 @@ use Bolt\Extension\CND\RelationList\Entity\Base;
 use Bolt\Extension\CND\RelationList\Entity\Item;
 use Bolt\Extension\CND\RelationList\Entity\Relation;
 use Bolt\Extension\CND\RelationList\IConnector;
+use Bolt\Extension\CND\RelationList\Utility\ConfigUtility;
 
 class RelationService {
 
@@ -49,7 +50,18 @@ class RelationService {
                 throw new \Exception('Connector configuration for pool with source "' . $sourceKey . '" invalid');
             }
 
-            $results[] =  $connector->searchRelations($source, $text, $parameters);
+            // Merge the Defaults
+            $defaults = $pool['defaults'] ?? [];
+            $defaults += $source['defaults'] ?? [];
+
+            $placeholders = ConfigUtility::getQueryParameters(
+                $defaults,
+                $parameters,
+                $source['customfields'] ?? []
+            );
+            $source = ConfigUtility::applyQueryParameters($source, $placeholders);
+
+            $results[] =  $connector->searchRelations($source, $text);
         }
         return $results ? array_merge(...$results) : [];
     }
