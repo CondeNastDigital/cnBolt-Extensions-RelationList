@@ -75,7 +75,6 @@ class FillService {
      */
     public function getItems($poolKeys, $count, $parameters = [], $fixedItems = [], $bucket = 'default', $addShown = true){
 
-        $poolDefaults = [];
         $poolKey = $poolKeys['fill']    // seperate pools per type
                 ?? $poolKeys;            // one pool for everything
 
@@ -135,20 +134,19 @@ class FillService {
         );
 
         // merge all records into one array and sort
-        $sortKey = trim($pool['order'], "!") ?? 'date';
+        $sortKey = trim($pool['order'] ?? 'date', "!") ;
         $sortDir = $pool['order-direction'] ?? false;
 
-        if($sortKey){
+        if ($sortKey) {
             $sorted = [];
-            $sortKey = trim($sortKey, '!');
 
-            foreach($results as $item){
-                $key = $item->teaser[$sortKey].$item->id;
+            foreach ($results as $item) {
+                $key = ($item->teaser[$sortKey] ?? '') . $item->id;
                 $sorted[$key] = $item;
             }
             ksort($sorted, SORT_STRING);
 
-            if(!$sortDir){
+            if (!$sortDir) {
                 $sorted = array_reverse($sorted);
             }
 
@@ -157,7 +155,7 @@ class FillService {
 
         // merge with positioned items (Use reversed fixed items for injection otherwise they will push each other around!)
         $positionKey = $pool['position'] ?? false;
-        foreach(array_reverse($fixedItems) as $item){
+        foreach (array_reverse($fixedItems) as $item) {
             $position = $positionKey ? ($item->attributes[$positionKey] ?? 0) : 0;
             array_splice($results, $position, 0, [$item]);
         }

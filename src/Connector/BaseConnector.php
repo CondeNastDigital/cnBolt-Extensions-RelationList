@@ -32,7 +32,7 @@ abstract class BaseConnector implements IConnector {
 
         // Create item list
         foreach($results as $result){
-            $item = $this->record2Item($result, $this->config['custom-fields'] ?? []);
+            $item = $this->record2Item($result, $this->config['customfields'] ?? []);
             if($item instanceof Item) {
                 $items[] = $item;
             }
@@ -72,7 +72,7 @@ abstract class BaseConnector implements IConnector {
         // Create item list and remove objects not found
         foreach($relations as $idx => $relation){
             if(isset($results[$relation->id])){
-                $item = $this->record2Item($results[$relation->id], $this->config['custom-fields'] ?? []);
+                $item = $this->record2Item($results[$relation->id], $this->config['customfields'] ?? []);
                 if($item instanceof Item) {
                     $item->attributes = $relation->attributes ?? [];
                     $items[] = $item;
@@ -92,7 +92,7 @@ abstract class BaseConnector implements IConnector {
 
         // Create item list
         foreach($results as $result){
-            $item = $this->record2Item($result, $config['custom-fields'] ?? []);
+            $item = $this->record2Item($result, $config['customfields'] ?? []);
             if($item instanceof Item) {
                 $items[] = $item;
             }

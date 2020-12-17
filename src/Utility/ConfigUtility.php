@@ -58,7 +58,7 @@ class ConfigUtility
             // Syntax 1 - '%<key>%' - Normal values from parameters (relationlist global attrributes) array
             $replacements['%'.$key.'%'] = $value;
             // Syntax 2 - '%customfields%<key>%' - Values from $customfields (mapping of custom fields in teaser object)
-            $mapped = is_string($value) && isset($customfields[$value]) ? $customfields[$value] : null;
+            $mapped = is_string($value) && array_key_exists($value, $customfields) ? $customfields[$value] : null;
             $replacements['%customfields%'.$key.'%'] = $mapped;
         });
 
