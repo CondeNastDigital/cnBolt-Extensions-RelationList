@@ -142,91 +142,78 @@ abstract class BaseConnector implements IConnector {
 
     // ------------------------------------------------------------------------------------------------
     // Utility functions
-
     protected function applyCustomFields($fields, $source, &$target) {
-
         // get all the strign paths
         foreach($fields as $field => $path) {
             $path  = explode('.', $path);
             $field = explode('.', $field);
             $last  = array_pop($field);
             $toSet = &$target;
-
             $value = array_reduce($path, function($array, $key) {
                 return is_array($array) && isset($array[$key]) ? $array[$key] : false;
             }, $source);
-
             $toSet = array_reduce($field, function(&$array, $key) {
                 if(!array_key_exists($key, $array)) {
                     $array[$key] = [];
                 }
-
                 $ret = &$array[$key];
                 return $ret;
-
             }, $toSet);
-
             $toSet[$last] = $value;
         }
-
     }
-
     /**
-     * Replace placeholders '%sample-key%' from array of replacements ['sample-key' => 'sample value']
+     * Replace search > replacement from array of replacements
      * @param $query
      * @param $parameters
      * @return mixed
      */
-    protected function applyQueryParameters($query, $parameters){
-        $replacements = [];
-        array_walk($parameters, function($value, $key) use (&$replacements, $parameters){
-            $replacements['%'.$key.'%'] = $value;
-            $link = is_string($value) && isset($parameters[$value]) ? $parameters[$value] : null;
-            $replacements['%%'.$key.'%%'] = $link;
-        });
-
-        $path = [&$query];
+    protected function applyQueryParameters($query, $replacements){
+        $path = [&$query]; // Helper variable for recursive replacements in below loop
         $i = 0;
-
         while($i<count($path) && $i<10000) {
             $current = &$path[$i++];
-
             foreach($current as $key => &$val) {
-                // Replace a key placeholder
+                // Replace a key placeholder in $query
                 if(array_key_exists($key, $replacements)) {
                     $current[$replacements[$key]] = $val;
                     unset($current[$key]);
                 }
-
-                // Replace a value placeholder
+                // Replace a value placeholder in $query
                 if(is_string($val) && array_key_exists($val,$replacements)) {
                     $val = $replacements[$val];
                 }
-
                 // Add to the process $path $path
                 if(is_array($val)) {
                     $path[] = &$val;
                 }
             }
         }
-
         return $query;
     }
 
     /**
-     * Generate a list of parameters from given and default values
+     * Generate a list of replacements from given and default values
      * @param $defaults
      * @param $parameters
      * @return array
      */
-    protected function getQueryParameters($defaults, $parameters): array {
-        // remove any empty strings from given parameters. These should fallback to defaults.
+    protected function getQueryParameters($defaults, $parameters, $customfields = []): array {
+        // Remove any empty strings from given parameters. These should fallback to defaults.
         // (Reason: Empty values from Input-Fields in forms have empty strings when nothing is specified instead of false/null)
         $filtered = array_filter($parameters, function($value,$key) {
             return (bool)$value;
         }, ARRAY_FILTER_USE_BOTH);
-
-        return $filtered + $defaults;
+        $parameters = $filtered + $defaults;
+        // Prepare replacements array with proper key/values for string replacement
+        array_walk($parameters, function($value, $key) use (&$replacements, $customfields){
+            // Syntax 1 - '%<key>%' - Normale values from parameters (relationlist global attrributes) array
+            $replacements['%'.$key.'%'] = $value;
+            // Syntax 2 - '%customfields%<key>%' - Values from $customfields (mapping of custom fields in teaser object)
+            $mapped = is_string($value) && isset($customfields[$value]) ? $customfields[$value] : null;
+            $replacements['%customfields%'.$key.'%'] = $mapped;
+        });
+        return $replacements;
     }
 
 }
