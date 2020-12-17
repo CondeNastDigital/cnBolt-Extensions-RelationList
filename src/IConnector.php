@@ -23,7 +23,7 @@ interface IConnector {
      * @param array $parameters
      * @return Relation[]
      */
-    public function searchRelations($config, $text, $parameters = []);
+    public function searchRelations($config, $text);
 
     /**
      * Update teaser info on requested relation objects
@@ -48,5 +48,5 @@ interface IConnector {
      * @param array $exclude
      * @return Item[]
      */
-    public function fillItems($config, $count, $parameters = [], $exclude = []);
+    public function fillItems($config, $count, $exclude = []);
 }
