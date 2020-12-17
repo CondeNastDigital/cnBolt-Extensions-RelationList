@@ -104,8 +104,7 @@ class FillService {
                 }
 
                 // Merge the Defaults
-                $defaults = $pool['defaults'] ?? [];
-                $defaults += $source['defaults'] ?? [];
+                $defaults = $source['defaults'] ?? [];
 
                 $placeholders = ConfigUtility::getQueryParameters(
                     $defaults,
