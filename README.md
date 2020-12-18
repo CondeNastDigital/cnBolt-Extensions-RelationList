@@ -125,20 +125,27 @@ that is present within the extensions configuration file`relationlist.cnd.yml`.
 pools:
 
     mypool:
-        order: !date
+        order: %oder%
+        order-direction: false
         position: order
         sources:
 
             content:
+                customfields:
+                    customfield_1: teaser_title 
                 connector: content
                 query:
                     contenttypes: [teasers]
+                    order: %customfields%order%    
 
             kraken:
+                customfields:
+                    customfield_1: teaser.title 
                 connector: kraken
                 query:
                     filter:
                         source.name: {"$in": %site%}
+                    order: %customfields%order%    
                 defaults:
                     site: ['mysite']
 ```
@@ -147,20 +154,143 @@ the pools key contains a list of pools that can be used in your contenttypes.yml
 can specify a list of sources. Each source contains the reference to the connector class to use, a query
 and a set or default parameters if no parameter was given during execution (see template).
 
-- `order` order all resulting items by this teaser attribute. Available attributes are title, description, date. Prefix
-   the key with `!` to reverse order. Default's to `!date`
+- `order` order all resulting items by this teaser attribute. Available attributes are title, description, date and 
+   all the custom attributes defined in `sources.mysource.customfields`. 
+   You can also use `%placeholders%`, where value of the placeholder must be a valid teaser attribute. 
+  
+- `order-direction` the order direction. The defualt is `false`. False stands for descending, while true is for ascending order. 
+
 - `position` all fixed items will be injected at a numeric position stored in an attribute with this name. Otherwise,
    all will be prepended to the beginning of the list. 
 - `sources` a list of connectors and their configuration (see below)
+  
+- `defaults` This is a key/value list of values to replace the placeholders above (the keys needs to be the placeholder
+  without the `%` characters). Dynamic values will be specified while templating, these values are used when nothing
+  was specified.. See twig section below.
 
 A source has a key that serves as it's service id and the following properties:
 
 - `connector` a reference to the connector configurationm top use for this source
+  
+- `customfields` a map  of type `[teaser.attribute => content.path.to.field.value]`. The key is the path of the teaser attribute to set.
+   The right side is the path, which contains the value to use for the new teaser attribute. The Fields **can not** 
+   contain `%placeholders%`.
+  
 - `query` a storage query as required by the connector class to use. Most use a couple of filter and order attributes. 
    The query can also contain `%placeholders%` that refer to values inside the 
 - `defaults` This is a key/value list of values to replace the placeholders above (the keys needs to be the placeholder 
    without the `%` characters). Dynamic values will be specified while templating, these values are used when nothing 
    was specified.. See twig section below.
+
+### Placeholders
+
+The placeholders are used to dynamically change the Pool configuration, based on some user input.
+A placeholder is a value, or a key in the Configuration that starts and ends with a `%`. e.g: %my_placeholder%.
+When calling the `RelationFill.getItems` you can pass an array of key => values, where the key is the name of the placeholder
+and the value its representation. 
+
+A simple example:
+```
+pools:
+    mypool:
+        sources:
+            kraken:
+                connector: kraken
+                query:
+                    filter:
+                        control.updateDate: { $lte: %date% } 
+                        source.name: {"$in": %site%} 
+                defaults:
+                    site: ['mysite']
+                    date: '$cnCurrentDate'
+```
+
+When you call RelationFill service, you need to provide an array of placeholder values:
+
+```
+[
+   "site" => "glamour", 
+   "date" =< "2028-12-01"
+]
+```
+
+The resulting pool looks like this:
+```
+pools:
+    mypool:
+        sources:
+            kraken:
+                connector: kraken
+                query:
+                    filter:
+                        control.updateDate: { $lte: "2028-12-01" } 
+                        source.name: {"$in": "glamour"} 
+                defaults:
+                    site: ['mysite']
+                    date: '$cnCurrentDate'
+```
+
+You can also use placeholder to create custom sorting: 
+
+```
+pools:
+    mypool:
+        order: %order%
+        sources:
+            kraken:
+                connector: kraken
+                customfields:
+                     custom_field: control.updateDate
+                query:
+                    filter:
+                        control.updateDate: { $lte: "2028-12-01" } 
+                        source.name: {"$in": "glamour"}
+                    order: 
+                       %customfields%order%: false     
+                defaults:
+                    site: ['mysite']
+                    date: '$cnCurrentDate'
+```
+
+You may notice that we have used a new placeholder `%customfield%order%`. This is a special way to say:
+Take the value of placeholder %order%, check if a custom field with this name exists, and use its definition (source path) as the value of
+%customfields%order%.
+
+For example: if we pass an array with the following properties:
+```
+[
+   "site"  => "glamour", 
+   "date"  => "2028-12-01"
+   "order" => "custom_field"
+]
+```
+
+The pool above will be converted into:
+
+```
+pools:
+    mypool:
+        order: 'custom_field'
+        sources:
+            kraken:
+                connector: kraken
+                customfields:
+                     custom_field: control.updateDate
+                query:
+                    filter:
+                        control.updateDate: { $lte: "2028-12-01" } 
+                        source.name: {"$in": "glamour"}
+                    order: 
+                       control.updateDate: false     
+                defaults:
+                    site: ['mysite']
+                    date: '$cnCurrentDate'
+```
+
+ - `%order%` will be replaced by the direct value form the placeholders array - 'custom_field'
+ - `%customfields%order%` will be replaced by the value of the customfield.custom_field - 'control.updateDate'
+
+At the moment we only support `%customfield%xxx%`, and it will not work for any other pool sub-configuration.
 
 ### Connector
 Each pool uses one or more sources, which need a connector configuration. A connector configuration needs a key
