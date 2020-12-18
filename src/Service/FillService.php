@@ -127,13 +127,14 @@ class FillService {
             unset($resultsByConnector);
         }
 
-        $pool = ConfigUtility::getQueryParameters(
+        $placeholders = ConfigUtility::getQueryParameters(
             $pool['defaults'] ?? [],
             $parameters
         );
+        $pool = ConfigUtility::applyQueryParameters($pool, $placeholders);
 
         // merge all records into one array and sort
-        $sortKey = trim($pool['order'] ?? 'date', "!") ;
+        $sortKey = trim($pool['order'] ?? 'date', "!");
         $sortDir = $pool['order-direction'] ?? false;
 
         if ($sortKey) {
@@ -143,7 +144,7 @@ class FillService {
                 $key = ($item->teaser[$sortKey] ?? '') . $item->id;
                 $sorted[$key] = $item;
             }
-            ksort($sorted, SORT_STRING);
+            ksort($sorted, SORT_NATURAL);
 
             if (!$sortDir) {
                 $sorted = array_reverse($sorted);
