@@ -46,6 +46,8 @@ class ConfigUtility
      */
     public static function getQueryParameters($defaults, $parameters, $customfields = []): array {
 
+        $replacements = [];
+
         // Remove any empty strings from given parameters. These should fallback to defaults.
         // (Reason: Empty values from Input-Fields in forms have empty strings when nothing is specified instead of false/null)
         $filtered = array_filter($parameters, function($value,$key) {
