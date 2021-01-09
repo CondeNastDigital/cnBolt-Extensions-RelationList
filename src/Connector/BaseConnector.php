@@ -92,9 +92,13 @@ abstract class BaseConnector implements IConnector {
 
         // Create item list
         foreach($results as $result){
-            $item = $this->record2Item($result, $config['customfields'] ?? []);
-            if($item instanceof Item) {
-                $items[] = $item;
+            try {
+                $item = $this->record2Item($result, $config['customfields'] ?? []);
+                if ($item instanceof Item) {
+                    $items[] = $item;
+                }
+            } catch (\Exception $e) {
+                dump($e->getMessage());
             }
         }
 
