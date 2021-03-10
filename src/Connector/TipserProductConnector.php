@@ -11,7 +11,6 @@ use CND\KrakenSDK\Services\KrakenService;
 
 class TipserProductConnector extends BaseConnector {
 
-    const SERVICE_NAME = 'tipser';
     const TIPSER_URL_PROD = 'https://t3-prod-api.tipser.com/v4/';
     const TIPSER_URL_STAGING = 'https://t3-stage-api.tipser.com/v4/';
     const TTL = 60;
@@ -33,6 +32,7 @@ class TipserProductConnector extends BaseConnector {
         $api = $config['api'] ?? [];
         $this->apiKey = $api['key'] ?? '';
         $this->env = $api['evn'] ?? 'staging';
+        $this->market = $api['market'] ?? 'de';
 
     }
 
@@ -45,23 +45,41 @@ class TipserProductConnector extends BaseConnector {
 
         // Basic Query
         $query = ($config['query'] ?? []) + [
-                'query' => $text,
-                'limit' => 20,
-                'offset' => 0,
-                'order' => 'name',
-            ];
+            'query'  => $text,
+            'limit'  => 20,
+            'offset' => 0,
+            'order'  => 'name',
+        ];
 
-        return $this->requestTipser('products', $query);
+        return $this->requestTipser('products', $query)['products'] ?? [];
     }
 
-
     /**
+     * This function uses an export endpoint of tipser, to save requests.
+     * However it requires a market!!!
      * @param Relation[] $relations
      * @return array
      * @throws \CND\KrakenSDK\Exception
      */
     protected function getRecords($relations): array{
-        return $relations;
+
+        $ids = [];
+        $result = [];
+
+        foreach ($relations as $relation) {
+            $ids[] = $relation->id;
+        }
+
+        $ids = implode(',', $ids);
+        $products = $this->requestTipser('export/products', [
+            'productIds' => $ids
+        ]) ?: [];
+
+        foreach ($products as $key => $product) {
+            $result[$product['id']] = $product;
+        }
+
+        return $result;
     }
 
     /**
@@ -78,9 +96,9 @@ class TipserProductConnector extends BaseConnector {
         $item = new Relation();
         $item->id = $record['id'];
         $item->type = 'products';
-        $item->service = self::SERVICE_NAME;
+        $item->service = $this->key;
         $item->teaser = [
-            'title'       => strtoupper($item->service).' - '.$record['name'] ?? '',
+            'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
             'description' => $record['description'] ?? '',
             'date'        => null,
@@ -93,17 +111,17 @@ class TipserProductConnector extends BaseConnector {
     }
 
     protected function record2Item($record, $customFields=[]): Item {
-        dump($record);
+
         $item = new Item();
-        return $item;
-        $item->id = $record['id'];
+
+        $item->id = $record['id'] ?? '';
         $item->type = 'product';
-        $item->service = self::SERVICE_NAME;
+        $item->service = $this->key;
         $item->object = $record;
         $item->teaser = [
-            'title'       => strtoupper($item->service).' - '.$record['name'] ?? '',
+            'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
-            'description' => $record['description'],
+            'description' => $record['description'] ?? '',
             'date'        => null,
             'link'        => '#'
         ];
@@ -114,34 +132,34 @@ class TipserProductConnector extends BaseConnector {
     }
 
     /**
+     * Converts the Relationlist Query to a query the Tipser understands
+     * @param $relationQuery
+     * @return array
+     */
+    protected function toTipserQuery($relationQuery):array {
+        // Moves the filter to the upper level - tipser format
+        $filter = $relationQuery['filter'] ?? [];
+        unset($relationQuery['filter']);
+
+        $relationQuery += $filter;
+
+        // Apply system mandatory fields - market and apiKey
+        // Market is required as its needed for getRecords.
+        $relationQuery['market'] = $this->market;
+        $relationQuery['apiKey'] = $this->apiKey;
+
+        return $relationQuery;
+    }
+
+    /**
      * Get largest image for a desired aspect ration
      * @param Content $record
      * @param float $target
      * @return mixed
      */
-    protected function getImage($record, $target = 1.5) {
-
+    protected function getImage($record, $target = '450x') {
         $variants = $record['images'] ?? [];
-
-        $bestImage = false;
-        $bestDiff = false;
-
-        foreach($variants as $variant){
-
-            if(!isset($variant["url"]) || !$variant["url"])
-                continue;
-
-            $diff = abs($target - $variant["aspectRatio"]);
-
-            if($bestDiff === false || $diff < $bestDiff){
-                $bestImage = $variant;
-                $bestDiff = $diff;
-            }
-
-            return $bestImage['url'] ?? false;
-        }
-
-        return false;
+        return reset($variants)[$target] ?? reset($variants)['original'] ?? false;
     }
 
     /**
@@ -156,6 +174,7 @@ class TipserProductConnector extends BaseConnector {
 
         $url  = $this->env === 'production' ? self::TIPSER_URL_PROD : self::TIPSER_URL_STAGING;
         $query['apiKey'] = $this->apiKey;
+        $query = $this->toTipserQuery($query);
 
         $data = http_build_query($query);
 
@@ -165,8 +184,8 @@ class TipserProductConnector extends BaseConnector {
 
         // Check Cache
         $hash = md5($url);
-        if($this->container["cache"]->contains($hash))
-            return $this->container["cache"]->fetch($hash);
+        //if($this->container["cache"]->contains($hash))
+        //    return $this->container["cache"]->fetch($hash);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
