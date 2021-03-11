@@ -117,13 +117,13 @@ class TipserProductConnector extends BaseConnector {
         $item->id = $record['id'] ?? '';
         $item->type = 'product';
         $item->service = $this->key;
-        $item->object = $record;
+        $item->object = $record + ['type' => 'tipser'];
         $item->teaser = [
             'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
             'description' => $record['description'] ?? '',
             'date'        => null,
-            'link'        => '#'
+            'link'        => '#',
         ];
 
         $this->applyCustomFields($customFields, $record, $item->teaser);
