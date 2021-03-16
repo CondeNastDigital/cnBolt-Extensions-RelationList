@@ -100,7 +100,7 @@ class TipserProductConnector extends BaseConnector {
         $item->teaser = [
             'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
-            'description' => $record['description'] ?? '',
+            'description' => strip_tags($record['description'] ?? ''),
             'date'        => null,
             'link'        => '#'
         ];
@@ -121,7 +121,7 @@ class TipserProductConnector extends BaseConnector {
         $item->teaser = [
             'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
-            'description' => $record['description'] ?? '',
+            'description' => strip_tags($record['description'] ?? ''),
             'date'        => null,
             'link'        => '#',
         ];
@@ -184,8 +184,8 @@ class TipserProductConnector extends BaseConnector {
 
         // Check Cache
         $hash = md5($url);
-        //if($this->container["cache"]->contains($hash))
-        //    return $this->container["cache"]->fetch($hash);
+        if($this->container["cache"]->contains($hash))
+            return $this->container["cache"]->fetch($hash);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
