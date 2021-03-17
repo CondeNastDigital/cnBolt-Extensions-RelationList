@@ -43,7 +43,12 @@ class TipserProductConnector extends BaseConnector {
      */
     public function searchRecords($config, $text): array{
 
-        // Basic Query
+        // ID Search
+        if(preg_match('/^[a-f\d]{24}$/i', $text)) {
+            return [$this->requestTipser('products/'.$text)];
+        }
+
+        // Free Text Search
         $query = ($config['query'] ?? []) + [
             'query'  => $text,
             'limit'  => 20,
@@ -170,7 +175,7 @@ class TipserProductConnector extends BaseConnector {
      * @return array|mixed
      * @throws \CND\KrakenSDK\Exception
      */
-    protected function requestTipser($endpoint, $query){
+    protected function requestTipser($endpoint, $query=[]){
 
         $url  = $this->env === 'production' ? self::TIPSER_URL_PROD : self::TIPSER_URL_STAGING;
         $query['apiKey'] = $this->apiKey;
