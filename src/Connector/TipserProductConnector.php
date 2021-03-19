@@ -98,6 +98,8 @@ class TipserProductConnector extends BaseConnector {
     // ----------------------------------------------------------------------------------------------
 
     protected function record2Relation($record, $customFields=[]): Relation {
+        $record = $this->cleanTipserRecord($record);
+
         $item = new Relation();
         $item->id = $record['id'];
         $item->type = 'products';
@@ -105,7 +107,7 @@ class TipserProductConnector extends BaseConnector {
         $item->teaser = [
             'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
-            'description' => strip_tags($record['description'] ?? ''),
+            'description' => $record['description'],
             'date'        => null,
             'link'        => '#'
         ];
@@ -117,16 +119,17 @@ class TipserProductConnector extends BaseConnector {
 
     protected function record2Item($record, $customFields=[]): Item {
 
-        $item = new Item();
+        $record = $this->cleanTipserRecord($record);
 
+        $item = new Item();
         $item->id = $record['id'] ?? '';
         $item->type = 'product';
         $item->service = $this->key;
         $item->object = $record + ['type' => 'tipser'];
         $item->teaser = [
-            'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
+            'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? '')),
             'image'       => $this->getImage($record),
-            'description' => strip_tags($record['description'] ?? ''),
+            'description' => $record['description'],
             'date'        => null,
             'link'        => '#',
         ];
@@ -134,6 +137,17 @@ class TipserProductConnector extends BaseConnector {
         $this->applyCustomFields($customFields, $record, $item->teaser);
 
         return $item;
+    }
+
+    /**
+     * @param $record
+     * @return mixed
+     */
+    protected function cleanTipserRecord($record): array {
+        $record['description'] = strip_tags($record['description'] ?? '');
+        $record['title']       = strip_tags($record['title'] ?? '');
+
+        return $record;
     }
 
     /**
