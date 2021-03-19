@@ -127,7 +127,7 @@ class TipserProductConnector extends BaseConnector {
         $item->service = $this->key;
         $item->object = $record + ['type' => 'tipser'];
         $item->teaser = [
-            'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? '')),
+            'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
             'description' => $record['description'],
             'date'        => null,
