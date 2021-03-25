@@ -223,7 +223,7 @@ class TipserProductConnector extends BaseConnector {
 
         $result = json_decode($output, true);
 
-        if($result && $result['error'] ?? false)
+        if($result && ($result['error'] ?? false))
             return false;
 
         $this->container["cache"]->save($hash, $result, self::TTL);
