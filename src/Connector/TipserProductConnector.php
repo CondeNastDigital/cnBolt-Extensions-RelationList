@@ -45,7 +45,8 @@ class TipserProductConnector extends BaseConnector {
 
         // ID Search
         if(preg_match('/^[a-f\d]{24}$/i', $text)) {
-            return [$this->requestTipser('products/'.$text)];
+            $found = $this->requestTipser('products/'.$text);
+            return $found ? [$found]: [];
         }
 
         // Free Text Search
