@@ -31,7 +31,7 @@ class TipserProductConnector extends BaseConnector {
 
         $api = $config['api'] ?? [];
         $this->apiKey = $api['key'] ?? '';
-        $this->env = $api['evn'] ?? 'staging';
+        $this->env = $api['env'] ?? 'staging';
         $this->market = $api['market'] ?? 'de';
 
     }
@@ -221,6 +221,9 @@ class TipserProductConnector extends BaseConnector {
         curl_close($ch);
 
         $result = json_decode($output, true);
+
+        if($result && $result['error'] ?? false)
+            return false;
 
         $this->container["cache"]->save($hash, $result, self::TTL);
 
