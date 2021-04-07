@@ -89,11 +89,25 @@ class TipserProductConnector extends BaseConnector {
     }
 
     /**
+     * similar?onlyAvailable=true&posId=xxx
      * @inheritdoc
      * @throws \Exception
      */
     protected function fillRecords($config, $count, $exclude = []): array {
-        return [];
+
+        $referenceId   = $config['referenceId'] ?? false;
+        $onlyAvailable = $config['onlyAvailable'] ?? true;
+
+        // ID Check
+        if(!$referenceId || !preg_match('/^[a-f\d]{24}$/i', $referenceId)) {
+            return [];
+        }
+
+        $products = $this->requestTipser('products/' .$referenceId. '/similar', [
+            'onlyAvailable' => $onlyAvailable
+        ]) ?: [];
+
+        return $products;
     }
 
     // ----------------------------------------------------------------------------------------------
