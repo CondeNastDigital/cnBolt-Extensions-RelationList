@@ -51,11 +51,11 @@ class TipserProductConnector extends BaseConnector {
 
         // Free Text Search
         $query = ($config['query'] ?? []) + [
-                'query'  => $text,
-                'limit'  => 20,
-                'offset' => 0,
-                'order'  => 'name',
-            ];
+            'query'  => $text,
+            'limit'  => 20,
+            'offset' => 0,
+            'order'  => 'name',
+        ];
 
         return $this->requestTipser('products', $query)['products'] ?? [];
     }
@@ -97,8 +97,8 @@ class TipserProductConnector extends BaseConnector {
 
         $products = [];
         $config = $config + [
-                "fill" => []
-            ];
+            "fill" => []
+        ];
 
         $mode = $config['fill']['mode'] ?? 'similar';
 
