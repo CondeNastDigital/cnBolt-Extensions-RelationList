@@ -105,7 +105,7 @@ class TipserProductConnector extends BaseConnector {
         switch ($mode) {
             case 'similar':
 
-                $productId = $config['fill']['product'] ?? false;
+                $productId = $config['fill']['productid'] ?? false;
                 if(!preg_match('/^[a-f\d]{24}$/i', $productId))
                     break;
 
@@ -118,7 +118,7 @@ class TipserProductConnector extends BaseConnector {
 
             case 'collection':
 
-                $collectionId = $config['fill']['collection'] ?? false;
+                $collectionId = $config['fill']['collectionid'] ?? false;
                 if(!preg_match('/^[a-f\d]{24}$/i', $collectionId))
                     break;
 
