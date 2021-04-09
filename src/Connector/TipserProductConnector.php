@@ -51,11 +51,11 @@ class TipserProductConnector extends BaseConnector {
 
         // Free Text Search
         $query = ($config['query'] ?? []) + [
-            'query'  => $text,
-            'limit'  => 20,
-            'offset' => 0,
-            'order'  => 'name',
-        ];
+                'query'  => $text,
+                'limit'  => 20,
+                'offset' => 0,
+                'order'  => 'name',
+            ];
 
         return $this->requestTipser('products', $query)['products'] ?? [];
     }
@@ -97,34 +97,34 @@ class TipserProductConnector extends BaseConnector {
 
         $products = [];
         $config = $config + [
-            "fill" => []
-        ];
+                "fill" => []
+            ];
 
-        $mode    = $config['fill']['mode'] ?? 'similar';
+        $mode = $config['fill']['mode'] ?? 'similar';
 
-        if($mode === 'similar') {
-            $referenceId   = $config['fill']['product'] ?? false;
-            $onlyAvailable = $config['fill']['onlyAvailable'] ?? true;
+        switch ($mode) {
+            case 'similar':
 
-            // ID Validation - MongoID
-            if(!$referenceId || !preg_match('/^[a-f\d]{24}$/i', $referenceId)) {
-                return [];
-            }
+                $productId = $config['fill']['product'] ?? false;
+                if(!preg_match('/^[a-f\d]{24}$/i', $productId))
+                    break;
 
-            $products = $this->requestTipser('products/' .$referenceId. '/similar', [
-                'onlyAvailable' => $onlyAvailable ? 'true': 'false' // The Booleans are converted to digits in http_build_query and tipser wants strings
-            ]) ?: [];
-        }
+                $onlyAvailable = $config['fill']['onlyAvailable'] ?? true;
+                $products = $this->requestTipser('products/' .$productId. '/similar', [
+                    'onlyAvailable' => $onlyAvailable ? 'true': 'false' // The Booleans are converted to digits in http_build_query and tipser wants strings
+                ]) ?: [];
 
-        if($mode === 'collection') {
-            $referenceId = $config['fill']['collection'] ?? false;
+                break;
 
-            // ID Validation - MongoID
-            if(!$referenceId || !preg_match('/^[a-f\d]{24}$/i', $referenceId)) {
-                return [];
-            }
+            case 'collection':
 
-            $products = $this->requestTipser('collections/' .$referenceId, []) ?: [];
+                $collectionId = $config['fill']['collection'] ?? false;
+                if(!preg_match('/^[a-f\d]{24}$/i', $collectionId))
+                    break;
+
+                $products = $this->requestTipser('collections/' .$collectionId, []) ?: [];
+
+                break;
         }
 
         return $products;
