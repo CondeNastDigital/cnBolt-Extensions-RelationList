@@ -95,17 +95,37 @@ class TipserProductConnector extends BaseConnector {
      */
     protected function fillRecords($config, $count, $exclude = []): array {
 
-        $referenceId   = $config['referenceId'] ?? false;
-        $onlyAvailable = $config['onlyAvailable'] ?? true;
+        $products = [];
+        $config = $config + [
+            "fill" => []
+        ];
 
-        // ID Check
-        if(!$referenceId || !preg_match('/^[a-f\d]{24}$/i', $referenceId)) {
-            return [];
+        $mode    = $config['fill']['mode'] ?? 'similar';
+
+        if($mode === 'similar') {
+            $referenceId   = $config['fill']['product'] ?? false;
+            $onlyAvailable = $config['fill']['onlyAvailable'] ?? true;
+
+            // ID Validation - MongoID
+            if(!$referenceId || !preg_match('/^[a-f\d]{24}$/i', $referenceId)) {
+                return [];
+            }
+
+            $products = $this->requestTipser('products/' .$referenceId. '/similar', [
+                'onlyAvailable' => $onlyAvailable ? 'true': 'false' // The Booleans are converted to digits in http_build_query and tipser wants strings
+            ]) ?: [];
         }
 
-        $products = $this->requestTipser('products/' .$referenceId. '/similar', [
-            'onlyAvailable' => $onlyAvailable
-        ]) ?: [];
+        if($mode === 'collection') {
+            $referenceId = $config['fill']['collection'] ?? false;
+
+            // ID Validation - MongoID
+            if(!$referenceId || !preg_match('/^[a-f\d]{24}$/i', $referenceId)) {
+                return [];
+            }
+
+            $products = $this->requestTipser('collections/' .$referenceId, []) ?: [];
+        }
 
         return $products;
     }
@@ -123,7 +143,7 @@ class TipserProductConnector extends BaseConnector {
             'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
             'description' => $record['description'],
-            'date'        => null,
+            'date'        => $record['lastUpdateDate'],
             'link'        => '#'
         ];
 
@@ -145,7 +165,7 @@ class TipserProductConnector extends BaseConnector {
             'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
             'description' => $record['description'],
-            'date'        => null,
+            'date'        => $record['lastUpdateDate'],
             'link'        => '#',
         ];
 
@@ -179,6 +199,7 @@ class TipserProductConnector extends BaseConnector {
 
         // Apply system mandatory fields - market and apiKey
         // Market is required as its needed for getRecords.
+        // Its also fixed as exporting products can only cope with one market at a time
         $relationQuery['market'] = $this->market;
         $relationQuery['apiKey'] = $this->apiKey;
 
