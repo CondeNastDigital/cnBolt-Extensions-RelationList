@@ -142,8 +142,8 @@ class TipserProductConnector extends BaseConnector {
         $item->teaser = [
             'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
-            'description' => $record['description'],
-            'date'        => $record['lastUpdateDate'],
+            'description' => $record['description'] ?? null,
+            'date'        => $record['lastUpdateDate'] ?? null,
             'link'        => '#'
         ];
 
@@ -164,8 +164,8 @@ class TipserProductConnector extends BaseConnector {
         $item->teaser = [
             'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
             'image'       => $this->getImage($record),
-            'description' => $record['description'],
-            'date'        => $record['lastUpdateDate'],
+            'description' => $record['description'] ?? null,
+            'date'        => $record['lastUpdateDate'] ?? null,
             'link'        => '#',
         ];
 
