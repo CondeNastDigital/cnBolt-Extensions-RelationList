@@ -342,6 +342,75 @@ this extension
 
 **Note** The Kraken Connector caches it's content for 60 seconds by default!
 
+#### Tipser
+This connector selects products from the Tipser API via different methods.
+
+**Configuration**
+The connector needs some values to access the api correctly. These are:
+
+```
+connectors:
+    tipser:
+        class: Bolt\Extension\CND\RelationList\Connector\TipserProductConnector
+        api:
+            market: de                   # Your market 2-letter code
+            env: production              # 'production' or 'stage' selects the tipser api to use
+            key: ABCDEFGHIJKLMNOPQRST    # API Key for selected environment (prod and stage have different keys)
+            posId: 1234567890            # POS Id. Needed for more 'products'
+            user: someone@condenast.de   # A user account with access to tipser backend and the give POS Id. Needed for more 'products'
+            password: abcdefghijk        # Passwort. Needed for more 'products'
+``` 
+
+**Similar Products**
+This select mode retrieves products similar to a given product id.
+
+```
+    tipser-products:
+        connector: tipser
+        fill:
+            mode: 'similar'
+            productid: 5f1e9aa0db740c0001422f5a
+```
+
+**All products**
+Retrieves a list of all products sorted by date.
+
+```
+    tipser-products:
+        connector: tipser
+        fill:
+            mode: all
+```
+
+**Collection**
+Retrieves a list of products within a specific collection 
+
+```
+    tipser-products:
+        connector: tipser
+        fill:
+            mode: 'collection'
+            collectionid: 607da544bf5a4ff6c0c682e4
+```
+
+**Products**
+Retrieves a filteres list of products. This mode requires you to specify posid, user and password in your connector configuration.
+The available filters can be derived from the calls used inside the shopping backend itself. The api is undocumented atm.
+
+```
+    tipser-products:
+        connector: tipser
+        fill:
+            mode: 'products'
+            filters:
+                categoryIds: [6006bafdbc862c8865d437e4]
+            onlyAvailable: true
+            order:
+                name: relevance
+                direction: ASC
+            query: ''
+```
+
 ## Usage
 
 ### RelationList

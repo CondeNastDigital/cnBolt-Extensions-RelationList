@@ -11,12 +11,24 @@ use CND\KrakenSDK\Services\KrakenService;
 
 class TipserProductConnector extends BaseConnector {
 
-    const TIPSER_URL_PROD = 'https://t3-prod-api.tipser.com/v4/';
-    const TIPSER_URL_STAGING = 'https://t3-stage-api.tipser.com/v4/';
-    const TTL = 60;
+    const TIPSER_URL_PROD = 'https://t3-prod-api.tipser.com/';
+    const TIPSER_URL_STAGING = 'https://t3-stage-api.tipser.com/';
+    const TTL_TOKEN = 3600 * 24 * 7; // 7 days cache for auth token
+    const TTL_DATA = 60 * 10; // 10 minutes cache for product data
 
-    protected $apiKey = null;
-    protected $env = 'staging';
+    protected $config = [];
+    protected $endpoint = false;
+
+    protected static $defaults = [
+        'api' => [
+            'market'   => 'de',       // Tipser market code
+            'key'      => false,      // api key
+            'env'      => 'staging',  // use 'staging' or 'production' api endpoint of tipser
+            'user'     => false,      // user to connect to pos api to do complex filter calls
+            'password' => false,      // password to connect to pos api to do complex filter calls
+            'posId'    => false,      // Shop POS id
+        ]
+    ];
 
 
     /**
@@ -29,11 +41,8 @@ class TipserProductConnector extends BaseConnector {
     public function __construct($key, Application $container, $config){
         parent::__construct($key, $container, $config);
 
-        $api = $config['api'] ?? [];
-        $this->apiKey = $api['key'] ?? '';
-        $this->env = $api['env'] ?? 'staging';
-        $this->market = $api['market'] ?? 'de';
-
+        $this->config = array_replace_recursive(self::$defaults, $config);
+        $this->endpoint  = $this->config['api']['env'] === 'production' ? self::TIPSER_URL_PROD : self::TIPSER_URL_STAGING;
     }
 
     /**
@@ -89,42 +98,72 @@ class TipserProductConnector extends BaseConnector {
     }
 
     /**
-     * similar?onlyAvailable=true&posId=xxx
+     * select products via Tipser Rest Api
+     * @see https://developers.tipser.com/rest-api
      * @inheritdoc
      * @throws \Exception
      */
     protected function fillRecords($config, $count, $exclude = []): array {
 
         $products = [];
-        $config = $config + [
-            "fill" => []
-        ];
 
         $mode = $config['fill']['mode'] ?? 'similar';
-
         switch ($mode) {
+
+            // Select products similar to given product id
             case 'similar':
-
                 $productId = $config['fill']['productid'] ?? false;
-                if(!preg_match('/^[a-f\d]{24}$/i', $productId))
+                if (!preg_match('/^[a-f\d]{24}$/i', $productId))
                     break;
 
-                $onlyAvailable = $config['fill']['onlyAvailable'] ?? true;
-                $products = $this->requestTipser('products/' .$productId. '/similar', [
-                    'onlyAvailable' => $onlyAvailable ? 'true': 'false' // The Booleans are converted to digits in http_build_query and tipser wants strings
-                ]) ?: [];
-
+                $products = $this->requestTipser('v4/products/' . $productId . '/similar', [
+                        'onlyAvailable' => ($config['fill']['onlyAvailable'] ?? true) ? 'true' : 'false', // The Booleans are converted to digits in http_build_query and tipser wants strings
+                        'market' => $this->config['api']['market'],
+                        'apiKey' => $this->config['api']['key'],
+                    ]) ?: [];
                 break;
 
+            // Select products inside given collection id
             case 'collection':
-
                 $collectionId = $config['fill']['collectionid'] ?? false;
-                if(!preg_match('/^[a-f\d]{24}$/i', $collectionId))
+                if (!preg_match('/^[a-f\d]{24}$/i', $collectionId))
                     break;
 
-                $products = $this->requestTipser('collections/' .$collectionId, []) ?: [];
+                $items = $this->requestTipser('v4/collections/' . $collectionId, [
+                        'market' => $this->config['api']['market'],
+                        'apiKey' => $this->config['api']['key'],
+                    ])['items'] ?? [];
 
+                foreach($items as $item){
+                    $products[] = $item['product'];
+                }
                 break;
+
+            // Get filtered products via pos api
+            case 'products':
+                $query = array_intersect_key($config['fill'], array_flip(['filters', 'order', 'query', 'market']));
+                $products = $this->requestTipser('v5/pos/products', $query + [
+                            'filters' => [],
+                            'order' => [
+                                'name' => 'relevance',
+                                'direction' => 'ASC'
+                            ],
+                            'query' => '',
+                            'market' => $this->config['api']['market'],
+                        ], 'json', true)['products'] ?? [];
+                break;
+
+            // Get all products of a market
+            case 'all':
+                $products = $this->requestTipser('v4/export/products', [
+                        'limit' => $count,
+                        'market' => $this->config['api']['market'],
+                        'apiKey' => $this->config['api']['key'],
+                    ]) ?: [];
+                break;
+
+            default:
+                throw new \Exception('TipserConnector: invalid fill mode configured');
         }
 
         return $products;
@@ -153,7 +192,6 @@ class TipserProductConnector extends BaseConnector {
     }
 
     protected function record2Item($record, $customFields=[]): Item {
-
         $record = $this->cleanTipserRecord($record);
 
         $item = new Item();
@@ -186,27 +224,6 @@ class TipserProductConnector extends BaseConnector {
     }
 
     /**
-     * Converts the Relationlist Query to a query the Tipser understands
-     * @param $relationQuery
-     * @return array
-     */
-    protected function toTipserQuery($relationQuery):array {
-        // Moves the filter to the upper level - tipser format
-        $filter = $relationQuery['filter'] ?? [];
-        unset($relationQuery['filter']);
-
-        $relationQuery += $filter;
-
-        // Apply system mandatory fields - market and apiKey
-        // Market is required as its needed for getRecords.
-        // Its also fixed as exporting products can only cope with one market at a time
-        $relationQuery['market'] = $this->market;
-        $relationQuery['apiKey'] = $this->apiKey;
-
-        return $relationQuery;
-    }
-
-    /**
      * Get largest image for a desired aspect ration
      * @param Content $record
      * @param float $target
@@ -225,44 +242,141 @@ class TipserProductConnector extends BaseConnector {
      * @return array|mixed
      * @throws \CND\KrakenSDK\Exception
      */
-    protected function requestTipser($endpoint, $query=[]){
+    protected function requestTipser($endpoint, $query=[], $mode = 'query', $useToken = false){
 
-        $url  = $this->env === 'production' ? self::TIPSER_URL_PROD : self::TIPSER_URL_STAGING;
-        $query['apiKey'] = $this->apiKey;
-        $query = $this->toTipserQuery($query);
-
-        $data = http_build_query($query);
-
-        if(!$url) return false;
-
-        $url = $url.$endpoint.'?'.$data;
+        $hash = md5($endpoint.serialize($query));
+        $url = $this->endpoint.$endpoint;
+        $headers = [];
 
         // Check Cache
-        $hash = md5($url);
-        if($this->container["cache"]->contains($hash))
+        if($this->container["cache"]->contains($hash)) {
+            $this->container['logger']->debug('Tipser request using cache');
             return $this->container["cache"]->fetch($hash);
+        }
+
+        if ($useToken) {
+            $token = $this->getAuthToken();
+            $headers[] = 'Authorization: Bearer ' . $token;
+        }
+
+        switch ($mode) {
+            case 'query':
+                $url .= '?' . http_build_query($query);
+                $result = $this->sendCurl($url, '', $headers, 'GET');
+                break;
+
+            case 'json':
+                $body = json_encode($query);
+                $result = $this->sendCurl($url, $body, $headers, 'POST');
+                break;
+        }
+
+        if ($result && ($result['error'] ?? false))
+            return false;
+
+        $this->container['logger']->debug('Tipser request successfull');
+        $this->container["cache"]->save($hash, $result, self::TTL_DATA);
+
+        return $result;
+    }
+
+    /**
+     * Process according to tipser devs:
+     * 1 - POST user/pw to https://t3-dev-api.tipser.com/v4/auth as json in body {"password":"xxx","email":"xxx"}
+     * 2 - Take token from response and PUT to https://t3-dev-api.tipser.com/v4/auth as header token
+     * 3 - Take token from response and be happy
+     * @return false|string
+     */
+    protected function getAuthToken(){
+        $hash = 'tipser-auth-token';
+
+        if($this->container["cache"]->contains($hash)) {
+            $token = $this->container["cache"]->fetch($hash);
+            if($this->validateToken($token)) {
+                $this->container['logger']->debug('Tipser request for token using cache');
+                return $token;
+            }
+        }
+
+        // Get intermediate token
+        $url = $this->endpoint.'v4/auth';
+        $body = json_encode([
+            'email' => $this->config['api']['user'],
+            'password' => $this->config['api']['password'],
+        ]);
+        $pretoken = $this->sendCurl($url, $body, [], 'POST');
+
+        // Link token to posId
+        $url = $this->endpoint.'v4/auth';
+        $body = json_encode([
+            'posId' => $this->config['api']['posId'],
+        ]);
+        $token = $this->sendCurl($url, $body, ['authorization: Bearer '.$pretoken], 'PUT');
+
+        $this->container['logger']->debug('Tipser request for token successfull');
+        $this->container["cache"]->save($hash, $token, self::TTL_TOKEN);
+
+        return $token;
+    }
+
+    protected function sendCurl($url, $body = '', $headers = [], $method = 'GET'){
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_VERBOSE, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0 );
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0 );
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true );
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2 );
 
+        switch($method){
+            case 'POST':
+                curl_setopt($ch, CURLOPT_POST, 1 );
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $body );
+                $headers[] = 'Content-Type:application/json';
+                break;
+            case 'PUT':
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $body );
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+                $headers[] = 'Content-Type:application/json';
+                break;
+            default:
+                curl_setopt($ch, CURLOPT_HTTPGET, 1 );
+        }
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         $output = curl_exec($ch);
 
-        if(curl_error($ch))
-            return $this->container['debug'] ? curl_error($ch) : false;
+        if(curl_error($ch)){
+            throw new \Exception('Curl request failed with '.curl_error($ch));
+        }
+
+        $output = json_decode($output, true);
+
+        if(!$output){
+            throw new \Exception('Curl request returned invalid json: '.$output);
+        }
+
+        if($output['error'] ?? false){
+            throw new \Exception('Curl request returned error message: '.($output['error']['message'] ?? 'Unknown'));
+        }
 
         curl_close($ch);
 
-        $result = json_decode($output, true);
+        return $output;
+    }
 
-        if($result && ($result['error'] ?? false))
+    protected function validateToken($token){
+        $parts = explode('.', $token);
+
+        // Decode JWT token
+        $header = base64_decode($parts[0]);
+        $payload = json_decode(base64_decode($parts[1]), true);
+        $signature = $parts[2];
+
+        // Check expiriation time
+        $expire = $payload['exp'] ?? false;
+        if($expire > time())
             return false;
 
-        $this->container["cache"]->save($hash, $result, self::TTL);
-
-        return $result;
+        return true;
     }
 }
