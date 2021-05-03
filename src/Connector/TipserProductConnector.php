@@ -132,7 +132,7 @@ class TipserProductConnector extends BaseConnector {
                 $items = $this->requestTipser('v4/collections/' . $collectionId, [
                         'market' => $this->config['api']['market'],
                         'apiKey' => $this->config['api']['key'],
-                    ])['items'] ?? [];
+                    ], 'items') ?: [];
 
                 foreach($items as $item){
                     $products[] = $item['product'];
@@ -141,8 +141,8 @@ class TipserProductConnector extends BaseConnector {
 
             // Get filtered products via pos api
             case 'products':
-                $query = array_intersect_key($config['fill'], array_flip(['filters', 'order', 'query', 'market']));
-                $products = $this->requestTipser('v5/pos/products', $query + [
+                $query = array_intersect_key($config['fill'], array_flip(['filters', 'order', 'query', 'market', 'limit']));
+                $products = $this->requestMultiTipser('v5/pos/products', $query + [
                             'filters' => [],
                             'order' => [
                                 'name' => 'relevance',
@@ -150,7 +150,7 @@ class TipserProductConnector extends BaseConnector {
                             ],
                             'query' => '',
                             'market' => $this->config['api']['market'],
-                        ], 'json', true)['products'] ?? [];
+                        ], 'json', true, 'products') ?: [];
                 break;
 
             // Get all products of a market
@@ -235,14 +235,56 @@ class TipserProductConnector extends BaseConnector {
     }
 
     /**
-     * @param $filters
-     * @param int $limit
-     * @param int $offset
-     * @param array $order
-     * @return array|mixed
-     * @throws \CND\KrakenSDK\Exception
+     * A wrapper for requestTipser that split's request into multiple calls to get around Tipser's max limit of 100 items
+     * @param $endpoint
+     * @param array $query
+     * @param string $mode
+     * @param false $useToken
+     * @param false $resultPath
+     * @return array
+     * @throws \Exception
      */
-    protected function requestTipser($endpoint, $query=[], $mode = 'query', $useToken = false){
+    protected function requestMultiTipser($endpoint, $query=[], $mode = 'query', $useToken = false, $resultPath = false){
+
+        $MAXLIMIT = 100;
+        $MAXTOTAL = 1000;
+        $MAXCALLS = 20;
+
+        $moreAvailable = true;
+        $limit = min($MAXTOTAL, $query['limit'] ?? $MAXLIMIT);
+        $call = 0;
+        $products = [];
+
+        while($call < $MAXCALLS && $moreAvailable && count($products) < $limit){
+            $batchLimit = min($MAXLIMIT, $limit - count($products));
+            $batchOffset = $call * $MAXLIMIT;
+
+            $query = [
+                'limit' => $batchLimit,
+                'skip' => $batchOffset,
+            ] + $query;
+
+            $batchProducts = $this->requestTipser($endpoint, $query, $mode, $useToken, $resultPath) ?: [];
+            $moreAvailable = count($batchProducts) >= $MAXLIMIT;
+            $call ++;
+
+            /** @noinspection SlowArrayOperationsInLoopInspection */
+            $products = array_merge($products, $batchProducts);
+        }
+
+        return $products;
+    }
+
+    /**
+     * @param $endpoint
+     * @param array $query
+     * @param string $mode
+     * @param bool $useToken
+     * @param bool $resultPath
+     * @return array|mixed
+     * @throws \Exception
+     */
+    protected function requestTipser($endpoint, $query=[], $mode = 'query', $useToken = false, $resultPath = false){
 
         $hash = md5($endpoint.serialize($query));
         $url = $this->endpoint.$endpoint;
@@ -273,6 +315,10 @@ class TipserProductConnector extends BaseConnector {
 
         if ($result && ($result['error'] ?? false))
             return false;
+
+        if($resultPath){
+            $result = $result[$resultPath] ?? [];
+        }
 
         $this->container['logger']->debug('Tipser request successfull');
         $this->container["cache"]->save($hash, $result, self::TTL_DATA);
@@ -349,19 +395,19 @@ class TipserProductConnector extends BaseConnector {
             throw new \Exception('Curl request failed with '.curl_error($ch));
         }
 
-        $output = json_decode($output, true);
+        $json = json_decode($output, true);
 
-        if(!$output){
+        if(!$json){
             throw new \Exception('Curl request returned invalid json: '.$output);
         }
 
-        if($output['error'] ?? false){
-            throw new \Exception('Curl request returned error message: '.($output['error']['message'] ?? 'Unknown'));
+        if($json['error'] ?? false){
+            throw new \Exception('Curl request returned error message: '.($json['error']['message'] ?? 'Unknown'));
         }
 
         curl_close($ch);
 
-        return $output;
+        return $json;
     }
 
     protected function validateToken($token){
