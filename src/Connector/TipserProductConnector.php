@@ -54,7 +54,10 @@ class TipserProductConnector extends BaseConnector {
 
         // ID Search
         if(preg_match('/^[a-f\d]{24}$/i', $text)) {
-            $found = $this->requestTipser('products/'.$text);
+            $found = $this->requestTipser('v4/products/'.$text, [
+                'market' => $this->config['api']['market'],
+                'apiKey' => $this->config['api']['key'],
+            ]);
             return $found ? [$found]: [];
         }
 
@@ -64,9 +67,11 @@ class TipserProductConnector extends BaseConnector {
             'limit'  => 20,
             'offset' => 0,
             'order'  => 'name',
+            'market' => $this->config['api']['market'],
+            'apiKey' => $this->config['api']['key'],
         ];
 
-        return $this->requestTipser('products', $query)['products'] ?? [];
+        return $this->requestTipser('v4/products', $query, 'query', false, 'products') ?: [];
     }
 
     /**
@@ -86,8 +91,10 @@ class TipserProductConnector extends BaseConnector {
         }
 
         $ids = implode(',', $ids);
-        $products = $this->requestTipser('export/products', [
-            'productIds' => $ids
+        $products = $this->requestTipser('v4/export/products', [
+            'productIds' => $ids,
+            'market' => $this->config['api']['market'],
+            'apiKey' => $this->config['api']['key'],
         ]) ?: [];
 
         foreach ($products as $key => $product) {
@@ -179,7 +186,7 @@ class TipserProductConnector extends BaseConnector {
         $item->type = 'products';
         $item->service = $this->key;
         $item->teaser = [
-            'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
+            'title'       => $record['name'] ?? $record['title'] ?? '',
             'image'       => $this->getImage($record),
             'description' => $record['description'] ?? null,
             'date'        => $record['lastUpdateDate'] ?? null,
@@ -200,7 +207,7 @@ class TipserProductConnector extends BaseConnector {
         $item->service = $this->key;
         $item->object = $record + ['type' => 'tipser'];
         $item->teaser = [
-            'title'       => strtoupper($item->service).' - '.($record['name'] ?? $record['title'] ?? ''),
+            'title'       => $record['name'] ?? $record['title'] ?? '',
             'image'       => $this->getImage($record),
             'description' => $record['description'] ?? null,
             'date'        => $record['lastUpdateDate'] ?? null,
