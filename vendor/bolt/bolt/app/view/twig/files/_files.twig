@@ -1,0 +1,133 @@
+{% from '@bolt/_buic/_moment.twig' import buic_moment %}
+
+<table class="dashboardlisting">
+    <thead>
+        <tr>
+            <th>{{ __('page.ckeditor-browse-server.files') }}</th>
+            <th class="hidden-xs hidden-sm">{{ __('page.ckeditor-browse-server.size') }} / {{ __('page.ckeditor-browse-server.modified') }}</th>
+            <th colspan="2"></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for file in context.files %}
+            <tr>
+                {# Column: Filename #}
+                <td>
+                    {% if file.image %}
+
+                        <i class="fa fa-fw fa-file-image-o"></i>
+
+                        {% if file.public %}
+                            <a href="{{ file.path|thumbnail(1000, 1000, 'r') }}"
+                               class="magnific"
+                               title="Image: {{ file.filename }}">
+                                <b>{{ file.filename|excerpt(80)|shy }}</b>
+                            </a>
+                        {% else %}
+                            <b>{{ file.filename|excerpt(80)|shy }} </b>
+                            <i class="fa fa-lock"></i>
+                        {% endif %}
+
+                    {% elseif file.extension in ['twig', 'txt', 'html', 'md', 'markdown', 'json', 'htm', 'scss', 'css', 'less', 'js', 'yml'] %}
+
+                        <i class="fa fa-fw fa-file-code-o"></i>
+
+                        {% if file.public %}
+                            <a href="{{ path('fileedit', {'namespace': context.namespace, 'file': file.path}) }}">
+                                <b>{{ file.filename|excerpt(80)|shy }}</b>
+                            </a>
+                        {% else %}
+                            <b>{{ file.filename|excerpt(80)|shy }}</b>
+                        {% endif %}
+
+                        {% if file.private %}
+                            <i class="fa fa-lock"></i>
+                        {% endif %}
+
+                    {% else %}
+
+                        <i class="fa fa-fw fa-link"></i>
+
+                        {% if file.public %}
+                            <a href="{{ file.url }}" target="_blank">
+                                <b>{{ file.filename|excerpt(80)|shy }}</b>
+                            </a>
+                        {% else %}
+                            <b>{{ file.filename|excerpt(80)|shy }} </b>
+                            <i class="fa fa-lock"></i>
+                        {% endif %}
+                    {% endif %}
+                </td>
+                {# Column: Filesize / Modified #}
+                <td style="min-width: 120px;" class="hidden-xs hidden-sm">
+                    <span class="buic-moment" title="{{ file.size }} bytes ({{ file.sizeformatted(true, false) }})">
+                        <b>{{ file.sizeformatted(true, true) }}</b></span>,
+                    {{ buic_moment(file.timestamp) }}
+                    {% if file.image %}
+                        <div class="image-dimensions">{{ file.width }}<span class="times">×</span>{{ file.height }} px</div>
+                    {% endif %}
+                </td>
+                {# Column: Thumbnail #}
+                <td class="listthumb">
+                    {% if file.image %}
+                        {{ file.path|showimage(54, 40, 'c')|replace({'alt=""': 'alt="' ~ __('general.phrase.thumbnail')|e('html_attr') ~ '"'})|raw }}
+                    {% endif %}
+                </td>
+                {# Column: Actions #}
+                <td class="actions" style="min-width: 16px;">
+
+                    <div class="btn-group">
+
+                        {% if not app.config.get('general/backend/stack/disable', false) and not stacked(file.path) %}
+                            <a href="#" class="btn btn-default btn-sm" data-bolt-addtostack="{{ file.path }}">
+                                <i class="fa fa-paperclip"></i>
+                                <span class="visible-sm-inline visible-xs-inline">{{ __('general.phrase.stack') }}</span>
+                                <span class="hidden-sm hidden-xs">{{ __('general.phrase.stack-add') }}</span>
+                            </a>
+                        {% endif %}
+
+                        {% if context.form != false %}
+                            <a class="btn dropdown-toggle btn-default btn-sm hidden-xs" data-toggle="dropdown">
+                                <i class="fa fa-info-circle"></i>
+                                {{ __('general.phrase.options') }}
+                                <span class="caret"></span>
+                            </a>
+
+                            <ul class="dropdown-menu pull-right hidden-xs">
+                                <li>
+                                    <a href="#"
+                                       data-action="Bolt.files.renameFile('{{ context.namespace }}', '{{ context.pathsegments|join('/') }}', '{{ file.filename }}', this);">
+
+                                        <i class="fa fa-keyboard-o"></i>
+                                        {{ __('general.phrase.rename-foldername', {'%foldername%': file.filename}) }}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" data-action="Bolt.files.deleteFile('{{ context.namespace }}', '{{ file.path }}', this);">
+                                        <i class="fa fa-ban"></i>
+                                        {{ __('general.phrase.delete-file-name', {'%filename%': file.filename}) }}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" data-action="Bolt.files.duplicateFile('{{ context.namespace }}', '{{ file.path }}')">
+                                        <i class="fa fa-files-o"></i>
+                                        {{ __('general.phrase.duplicate-file-name', {'%filename%': file.filename }) }}
+                                    </a>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a class="nolink">
+                                        {{ __('general.phrase.permissions') }}:
+                                        <strong><code>{{ file.visibility }}</code></strong>
+                                    </a>
+                                </li>
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

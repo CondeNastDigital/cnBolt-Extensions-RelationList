@@ -1,0 +1,35 @@
+{
+    "name": "bolt/passwordlib",
+    "type": "library",
+	"version": "1.0.1",
+    "description": "A Password Hashing Library",
+    "keywords": ["password", "hash", "hashing", "random", "salt", "crypt"],
+    "homepage": "https://github.com/bolt/PHP-PasswordLib",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Anthony Ferrara",
+            "email": "ircmaxell@ircmaxell.com",
+            "homepage": "https://blog.ircmaxell.com"
+        },
+        {
+            "name": "Bob den Otter",
+            "email": "bob@bolt.cm",
+            "homepage": "https://bolt.cm"
+        }
+    ],
+    "replace": {
+        "passwordlib/passwordlib": "*"
+    },
+    "require-dev": {
+        "mikey179/vfsStream": "1.1.*"
+    },
+    "require": {
+        "php": ">=5.5.9"
+    },
+    "autoload": {
+        "psr-0": {
+            "PasswordLib": "lib"
+        }
+    }
+}

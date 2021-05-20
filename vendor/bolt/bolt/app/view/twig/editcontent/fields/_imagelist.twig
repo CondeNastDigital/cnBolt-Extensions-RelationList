@@ -1,0 +1,90 @@
+{#=== OPTIONS ========================================================================================================#}
+
+{% set option = {
+    extensions:  field.extensions|default([]),
+    label:       field.label,
+    upload:      field.upload|default(''),
+    can_upload:  field.canUpload,
+    info:        field.info|default('info.upload.imagelist')
+} %}
+
+{#=== INIT ===========================================================================================================#}
+
+{% set attributes = {
+    fileupload: {
+        accept:       option.extensions ? '.' ~ option.extensions|join(',.') : '',
+        data_url:     url('upload', {' handler': option.upload }, true),
+        id:           'fileupload-' ~ key,
+        multiple:     true,
+        name:         'files[]',
+        type:         'file',
+    }
+} %}
+
+{% set list = context.content.get(contentkey)|default([]) %}
+
+{#=== TEMPLATES ======================================================================================================#}
+
+{### Template: Empty list ###}
+
+{% set template_empty %}
+    <p>{{ __('general.phrase.no-images-in-list') }}</p>
+{% endset %}
+{% set template_empty = template_empty|trim %}
+
+{### Template: Listitem ###}
+
+{% set template_item %}
+    <div class="item ui-state-default">
+        <a class="magnific" href="{{ app.paths.files }}%FILENAME_A%" title="%TITLE_A%">
+            <img src="{{ app.paths.bolt }}../thumbs/60x40/%FILENAME_A%" width="60" height="40">
+        </a>
+        <input type="text" class="title" value="%TITLE_A%">
+        <input type="hidden" class="filename" value="%FILENAME_A%">
+        <a href="#" class="remove"><i class="fa fa-times"></i></a>
+        <span class="desc">%FILENAME_E%</span>
+    </div>
+{% endset %}
+{% set template_item = template_item|trim|preg_replace('/>\\s+</', '><') %}
+
+{#=== FIELDSET =======================================================================================================#}
+
+{% extends '@bolt/_base/_fieldset.twig' %}
+
+{% block fieldset_type 'imagelist' %}
+{% block fieldset_widget 'fieldImagelist' %}
+
+{% block fieldset_label_text  labelkey %}
+{% block fieldset_label_info  option.info %}
+{% block fieldset_label_class 'col-xs-12 control-label' %}
+
+{% block fieldset_controls %}
+    {{ data('field.imagelist.template.empty', template_empty) }}
+    {{ data('field.imagelist.template.item', template_item) }}
+
+    <div class="col-xs-12 dropzone">
+        {# Imagelist #}
+        <div class="list">
+            {% for image in list %}
+                {{ template_item|replace({
+                    '%TITLE_A%':    image.title|e('html_attr'),
+                    '%FILENAME_A%': image.filename|e('html_attr'),
+                    '%FILENAME_E%': image.filename|e('html')
+                })|raw }}
+            {% else %}
+                {{ template_empty|raw }}
+            {% endfor %}
+        </div>
+
+        {# Progress info #}
+        <div class="buic-progress" data-bolt-widget="buicProgress"></div>
+
+        {# Buttons #}
+        {% set can_upload = context.can.upload and option.can_upload %}
+        <div class="clearfix">
+            {{ macro.upload_buttons('image', attributes.fileupload, option.upload, can_upload, true) }}
+
+            <textarea name="{{ name }}" class="hide">{{ list|json_encode() }}</textarea>
+        </div>
+    </div>
+{% endblock fieldset_controls %}

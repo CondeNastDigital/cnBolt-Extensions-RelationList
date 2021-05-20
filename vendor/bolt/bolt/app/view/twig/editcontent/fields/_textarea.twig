@@ -1,0 +1,41 @@
+{#=== OPTIONS ========================================================================================================#}
+
+{% set option = {
+    class:       ('form-control ' ~ field.class)|trim,
+    height:      field.height|default(''),
+    label:       field.label,
+    info:        field.info|default(''),
+    required:    field.required|default(false),
+    errortext:   field.error|default(''),
+    placeholder: field.placeholder|default(''),
+} %}
+
+{#=== INIT ===========================================================================================================#}
+
+{% set attributes = {
+    text: {
+        class:           option.class,
+        data_errortext:  option.errortext,
+        name:            name,
+        placeholder:     option.placeholder,
+        required:        option.required,
+        style:           option.height ? 'height: ' ~ option.height ~ ';' : '',
+    }
+} %}
+
+{#=== FIELDSET =======================================================================================================#}
+
+{% extends '@bolt/_base/_fieldset.twig' %}
+
+{% block fieldset_type 'textarea' %}
+{% block fieldset_widget 'fieldTextarea' %}
+
+{% block fieldset_label_text  labelkey %}
+{% block fieldset_label_info  option.info %}
+{% block fieldset_label_class 'col-xs-12 control-label' %}
+
+{% block fieldset_controls %}
+    <div class="col-xs-12">
+        <textarea{{ macro.attr(attributes.text) }}>{{ context.content.get(contentkey)|default('') }}</textarea>
+    </div>
+{% endblock fieldset_controls %}

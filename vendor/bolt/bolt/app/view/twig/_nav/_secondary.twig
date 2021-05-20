@@ -1,0 +1,59 @@
+{% import '@bolt/_nav/_macros.twig' as nav %}
+
+<ul class="nav">
+    {% if app.session.get('authentication') is not null %}
+
+        {# Omnisearch: one here for "extra small", the other in the header-navbar #}
+        {{ include('@bolt/_nav/_secondary-search.twig') }}
+
+        {# Dashboard #}
+        {{ nav.link('fa:dashboard', __('general.phrase.dashboard'), 'dashboard', (page_nav == 'Dashboard')) }}
+
+        {# View site #}
+        <li class="visible-xs">
+            <a href="{{ path('homepage') }}" target="_blank"><i class="icon fa fa-external-link-square"></i> {{ __('general.phrase.view-site') }}</a>
+        </li>
+
+        {# ContentTypes #}
+        {{ nav.heading(__('Content'), 'fa:file-text') }}
+        {{ include('@bolt/_nav/_secondary-content.twig') }}
+
+        {# Settings #}
+        {% if isallowed('settings') %}
+            {% set nav_config %}{{ include('@bolt/_nav/_secondary-configuration.twig') }}{% endset %}
+            {% set nav_files %}{{ include('@bolt/_nav/_secondary-filemanagement.twig') }}{% endset %}
+            {% set nav_trans %}{{ include('@bolt/_nav/_secondary-translations.twig') }}{% endset %}
+            {# Link to Extend Bolt #}
+            {% if app['menu.admin'].get('extend').children or isallowed('extensions||extensions:config') %}
+                {% set nav_extend %}{{ include('@bolt/_nav/_secondary-extensions.twig') }}{% endset %}
+            {% else %}
+                {% set nav_extend = '' %}
+            {% endif %}
+
+            {% if nav_config|trim or nav_files|trim or nav_trans|trim or nav_extend|trim %}
+                {{ nav.heading(__('general.phrase.settings'), 'fa:wrench') }}
+
+                {{ nav_config }}
+                {{ nav_files }}
+                {{ nav_trans }}
+                {{ nav_extend }}
+            {% endif %}
+
+        {% endif %}
+
+
+        {{ nav.collapse() }}
+
+    {% else %}
+
+        {# View site #}
+        <li>
+            <a href="{{ path('homepage') }}" target="_blank"><i class="fa fa-external-link-square"></i> {{ __('general.phrase.view-site') }}</a>
+        </li>
+
+        {# Login #}
+        <li>
+            <a href="{{ path('login') }}"><i class="fa fa-signin"></i> {{ __('general.phrase.login') }}</a>
+        </li>
+    {% endif %}
+</ul>

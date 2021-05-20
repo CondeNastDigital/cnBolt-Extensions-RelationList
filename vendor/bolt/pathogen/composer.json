@@ -1,0 +1,32 @@
+{
+    "name": "bolt/pathogen",
+    "description": "Fork of pathogen, a general-purpose path library for PHP, but without using isolator.",
+    "keywords": ["path", "filesystem", "file", "manipulation"],
+    "homepage": "https://github.com/bolt/pathogen",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Erin Millard",
+            "email": "ezzatron@gmail.com",
+            "homepage": "http://ezzatron.com/"
+        },
+        {
+            "name": "Darian Brown",
+            "email": "darianbr@gmail.com",
+            "homepage": "http://www.darian-brown.com/"
+        }
+    ],
+    "require": {
+        "php": ">=5.3",
+        "symfony/polyfill-mbstring": "^1.0"
+    },
+    "require-dev": {
+        "icecave/archer": "~1",
+        "eloquent/liberator": "~2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Eloquent\\Pathogen\\": "src"
+        }
+    }
+}

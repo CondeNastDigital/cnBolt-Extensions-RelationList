@@ -1,0 +1,85 @@
+{##
+ # Sidebar-Panel: Displays actions for contenttype
+ #}
+{% extends '@bolt/_base/_panel.twig' %}
+
+{% block panel_class 'panel-news' %}
+
+{% block panel_icon 'fa-cog' %}
+
+{% block panel_head __('contenttypes.generic.actions-all', {'%contenttypes%': context.contenttype.slug}) %}
+
+{% block panel_body %}
+    {% if isallowed('contenttype:' ~ context.contenttype.slug ~ ':create') %}
+        <a class="btn btn-primary" href="{{ path('editcontent', {'contenttypeslug': context.contenttype.slug}) }}">
+            <i class="fa fa-plus"></i> {{ __('contenttypes.generic.new', {'%contenttype%': context.contenttype.slug}) }}
+        </a>
+    {% endif %}
+
+    <p style="margin-top: 15px;"><strong>{{ __('general.phrase.filter') }}</strong></p>
+
+    <form class="form-inline">
+
+        {% set taxonomyfilter = false %}
+
+        <div class="form-group">
+        {% for taxonomy in context.contenttype.taxonomy|default([]) %}
+            {% if app.config.get('taxonomy/' ~ taxonomy ~ '/options') is iterable %}
+                {% if request('taxonomy-' ~ taxonomy ) %}
+                    {% set taxonomyfilter = true %}
+                {% endif %}
+                <select name='taxonomy-{{taxonomy}}' class='form-control'>
+                    <option value=''>
+                        ({{ app.config.get('taxonomy/' ~ taxonomy ~ '/name')|default(taxonomy) }})
+                    </option>
+                {% for slug, name in app.config.get('taxonomy/' ~ taxonomy ~ '/options') %}
+                    <option value='{{slug}}' {% if request('taxonomy-' ~ taxonomy ) == slug %}selected{% endif %}>
+                        {{name}}
+                    </option>
+                {% endfor %}
+                </select>
+                {{ __('general.phrase.or') }}
+            {% endif %}
+        {% endfor %}
+            <input type="text" class="form-control" value="{{ request('filter', '', true) }}" name="filter" style="width: 110px;" placeholder="{{ __('general.phrase.keyword-ellipsis') }}">
+        </div>
+
+        <div class="form-group" style="display: block; margin-top: 12px;">
+            <button type="submit" class="btn btn-tertiary"><i class="fa fa-filter"></i> {{ __('general.phrase.filter') }}</button>
+
+            {% if request('filter') or request('order') or taxonomyfilter %}
+                <a class="btn btn-tertiary" href="?"><i class="fa fa-close"></i> {{ __('general.phrase.clear-filter-sort') }}</a>
+            {% endif %}
+        </div>
+
+    </form>
+
+    {# Use the `description:` from contenttypes.yml if set, otherwise fall back
+       to the (localized) default descriptions that are available for the
+       built-in contenttupes like 'pages' and 'blocks'. #}
+    {% set description = context.contenttype.description|default(__(['contenttypes', context.contenttype.slug, 'description'], {DEFAULT: ''})) %}  
+    <div class="description">
+        {% if description %}
+            {{ description|markdown }}
+        {% endif %}
+    </div>
+
+    <p><strong>{{ __('general.phrase.details') }}</strong></p>
+    <ul>
+        <li>{{ __('general.phrase.status-default') }}: {{ context.contenttype.default_status|default('published') }}</li>
+        <li>{{ __('general.phrase.listing-template') }}: <code>{{ context.contenttype.listing_template|default( app.config.get('general/listing_template') ) }}</code></li>
+        <li>{{ __('general.phrase.template-detail') }}: <code>{{ context.contenttype.record_template|default( app.config.get('general/record_template') ) }}</code></li>
+        {% if context.contenttype.taxonomy|default('') is iterable %}
+            <li>{{ __('general.phrase.taxonomy') }}: {{ context.contenttype.taxonomy|join(', ') }}</li>
+        {% endif %}
+        {% if context.contenttype.relations|default('') is iterable %}
+            <li>
+                {{ __('general.phrase.relationships') }}:
+                {% for rel, data in context.contenttype.relations %}
+                    {{ rel }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            </li>
+        {% endif %}
+    </ul>
+
+{% endblock panel_body %}

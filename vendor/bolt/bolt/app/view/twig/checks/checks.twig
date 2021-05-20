@@ -1,0 +1,42 @@
+{# Page: Footer > About #}
+
+{% extends '@bolt/_base/_page-nav.twig' %}
+
+{% block page_title __('general.phrase.system-config-checks') %}
+
+{% block page_subtitle %}
+    Bolt {{ bolt_version }}
+{% endblock page_subtitle %}
+
+{% block page_main %}
+
+    <div class="row">
+        <div class="col-md-8">
+
+            <div class="row">
+                <div class="col-md-12">
+                    {{ dump(render(path('directories'))|json_decode) }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    {{ dump(render(path('email'))|json_decode) }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    {{ dump(render(path('extensions'))|json_decode) }}
+                </div>
+            </div>
+
+        </div>
+
+        <aside class="col-md-4">
+            {{ include('@bolt/checks/_aside.twig') }}
+        </aside>
+    </div>
+
+
+{% endblock page_main %}

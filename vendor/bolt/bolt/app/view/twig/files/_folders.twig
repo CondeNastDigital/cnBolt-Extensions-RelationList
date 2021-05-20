@@ -1,0 +1,69 @@
+{% from '@bolt/_buic/_moment.twig' import buic_moment %}
+
+<table class="dashboardlisting">
+    <thead>
+        <tr>
+            <th>{{ __('general.phrase.folders') }}</th>
+            <th colspan="2">{{ __('general.phrase.modified') }}</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for directory in context.directories %}
+            <tr>
+                <td>
+                    <i class="fa fa-fw fa-folder-open-o"></i>
+                    <a href="{{ path('files', {'path': directory.path, 'namespace': context.namespace}) }}">
+                        <b>{{ directory.filename|excerpt(60)|shy }}/</b>
+                    </a>
+                </td>
+                <td>
+                    {{ buic_moment(directory.timestamp) }}
+                </td>
+                <td class="actions">
+                {% if context.form != false %}
+                    <div class="btn-group">
+                    {% if directory.public %}
+
+                        <a class="btn dropdown-toggle btn-default btn-sm" data-toggle="dropdown">
+                            <i class="fa fa-info-circle"></i>
+                            {{ __('general.phrase.options') }}
+                            <span class="caret"></span>
+                        </a>
+
+                        <ul class="dropdown-menu pull-right">
+                            <li>
+                                <a href="#"
+                                   data-action="bolt.files.renameFolder('{{ context.namespace }}',
+                                                                    '{{ context.pathsegments|keys|last }}',
+                                                                    '{{ directory.path }}',
+                                                                    this);">
+
+                                    <i class="fa fa-keyboard-o"></i>
+                                    {{ __('general.phrase.rename-foldername', {'%foldername%': directory.filename}) }}
+                                </a>
+                                <a href="#"
+                                   class="confirm"
+                                   data-action="bolt.files.deleteFolder('{{ context.namespace }}',
+                                                                    '{{ context.pathsegments|keys|last }}',
+                                                                    '{{ directory.path }}',
+                                                                    this);">
+
+                                    <i class="fa fa-ban"></i>
+                                    {{ __('general.phrase.delete-directory-name', {'%foldername%': directory.filename}) }}
+                                </a>
+                            </li>
+                        </ul>
+                    {% else %}
+                        <a class="btn btn-default btn-sm">
+                            <i class="fa fa-exclamation-circle"></i>
+                            {{ __('page.file-management.message.folder-access-denied') }}
+                        </a>
+                    {% endif %}
+                    </div>
+                {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

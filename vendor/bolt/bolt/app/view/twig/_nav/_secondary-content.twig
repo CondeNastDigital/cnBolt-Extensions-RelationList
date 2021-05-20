@@ -1,0 +1,66 @@
+{% set definedSubs = [] %}
+
+{% for slug, contenttype in app.config.get('contenttypes')  %}
+    {% if isallowed('contenttype:' ~ slug) %}
+        {% set sub_view = {
+            icon: contenttype.icon_many|default(contenttype.show_in_menu ? 'fa:files-o' : 'fa:th-list'),
+            label: __('contenttypes.generic.view', {'%contenttypes%': contenttype.name}),
+            link: path('overview', {'contenttypeslug': slug})
+        } %}
+        {% set sub_new = {
+            icon: 'fa:plus',
+            label: __('contenttypes.generic.new', {'%contenttype%': contenttype.singular_name}),
+            link: path('editcontent', {'contenttypeslug': slug}),
+            isallowed: 'contenttype:' ~ slug ~ ':create'
+        } %}
+        {% set sub = [sub_view, sub_new, '-'] %}
+
+        {# ContentTypes, where show_in_menu is set true #}
+        {% if contenttype.show_in_menu == "true" %}
+
+            {% setcontent records = slug limit 4 nohydrate orderby '-datechanged' %}
+            {% for record in records %}
+                {% set sub = sub|merge([
+                    {
+                        icon: contenttype.icon_one|default('fa:file-text-o'),
+                        label: record.excerpt(80, true)|replace({"</b>": "&nbsp;</b>"})|trim,
+                        link: path('editcontent', {'contenttypeslug': slug, 'id': record.id})
+                    }
+                ]) %}
+            {% endfor %}
+
+            {% set label = __(['contenttypes', contenttype.slug, 'name', 'plural'], {DEFAULT: contenttype.name}) %}
+            {% set active = (page_nav == 'Content/*' and context.contenttype.slug|default == slug) %}
+
+            {{ nav.submenu(contenttype.icon_many|default(''), label, sub, active, true) }}
+
+        {# ContentTypes, where show_in_menu is set to a custom value or false #}
+        {% else %}
+
+            {% set sub_view = {
+                icon: contenttype.icon_many|default(contenttype.show_in_menu ? 'fa:files-o' : 'fa:th-list'),
+                label: __(['contenttypes', contenttype.slug, 'name', 'plural'], {DEFAULT: contenttype.name}),
+                link: path('overview', {'contenttypeslug': slug})
+            } %}
+
+            {% set key = contenttype.show_in_menu ?: __('general.phrase.other-content') %}
+            {% if definedSubs[key] is defined %}
+                {% for submenuName, submenudef in definedSubs %}
+                    {% if key == submenuName %}
+                        {% set submenudef = submenudef|merge([sub_view]) %}
+                        {% set definedSubs = definedSubs|merge({(submenuName) : submenudef}) %}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                {% set definedSubs = definedSubs|merge({(key) : [sub_view]}) %}
+            {% endif %}
+
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+{# Display contenttypes, that have show_in_menu set to false or a custom value in submenus #}
+{% for submenuName, submenudef in definedSubs %}
+    {# Create the submenu and force it to be a submenu #}
+    {{ nav.submenu('fa:th-list', submenuName, submenudef, false, false, false, true) }}
+{% endfor %}
