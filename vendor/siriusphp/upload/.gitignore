@@ -1,9 +1,0 @@
-build/
-/.settings
-/.buildpath
-/.project
-/vendor
-/composer.lock
-.idea
-atlassian-ide-plugin.xml
-tests/fixitures/

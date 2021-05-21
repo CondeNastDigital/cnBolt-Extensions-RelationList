@@ -1,6 +1,0 @@
-/vendor/
-composer.lock
-.DS_*
-.idea
-tests/tmp
-tests/report
