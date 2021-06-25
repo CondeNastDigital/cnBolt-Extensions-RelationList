@@ -411,6 +411,21 @@ The available filters can be derived from the calls used inside the shopping bac
             query: ''
 ```
 
+**Warning!** If a selection does not return any matches because of it's filter criteria, the api will return an error message. There is no error, just no matches were found.
+
+**Categories Endpoint**
+The extension provides an JSON endpoint to get categories for autocomplete select boxes. The url is `/bolt/relationlist/tipser/autocomplete/categories?search={{query}}`
+
+Sample:
+```
+    categoryIds:
+        type: autocomplete
+        label: Kategorien
+        taggable: true
+        multiple: true
+        endpoints:
+            - '/bolt/relationlist/tipser/autocomplete/categories?search={{query}}'
+```
 ## Usage
 
 ### RelationList

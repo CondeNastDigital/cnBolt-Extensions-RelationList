@@ -148,16 +148,18 @@ class TipserProductConnector extends BaseConnector {
 
             // Get filtered products via pos api
             case 'products':
-                $query = array_intersect_key($config['fill'], array_flip(['filters', 'order', 'query', 'market', 'limit']));
-                $products = $this->requestMultiTipser('v5/pos/products', $query + [
-                            'filters' => [],
-                            'order' => [
-                                'name' => 'relevance',
-                                'direction' => 'ASC'
-                            ],
-                            'query' => '',
-                            'market' => $this->config['api']['market'],
-                        ], 'json', true, 'products') ?: [];
+                $query = $config['fill'] + [
+                    'filters' => [],
+                    'order' => [
+                        'name' => 'relevance',
+                        'direction' => 'ASC'
+                    ],
+                    'limit' => $count,
+                    'market' => $this->config['api']['market'],
+                ];
+                $query = array_intersect_key($query, array_flip(['filters', 'order', 'query', 'market', 'limit']));
+                $query['filters'] = array_intersect_key($query['filters'] ?? [], array_flip(['brands', 'genders', 'priceTo', 'categoryIds', 'onlyAvailable']));
+                $products = $this->requestMultiTipser('v5/pos/products', $query, 'json', true, 'products') ?: [];
                 break;
 
             // Get all products of a market
