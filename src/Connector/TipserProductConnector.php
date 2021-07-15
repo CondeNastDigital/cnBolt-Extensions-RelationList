@@ -127,6 +127,7 @@ class TipserProductConnector extends BaseConnector {
                         'onlyAvailable' => ($config['fill']['onlyAvailable'] ?? true) ? 'true' : 'false', // The Booleans are converted to digits in http_build_query and tipser wants strings
                         'market' => $this->config['api']['market'],
                         'apiKey' => $this->config['api']['key'],
+                        // Currently no support for 'onlyOnSale' with this endpoint :(
                     ]) ?: [];
                 break;
 
@@ -158,7 +159,7 @@ class TipserProductConnector extends BaseConnector {
                     'market' => $this->config['api']['market'],
                 ];
                 $query = array_intersect_key($query, array_flip(['filters', 'order', 'query', 'market', 'limit']));
-                $query['filters'] = array_intersect_key($query['filters'] ?? [], array_flip(['brands', 'genders', 'priceTo', 'categoryIds', 'onlyAvailable']));
+                $query['filters'] = array_intersect_key($query['filters'] ?? [], array_flip(['brands', 'genders', 'priceTo', 'categoryIds', 'onlyAvailable', 'onlyOnSale']));
                 $products = $this->requestMultiTipser('v5/pos/products', $query, 'json', true, 'products') ?: [];
                 break;
 
