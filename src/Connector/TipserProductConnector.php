@@ -14,6 +14,7 @@ class TipserProductConnector extends BaseConnector {
     const TIPSER_URL_PROD = 'https://t3-prod-api.tipser.com/';
     const TIPSER_URL_STAGING = 'https://t3-stage-api.tipser.com/';
     const TTL_TOKEN = 3600 * 24 * 7; // 7 days cache for auth token
+    const TTL_DATA_LAST = 3600* 24 * 7 * 4; // A Month
     const TTL_DATA = 60 * 10; // 10 minutes cache for product data
 
     protected $config = [];
@@ -301,9 +302,12 @@ class TipserProductConnector extends BaseConnector {
         $headers = [];
 
         // Check Cache
-        if($this->container["cache"]->contains($hash)) {
+        $hasCache  = $this->container["cache"]->contains($hash) && $this->container["cache"]->contains($hash.'.expires');
+        $lastCache = $hasCache ? $this->container["cache"]->fetch($hash) : false;
+
+        if($hasCache && time() - $this->container["cache"]->contains($hash.'.expires') < self::TTL_DATA ) {
             $this->container['logger']->debug('Tipser request using cache');
-            return $this->container["cache"]->fetch($hash);
+            return $lastCache;
         }
 
         if ($useToken) {
@@ -324,14 +328,15 @@ class TipserProductConnector extends BaseConnector {
         }
 
         if ($result && ($result['error'] ?? false))
-            return false;
+            return $lastCache;
 
         if($resultPath){
             $result = $result[$resultPath] ?? [];
         }
 
         $this->container['logger']->debug('Tipser request successfull');
-        $this->container["cache"]->save($hash, $result, self::TTL_DATA);
+        $this->container["cache"]->save($hash, $result, self::TTL_DATA_LAST);
+        $this->container["cache"]->save($hash.'.expires', time() + self::TTL_DATA, self::TTL_TOKEN);
 
         return $result;
     }
