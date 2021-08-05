@@ -14,7 +14,7 @@ class TipserProductConnector extends BaseConnector {
     const TIPSER_URL_PROD = 'https://t3-prod-api.tipser.com/';
     const TIPSER_URL_STAGING = 'https://t3-stage-api.tipser.com/';
     const TTL_TOKEN = 3600 * 24 * 7; // 7 days cache for auth token
-    const TTL_DATA_LAST = 3600* 24 * 7 * 4; // A Month
+    const TTL_DATA_FALLBACK = 3600* 24 * 7 * 4; // A Month
     const TTL_DATA = 60 * 10; // 10 minutes cache for product data
 
     protected $config = [];
@@ -297,6 +297,7 @@ class TipserProductConnector extends BaseConnector {
      */
     protected function requestTipser($endpoint, $query=[], $mode = 'query', $useToken = false, $resultPath = false){
 
+        $result = false;
         $hash = md5($endpoint.serialize($query));
         $url = $this->endpoint.$endpoint;
         $headers = [];
@@ -305,37 +306,46 @@ class TipserProductConnector extends BaseConnector {
         $hasCache  = $this->container["cache"]->contains($hash) && $this->container["cache"]->contains($hash.'.expires');
         $lastCache = $hasCache ? $this->container["cache"]->fetch($hash) : false;
 
-        if($hasCache && time() - $this->container["cache"]->contains($hash.'.expires') < self::TTL_DATA ) {
+        if($hasCache && time() - $this->container["cache"]->fetch($hash.'.expires') < self::TTL_DATA ) {
             $this->container['logger']->debug('Tipser request using cache');
             return $lastCache;
         }
 
-        if ($useToken) {
-            $token = $this->getAuthToken();
-            $headers[] = 'Authorization: Bearer ' . $token;
+        try {
+
+            if ($useToken) {
+                $token = $this->getAuthToken();
+                $headers[] = 'Authorization: Bearer ' . $token;
+            }
+
+            switch ($mode) {
+                case 'query':
+                    $url .= '?' . http_build_query($query);
+                    $result = $this->sendCurl($url, '', $headers, 'GET');
+                    break;
+
+                case 'json':
+                    $body = json_encode($query);
+                    $result = $this->sendCurl($url, $body, $headers, 'POST');
+                    break;
+            }
+
+        } catch (\Exception $e) {
+            $this->container['logger']->error('Tipser request - connection/parse error: '.$e->getMessage());
         }
 
-        switch ($mode) {
-            case 'query':
-                $url .= '?' . http_build_query($query);
-                $result = $this->sendCurl($url, '', $headers, 'GET');
-                break;
-
-            case 'json':
-                $body = json_encode($query);
-                $result = $this->sendCurl($url, $body, $headers, 'POST');
-                break;
-        }
-
-        if ($result && ($result['error'] ?? false))
+        // Return the last known working cached Result
+        if (!$result || $result && ($result['error'] ?? false)) {
+            $this->container['logger']->warn('Tipser - possibly expired data retured, because of an error in Tipser response.');
             return $lastCache;
+        }
 
         if($resultPath){
             $result = $result[$resultPath] ?? [];
         }
 
         $this->container['logger']->debug('Tipser request successfull');
-        $this->container["cache"]->save($hash, $result, self::TTL_DATA_LAST);
+        $this->container["cache"]->save($hash, $result, self::TTL_DATA_FALLBACK);
         $this->container["cache"]->save($hash.'.expires', time() + self::TTL_DATA, self::TTL_TOKEN);
 
         return $result;
