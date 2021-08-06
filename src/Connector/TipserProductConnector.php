@@ -303,12 +303,13 @@ class TipserProductConnector extends BaseConnector {
         $headers = [];
 
         // Check Cache
-        $hasCache  = $this->container["cache"]->contains($hash) && $this->container["cache"]->contains($hash.'.expires');
-        $lastCache = $hasCache ? $this->container["cache"]->fetch($hash) : false;
+        $hasCache   = $this->container["cache"]->contains($hash) && $this->container["cache"]->contains($hash.'.expires');
+        $cachedData = $hasCache ? $this->container["cache"]->fetch($hash) : false;
+        $isToExpire = time() - $this->container["cache"]->fetch($hash.'.expires') >= self::TTL_DATA;
 
-        if($hasCache && time() - $this->container["cache"]->fetch($hash.'.expires') < self::TTL_DATA ) {
+        if($hasCache && !$isToExpire ) {
             $this->container['logger']->debug('Tipser request using cache');
-            return $lastCache;
+            return $cachedData;
         }
 
         try {
@@ -337,7 +338,7 @@ class TipserProductConnector extends BaseConnector {
         // Return the last known working cached Result
         if (!$result || $result && ($result['error'] ?? false)) {
             $this->container['logger']->warn('Tipser - possibly expired data retured, because of an error in Tipser response.');
-            return $lastCache;
+            return $cachedData;
         }
 
         if($resultPath){
