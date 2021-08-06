@@ -336,7 +336,7 @@ class TipserProductConnector extends BaseConnector {
         }
 
         // Return the last known working cached Result
-        if (!$result || $result && ($result['error'] ?? false)) {
+        if (!$result || ($result['error'] ?? false)) {
             $this->container['logger']->warn('Tipser - possibly expired data retured, because of an error in Tipser response.');
             return $cachedData;
         }
