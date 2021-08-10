@@ -305,9 +305,8 @@ class TipserProductConnector extends BaseConnector {
         // Check Cache
         $hasCache   = $this->container["cache"]->contains($hash) && $this->container["cache"]->contains($hash.'.expires');
         $cachedData = $hasCache ? $this->container["cache"]->fetch($hash) : false;
-        $isToExpire = time() - $this->container["cache"]->fetch($hash.'.expires') >= self::TTL_DATA;
 
-        if($hasCache && !$isToExpire ) {
+        if($hasCache ) {
             $this->container['logger']->debug('Tipser request using cache');
             return $cachedData;
         }
@@ -347,7 +346,7 @@ class TipserProductConnector extends BaseConnector {
 
         $this->container['logger']->debug('Tipser request successfull');
         $this->container["cache"]->save($hash, $result, self::TTL_DATA_FALLBACK);
-        $this->container["cache"]->save($hash.'.expires', time() + self::TTL_DATA, self::TTL_TOKEN);
+        $this->container["cache"]->save($hash.'.expires', time() + self::TTL_DATA, self::TTL_DATA);
 
         return $result;
     }
