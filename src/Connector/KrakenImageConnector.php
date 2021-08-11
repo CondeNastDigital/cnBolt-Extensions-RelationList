@@ -25,12 +25,14 @@ class KrakenImageConnector extends KrakenConnector {
         $item->teaser = [];
         $item->type = 'Image';
 
+        $reference = array_pop($record['reference'] );
+
         $item->teaser = [
             'title' => strtoupper($record['source']['name'] ?? '') . ' - ' . $record['meta']['alt'] ?? $record['meta']['title'],
             'image' => $this->getImage($record),
             'description' => $record['meta']['description'] . ' copyright:' . $record['meta']['copyright'] ,
             'date' => date('c', strtotime($record['control']['publishDate'] ?? '')),
-            'link' => $record['origin']['url'] ?? $record['control']['url']
+            'link' => $reference['url'] ?? $record['control']['url']
         ];
 
 
@@ -47,12 +49,14 @@ class KrakenImageConnector extends KrakenConnector {
         $item->type = 'Image';
         $item->object = $record;
 
+        $reference = array_pop($record['reference'] );
+
         $item->teaser = [
             'title' => strtoupper($record['source']['name'] ?? '') . ' - ' . $record['meta']['alt'] ?? $record['meta']['title'],
             'image' => $this->getImage($record),
             'description' => $record['meta']['description'] . ' copyright:' . $record['meta']['copyright'] ,
             'date' => date('c', strtotime($record['control']['publishDate'] ?? '')),
-            'link' => $record['origin']['url'] ?? $record['control']['url']
+            'link' => $reference['url'] ?? $record['control']['url']
         ];
 
         $this->applyCustomFields($customFields, $record, $item->teaser);
