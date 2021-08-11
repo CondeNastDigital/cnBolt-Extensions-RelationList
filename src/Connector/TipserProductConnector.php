@@ -303,10 +303,10 @@ class TipserProductConnector extends BaseConnector {
         $headers = [];
 
         // Check Cache
-        $hasCache   = $this->container["cache"]->contains($hash) && $this->container["cache"]->contains($hash.'.expires');
-        $cachedData = $hasCache ? $this->container["cache"]->fetch($hash) : false;
+        $cachedData = $this->container["cache"]->fetch($hash); // Returns False on no Cache
+        $hasCache   = $cachedData && $this->container["cache"]->contains($hash.'.expires');
 
-        if($hasCache ) {
+        if($hasCache) {
             $this->container['logger']->debug('Tipser request using cache');
             return $cachedData;
         }
