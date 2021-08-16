@@ -99,7 +99,7 @@ class KrakenConnector extends BaseConnector {
 
         $query['filter']['control.uid'] = ['$nin' => $exclude];
 
-        return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']);
+        return $this->requestKraken($query['filter'], $query['limit'], $query['offset'], $query['order']) ?? [];
     }
 
     // ----------------------------------------------------------------------------------------------
