@@ -33,11 +33,11 @@ class ShopifyProductConnector extends BaseConnector {
      */
     public function searchRecords($config, $text): array{
 
-        $cleaned = preg_replace('/[a-z0-9\_\-\s]+/i','*', $text);
+        $cleaned = preg_replace('/[^a-z0-9\_\-\s]+/i','*', $text);
 
         $query = self::GRAPHQL_FRAGMENT_PRODUCT.'
         query {
-            products(first: 20, query: "title:*'.$cleaned.'*") {
+            products(first: 20, query: "title:*'.$cleaned.'*", sortKey: PUBLISHED_AT) {
                 edges {
                     node {
                         ... Properties
@@ -46,7 +46,7 @@ class ShopifyProductConnector extends BaseConnector {
             }
         }';
 
-        return $this->requestShopify($query) ?: [];
+        return $this->requestShopify($query)['data']['products']['edges'] ?: [];
     }
 
     /**
@@ -86,7 +86,7 @@ class ShopifyProductConnector extends BaseConnector {
 
         $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
         query {
-            products(first: '.(int)$config['limit'].', query: "'.$config['query'].'") {
+            products(first: '.(int)$config['limit'].', query: "'.$config['query'].'", sortKey: PUBLISHED_AT) {
                 edges {
                     node {
                         ... Properties
@@ -95,45 +95,24 @@ class ShopifyProductConnector extends BaseConnector {
             }
         }';
 
-        return $this->requestShopify($config['query'])['data']['products'] ?: [];
+        return $this->requestShopify($query)['data']['products']['edges'] ?: [];
 
     }
 
     // ----------------------------------------------------------------------------------------------
 
     protected function record2Relation($record, $customFields=[]): Relation {
-        $record = $this->cleanTipserRecord($record);
+        $record = $this->cleanRecord($record);
 
         $item = new Relation();
         $item->id = $record['id'];
         $item->type = 'products';
         $item->service = $this->key;
         $item->teaser = [
-            'title'       => $record['name'] ?? $record['title'] ?? '',
-            'image'       => $this->getImage($record),
-            'description' => $record['description'] ?? null,
-            'date'        => $record['lastUpdateDate'] ?? null,
-            'link'        => '#'
-        ];
-
-        $this->applyCustomFields($customFields, $record, $item->teaser);
-
-        return $item;
-    }
-
-    protected function record2Item($record, $customFields=[]): Item {
-        $record = $this->cleanTipserRecord($record);
-
-        $item = new Item();
-        $item->id = $record['id'] ?? '';
-        $item->type = 'product';
-        $item->service = $this->key;
-        $item->object = $record + ['type' => 'tipser'];
-        $item->teaser = [
-            'title'       => $record['name'] ?? $record['title'] ?? '',
-            'image'       => $this->getImage($record),
-            'description' => $record['description'] ?? null,
-            'date'        => $record['lastUpdateDate'] ?? null,
+            'title'       => $record['node']['title'] ?? '',
+            'image'       => $this->getImage($record['node']),
+            'description' => $record['node']['description'] ?? null,
+            'date'        => $record['node']['publishedAt'] ?? null,
             'link'        => '#',
         ];
 
@@ -142,13 +121,35 @@ class ShopifyProductConnector extends BaseConnector {
         return $item;
     }
 
+    protected function record2Item($record, $customFields=[]): Item {
+        $record = $this->cleanRecord($record);
+
+        $item = new Item();
+        $item->id = $record['id'] ?? '';
+        $item->type = 'product';
+        $item->service = $this->key;
+        $item->object = $record['node'] + ['type' => 'shopify-product'];
+        $item->teaser = [
+            'title'       => $record['node']['title'] ?? '',
+            'image'       => $this->getImage($record['node']),
+            'description' => $record['node']['description'] ?? null,
+            'date'        => $record['node']['publishedAt'] ?? null,
+            'link'        => '#',
+        ];
+
+        $this->applyCustomFields($customFields, $item->object, $item->teaser);
+
+        return $item;
+    }
+
     /**
      * @param $record
      * @return mixed
      */
-    protected function cleanTipserRecord($record): array {
-        $record['description'] = strip_tags($record['description'] ?? '');
-        $record['title']       = strip_tags($record['title'] ?? '');
+    protected function cleanRecord($record): array {
+
+        $record['node']['description'] = strip_tags($record['node']['description'] ?? '');
+        $record['node']['title']       = strip_tags($record['node']['title'] ?? '');
 
         return $record;
     }
@@ -159,9 +160,8 @@ class ShopifyProductConnector extends BaseConnector {
      * @param float $target
      * @return mixed
      */
-    protected function getImage($record, $target = '450x') {
-        $variants = $record['images'] ?? [];
-        return reset($variants)[$target] ?? reset($variants)['original'] ?? false;
+    protected function getImage($record) {
+        return $record['featuredMedia']['preview']['image']['transformedSrc'] ?? false;
     }
 
     /**
@@ -173,20 +173,24 @@ class ShopifyProductConnector extends BaseConnector {
      * @return array|mixed
      * @throws \Exception
      */
-    protected function requestShopify($query=[]){
+    protected function requestShopify($query){
 
-        $endpoint = $this->config['api']['endpoint'];
+        $endpoint = $this->config['api']['url'].$this->config['api']['endpoint'];
         $hash = md5($endpoint.serialize($query));
         $url = $this->endpoint.$endpoint;
         $headers = [];
 
         // Check Cache
-        if($this->container["cache"]->contains($hash)) {
+        if(false && $this->container["cache"]->contains($hash)) {
             $this->container['logger']->debug('Tipser request using cache');
             return $this->container["cache"]->fetch($hash);
         }
 
-        $result = $this->sendCurl($url, $query, $headers, 'POST');
+        $body = json_encode([
+            "query" => $query
+        ]);
+
+        $result = $this->sendCurl($url, $body, $headers, 'POST');
 
         if ($result && ($result['error'] ?? false))
             return false;
@@ -240,22 +244,6 @@ class ShopifyProductConnector extends BaseConnector {
         curl_close($ch);
 
         return $json;
-    }
-
-    protected function validateToken($token){
-        $parts = explode('.', $token);
-
-        // Decode JWT token
-        $header = base64_decode($parts[0]);
-        $payload = json_decode(base64_decode($parts[1]), true);
-        $signature = $parts[2];
-
-        // Check expiriation time
-        $expire = $payload['exp'] ?? false;
-        if($expire > time())
-            return false;
-
-        return true;
     }
 
     // GraphQl
