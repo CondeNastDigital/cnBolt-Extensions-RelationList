@@ -57,11 +57,11 @@ class ShopifyProductConnector extends BaseConnector {
 
         $queries = [];
         $result = [];
-        $endPoint = $this->config['api']['endpoint'];
 
         foreach ($relations as $relation) {
-            $id = md5($relation->id);
-            $queries[] = $id.': product(id:"'.$relation->id.'"){ ... Properties }';
+            // GraphQL aliases can only start with a letter
+            $alias = '_'.md5($relation->id);
+            $queries[] = $alias.': product(id:"'.$relation->id.'"){ ... Properties }';
         }
 
         $query =  self::GRAPHQL_FRAGMENT_PRODUCT.' query {'. implode("\n", $queries) . '}';
@@ -144,7 +144,7 @@ class ShopifyProductConnector extends BaseConnector {
     }
 
     protected function getLink($record) {
-        return 'https://'.strtolower($record['vendor']) . 'myshopify.com/products/' . $record('handle');
+        return 'https://'.strtolower($record['vendor']) . '.myshopify.com/products/'. $record['handle'];
     }
 
     /**
@@ -168,7 +168,7 @@ class ShopifyProductConnector extends BaseConnector {
      * @return mixed
      */
     protected function getImage($record) {
-        return $record['featuredMedia']['preview']['w800h800']['transformedSrc'] ?? false;
+        return $record['featuredMedia']['preview']['w800h800']['src'] ?? false;
     }
 
     /**
