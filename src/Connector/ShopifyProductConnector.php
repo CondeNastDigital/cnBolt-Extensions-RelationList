@@ -65,7 +65,7 @@ class ShopifyProductConnector extends BaseConnector {
         }
 
         $query =  self::GRAPHQL_FRAGMENT_PRODUCT.' query {'. implode("\n", $queries) . '}';
-        $products = $this->requestShopify($endPoint, $query)['data'] ?: [];
+        $products = $this->requestShopify($query)['data'] ?: [];
 
         foreach ($products as $key => $product) {
             $result[$product['id']] = $product;
