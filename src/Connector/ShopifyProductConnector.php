@@ -82,9 +82,13 @@ class ShopifyProductConnector extends BaseConnector {
      */
     protected function fillRecords($config, $count, $exclude = []): array {
 
+        $fill   = $config['fill'] ?? [];
+        $filter = $this->buildQuery($fill['filter'] ?? [], $exclude);
+        $limit  = (int)($fill['limit'] ?: 4);
+
         $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
         query {
-            products(first: '.(int)$config['limit'].', query: "'.$config['query'].'", sortKey: PUBLISHED_AT) {
+            products(first: '.$limit.', query: "'.$filter.'", sortKey: PUBLISHED_AT) {
                 edges {
                     node {
                         ... Properties
@@ -172,6 +176,33 @@ class ShopifyProductConnector extends BaseConnector {
     }
 
     /**
+     * @param $params
+     * @param array $exclude
+     * @return string
+     */
+    protected function buildQuery($params, $exclude = []) {
+        $query = [];
+        foreach ($params as $key => $value) {
+            switch ($key) {
+                case '-id':
+                case 'id':
+                    $value = explode('/', $value);
+                    $query[] = $key.':'.end($value);
+                    break;
+                default:
+                   $query[] = $key.':'.preg_replace('/[^a-z0-9\-\_]+/i','*', $value);
+            }
+        }
+
+        foreach ($exclude as $value) {
+            $value = explode('/', $value);
+            $query[] = '-id:'.end($value);
+        }
+
+        return implode(' AND ', $query);
+    }
+
+    /**
      * @param $endpoint
      * @param array $query
      * @param string $mode
@@ -188,7 +219,7 @@ class ShopifyProductConnector extends BaseConnector {
         $headers = [];
 
         // Check Cache
-        if(false && $this->container["cache"]->contains($hash)) {
+        if($this->container["cache"]->contains($hash)) {
             $this->container['logger']->debug('Tipser request using cache');
             return $this->container["cache"]->fetch($hash);
         }
