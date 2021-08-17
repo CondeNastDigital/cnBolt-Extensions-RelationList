@@ -8,12 +8,10 @@ use Bolt\Extension\CND\RelationList\Entity\Relation;
 
 class ShopifyProductConnector extends BaseConnector {
 
-    const TTL_TOKEN = 3600 * 24 * 7; // 7 days cache for auth token
     const TTL_DATA = 60 * 10; // 10 minutes cache for product data
 
     protected $config = [];
     protected $endpoint = false;
-
 
 
     /**
@@ -109,10 +107,10 @@ class ShopifyProductConnector extends BaseConnector {
         $item->type = 'products';
         $item->service = $this->key;
         $item->teaser = [
-            'title'       => $record['node']['title'] ?? '',
-            'image'       => $this->getImage($record['node']),
-            'description' => $record['node']['description'] ?? null,
-            'date'        => $record['node']['publishedAt'] ?? null,
+            'title'       => $record['title'] ?? '',
+            'image'       => $this->getImage($record),
+            'description' => $record['description'] ?? null,
+            'date'        => $record['publishedAt'] ?? null,
             'link'        => '#',
         ];
 
@@ -128,12 +126,12 @@ class ShopifyProductConnector extends BaseConnector {
         $item->id = $record['id'] ?? '';
         $item->type = 'product';
         $item->service = $this->key;
-        $item->object = $record['node'] + ['type' => 'shopify-product'];
+        $item->object = $record + ['type' => 'shopify-product'];
         $item->teaser = [
-            'title'       => $record['node']['title'] ?? '',
-            'image'       => $this->getImage($record['node']),
-            'description' => $record['node']['description'] ?? null,
-            'date'        => $record['node']['publishedAt'] ?? null,
+            'title'       => $record['title'] ?? '',
+            'image'       => $this->getImage($record),
+            'description' => $record['description'] ?? null,
+            'date'        => $record['publishedAt'] ?? null,
             'link'        => '#',
         ];
 
@@ -148,8 +146,10 @@ class ShopifyProductConnector extends BaseConnector {
      */
     protected function cleanRecord($record): array {
 
-        $record['node']['description'] = strip_tags($record['node']['description'] ?? '');
-        $record['node']['title']       = strip_tags($record['node']['title'] ?? '');
+        $record = $record['node'] ?? $record;
+
+        $record['description'] = strip_tags($record['description'] ?? '');
+        $record['title']       = strip_tags($record['title'] ?? '');
 
         return $record;
     }
@@ -250,6 +250,7 @@ class ShopifyProductConnector extends BaseConnector {
     const GRAPHQL_FRAGMENT_PRODUCT = "
        fragment Properties on Product {
         id
+        handle
         title
         description
         vendor
