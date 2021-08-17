@@ -111,7 +111,7 @@ class ShopifyProductConnector extends BaseConnector {
             'image'       => $this->getImage($record),
             'description' => $record['description'] ?? null,
             'date'        => $record['publishedAt'] ?? null,
-            'link'        => '#',
+            'link'        => $this->getLink($record),
         ];
 
         $this->applyCustomFields($customFields, $record, $item->teaser);
@@ -132,12 +132,16 @@ class ShopifyProductConnector extends BaseConnector {
             'image'       => $this->getImage($record),
             'description' => $record['description'] ?? null,
             'date'        => $record['publishedAt'] ?? null,
-            'link'        => '#',
+            'link'        => $this->getLink($record),
         ];
 
         $this->applyCustomFields($customFields, $item->object, $item->teaser);
 
         return $item;
+    }
+
+    protected function getLink($record) {
+        return 'https://'.strtolower($record['vendor']) . 'myshopify.com/products/' . $record('handle');
     }
 
     /**
@@ -251,6 +255,7 @@ class ShopifyProductConnector extends BaseConnector {
        fragment Properties on Product {
         id
         handle
+        vendor
         title
         description
         vendor
@@ -274,6 +279,7 @@ class ShopifyProductConnector extends BaseConnector {
               id
               altText
               originalSrc
+              
               transformedSrc(maxWidth: 800, maxHeight: 800)
             }
           }
