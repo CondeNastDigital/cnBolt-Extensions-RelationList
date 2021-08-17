@@ -168,7 +168,7 @@ class ShopifyProductConnector extends BaseConnector {
      * @return mixed
      */
     protected function getImage($record) {
-        return $record['featuredMedia']['preview']['image']['transformedSrc'] ?? false;
+        return $record['featuredMedia']['preview']['w800h800']['transformedSrc'] ?? false;
     }
 
     /**
