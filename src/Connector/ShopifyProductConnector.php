@@ -278,29 +278,34 @@ class ShopifyProductConnector extends BaseConnector {
         }
         featuredMedia {
           preview {
+            original: image {
+              id
+              altText
+              src: originalSrc
+            }
             w800h800: image {
               id
               altText
               originalSrc
-              transformedSrc(maxWidth: 800, maxHeight: 800, crop: CENTER)
+              src: transformedSrc(maxWidth: 800, maxHeight: 800, crop: CENTER)
             }
             w1024h576: image {
               id
               altText
               originalSrc
-              transformedSrc(maxWidth: 1024, maxHeight: 576, crop: CENTER)
+              src: transformedSrc(maxWidth: 1024, maxHeight: 576, crop: CENTER)
             }
             w600h900: image {
               id
               altText
               originalSrc
-              transformedSrc(maxWidth: 600, maxHeight: 900, crop: CENTER)
+              src: transformedSrc(maxWidth: 600, maxHeight: 900, crop: CENTER)
             }
             w800h533: image {
               id
               altText
               originalSrc
-              transformedSrc(maxWidth: 800, maxHeight: 533, crop: CENTER)
+              src: transformedSrc(maxWidth: 800, maxHeight: 533, crop: CENTER)
             }
           }
         }
