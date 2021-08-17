@@ -292,19 +292,16 @@ class ShopifyProductConnector extends BaseConnector {
             w1024h576: image {
               id
               altText
-              originalSrc
               src: transformedSrc(maxWidth: 1024, maxHeight: 576, crop: CENTER)
             }
             w600h900: image {
               id
               altText
-              originalSrc
               src: transformedSrc(maxWidth: 600, maxHeight: 900, crop: CENTER)
             }
             w800h533: image {
               id
               altText
-              originalSrc
               src: transformedSrc(maxWidth: 800, maxHeight: 533, crop: CENTER)
             }
           }
