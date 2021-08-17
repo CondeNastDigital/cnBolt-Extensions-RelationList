@@ -126,7 +126,10 @@ class ShopifyProductConnector extends BaseConnector {
         $item->id = $record['id'] ?? '';
         $item->type = 'product';
         $item->service = $this->key;
-        $item->object = $record + ['type' => 'shopify-product'];
+        $item->object = $record + [
+            'type' => 'shopify-product',
+            'link' => $this->getLink($record)
+        ];
         $item->teaser = [
             'title'       => $record['title'] ?? '',
             'image'       => $this->getImage($record),
