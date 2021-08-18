@@ -42,9 +42,16 @@ class ShopifyProductConnector extends BaseConnector {
                     }
                 }
             }
+            '.self::GRAPHQL_QUERY_SHOP.'
         }';
 
-        return $this->requestShopify($query)['data']['products']['edges'] ?: [];
+        $data = $this->requestShopify($query)['data'];
+        $shop = $data['shop'] ?? [];
+        array_walk($data['products']['edges'], function (&$el) use ($shop){
+            $el['affiliate'] = $shop;
+        });
+
+        return $data['products']['edges'] ?: [];
     }
 
     /**
@@ -64,10 +71,16 @@ class ShopifyProductConnector extends BaseConnector {
             $queries[] = $alias.': product(id:"'.$relation->id.'"){ ... Properties }';
         }
 
-        $query =  self::GRAPHQL_FRAGMENT_PRODUCT.' query {'. implode("\n", $queries) . '}';
+        $query =  self::GRAPHQL_FRAGMENT_PRODUCT.' query {'. implode("\n", $queries) . ' '.self::GRAPHQL_QUERY_SHOP.' }';
         $products = $this->requestShopify($query)['data'] ?: [];
 
+        // Extracts the shop form the results
+        $shop     = $products['shop'];
+        unset($products['shop']);
+
+        // Applies the shop and transfers the Products to the results array
         foreach ($products as $key => $product) {
+            $product['affiliate']   = $shop;
             $result[$product['id']] = $product;
         }
 
@@ -95,9 +108,19 @@ class ShopifyProductConnector extends BaseConnector {
                     }
                 }
             }
+            
+            '.self::GRAPHQL_QUERY_SHOP.'
+            
         }';
 
-        return $this->requestShopify($query)['data']['products']['edges'] ?: [];
+        $data = $this->requestShopify($query)['data'];
+        $shop = $data['shop'] ?? [];
+
+        array_walk($data['products']['edges'], function (&$el) use ($shop){
+            $el['affiliate'] = $shop;
+        });
+
+        return $data['products']['edges'] ?: [];
 
     }
 
@@ -287,6 +310,13 @@ class ShopifyProductConnector extends BaseConnector {
 
         return $json;
     }
+
+    const GRAPHQL_QUERY_SHOP = "
+      shop {
+        id
+        name
+      }
+    ";
 
     // GraphQl
     const GRAPHQL_FRAGMENT_PRODUCT = "
