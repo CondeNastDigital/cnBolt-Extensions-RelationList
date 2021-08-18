@@ -48,7 +48,7 @@ class ShopifyProductConnector extends BaseConnector {
         $data = $this->requestShopify($query)['data'];
         $shop = $data['shop'] ?? [];
         array_walk($data['products']['edges'], function (&$el) use ($shop){
-            $el['affiliate'] = $shop;
+            $el['node']['affiliate'] = $shop;
         });
 
         return $data['products']['edges'] ?: [];
@@ -117,7 +117,7 @@ class ShopifyProductConnector extends BaseConnector {
         $shop = $data['shop'] ?? [];
 
         array_walk($data['products']['edges'], function (&$el) use ($shop){
-            $el['affiliate'] = $shop;
+            $el['node']['affiliate'] = $shop;
         });
 
         return $data['products']['edges'] ?: [];
