@@ -147,8 +147,12 @@ class ShopifyProductConnector extends BaseConnector {
         return $item;
     }
 
+    /**
+     * @param $record
+     * @return mixed
+     */
     protected function getLink($record) {
-        return 'https://'.strtolower($record['vendor']) . '.myshopify.com/products/'. $record['handle'];
+        return $record['onlineStoreUrl'] ?: $record['onlineStorePreviewUrl'];
     }
 
     /**
@@ -295,6 +299,7 @@ class ShopifyProductConnector extends BaseConnector {
         vendor
         storefrontId
         onlineStoreUrl
+        onlineStorePreviewUrl
         publishedAt
         tags
         priceRangeV2 {
