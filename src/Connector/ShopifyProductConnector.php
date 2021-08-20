@@ -175,7 +175,7 @@ class ShopifyProductConnector extends BaseConnector {
      * @return mixed
      */
     protected function getLink($record) {
-        return $record['onlineStoreUrl'] ?: $record['onlineStorePreviewUrl'];
+        return $record['onlineStoreUrl'] ?? null;
     }
 
     /**
@@ -199,7 +199,8 @@ class ShopifyProductConnector extends BaseConnector {
      * @return mixed
      */
     protected function getImage($record) {
-        return $record['featuredMedia']['preview']['w800h800']['src'] ?? false;
+        $images = $record['featuredMedia']['preview'] ?? [];
+        return reset($images)['w800h800']['src'] ?? false;
     }
 
     /**
@@ -327,12 +328,11 @@ class ShopifyProductConnector extends BaseConnector {
         title
         description
         vendor
-        storefrontId
         onlineStoreUrl
-        onlineStorePreviewUrl
         publishedAt
+        updatedAt
         tags
-        priceRangeV2 {
+        priceRangeV2: priceRange {
           minVariantPrice {
             amount
             currencyCode
@@ -342,33 +342,35 @@ class ShopifyProductConnector extends BaseConnector {
             currencyCode
           }
         }
-        featuredMedia {
-          preview {
-            original: image {
-              id
-              altText
-              src: originalSrc
-            }
-            w800h800: image {
-              id
-              altText
-              originalSrc
-              src: transformedSrc(maxWidth: 800, maxHeight: 800, crop: CENTER)
-            }
-            w1024h576: image {
-              id
-              altText
-              src: transformedSrc(maxWidth: 1024, maxHeight: 576, crop: CENTER)
-            }
-            w600h900: image {
-              id
-              altText
-              src: transformedSrc(maxWidth: 600, maxHeight: 900, crop: CENTER)
-            }
-            w800h533: image {
-              id
-              altText
-              src: transformedSrc(maxWidth: 800, maxHeight: 533, crop: CENTER)
+        featuredMedia: media(first: 10) {
+           preview: edges {
+            node {
+                original: previewImage {
+                  id
+                  altText
+                  src: originalSrc
+                }
+                w800h800: previewImage {
+                  id
+                  altText
+                  originalSrc
+                  src: transformedSrc(maxWidth: 800, maxHeight: 800, crop: CENTER)
+                }
+                w1024h576: previewImage {
+                  id
+                  altText
+                  src: transformedSrc(maxWidth: 1024, maxHeight: 576, crop: CENTER)
+                }
+                w600h900: previewImage {
+                  id
+                  altText
+                  src: transformedSrc(maxWidth: 600, maxHeight: 900, crop: CENTER)
+                }
+                w800h533: previewImage {
+                  id
+                  altText
+                  src: transformedSrc(maxWidth: 800, maxHeight: 533, crop: CENTER)
+                }
             }
           }
         }
