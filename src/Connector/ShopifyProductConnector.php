@@ -101,7 +101,7 @@ class ShopifyProductConnector extends BaseConnector {
 
         $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
         query {
-            products(first: '.$limit.', query: "'.$filter.'", sortKey: PUBLISHED_AT) {
+            products(first: '.$limit.', query: "'.$filter.'", sortKey: UPDATED_AT) {
                 edges {
                     node {
                         ... Properties
@@ -200,7 +200,7 @@ class ShopifyProductConnector extends BaseConnector {
      */
     protected function getImage($record) {
         $images = $record['featuredMedia']['preview'] ?? [];
-        return reset($images)['w800h800']['src'] ?? false;
+        return reset($images)['node']['w800h800']['src'] ?? false;
     }
 
     /**
@@ -244,7 +244,10 @@ class ShopifyProductConnector extends BaseConnector {
         $endpoint = $this->config['api']['url'].$this->config['api']['endpoint'];
         $hash = md5($endpoint.serialize($query));
         $url = $this->endpoint.$endpoint;
-        $headers = [];
+        $token = $this->config['api']['token'] ?? false;
+        $headers = [
+            'X-Shopify-Storefront-Access-Token: ' . $token
+        ];
 
         // Check Cache
         if($this->container["cache"]->contains($hash)) {
@@ -314,8 +317,12 @@ class ShopifyProductConnector extends BaseConnector {
 
     const GRAPHQL_QUERY_SHOP = "
       shop {
-        id
         name
+        primaryDomain {
+          url
+          host
+          sslEnabled
+        }
       }
     ";
 
