@@ -68,7 +68,7 @@ class ShopifyProductConnector extends BaseConnector {
         foreach ($relations as $relation) {
             // GraphQL aliases can only start with a letter
             $alias = '_'.md5($relation->id);
-            $queries[] = $alias.': product(id:"'.$relation->id.'"){ ... Properties }';
+            $queries[] = $alias.': node(id:"'.$relation->id.'"){ ... Properties }';
         }
 
         $query =  self::GRAPHQL_FRAGMENT_PRODUCT.' query {'. implode("\n", $queries) . ' '.self::GRAPHQL_QUERY_SHOP.' }';
