@@ -35,7 +35,7 @@ class ShopifyProductConnector extends BaseConnector {
 
         $query = self::GRAPHQL_FRAGMENT_PRODUCT.'
         query {
-            products(first: 20, query: "title:*'.$cleaned.'*", sortKey: PUBLISHED_AT) {
+            products(first: 20, query: "title:*'.$cleaned.'*", sortKey: UPDATED_AT) {
                 edges {
                     node {
                         ... Properties
