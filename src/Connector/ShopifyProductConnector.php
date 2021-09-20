@@ -244,10 +244,13 @@ class ShopifyProductConnector extends BaseConnector {
         $endpoint = $this->config['api']['url'].$this->config['api']['endpoint'];
         $hash = md5($endpoint.serialize($query));
         $url = $this->endpoint.$endpoint;
+
         $token = $this->config['api']['token'] ?? false;
-        $headers = [
-            'X-Shopify-Storefront-Access-Token: ' . $token
-        ];
+        if($token) {
+            $headers = [
+                'X-Shopify-Storefront-Access-Token: ' . $token
+            ];
+        }
 
         // Check Cache
         if($this->container["cache"]->contains($hash)) {
