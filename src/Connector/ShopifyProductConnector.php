@@ -15,17 +15,6 @@ class ShopifyProductConnector extends BaseConnector {
 
 
     /**
-     * KrakenConnector constructor.
-     * @param $key
-     * @param Application $container
-     * @param $config
-     * @throws \Exception
-     */
-    public function __construct($key, Application $container, $config){
-        parent::__construct($key, $container, $config);
-    }
-
-    /**
      * @inheritdoc
      * @throws \Exception
      */
@@ -79,7 +68,7 @@ class ShopifyProductConnector extends BaseConnector {
         unset($products['shop']);
 
         // Applies the shop and transfers the Products to the results array
-        foreach ($products as $key => $product) {
+        foreach ($products as $product) {
             $product['affiliate']   = $shop;
             $result[$product['id']] = $product;
         }
@@ -96,33 +85,87 @@ class ShopifyProductConnector extends BaseConnector {
     protected function fillRecords($config, $count, $exclude = []): array {
 
         $fill   = $config['fill'] ?? [];
-        $filter = $this->buildQuery($fill['filter'] ?? [], $exclude);
-        $limit  = (int)($fill['limit'] ?: 4);
+        $mode = $fill['mode'] ?? 'similar';
+        $fillItems = [];
+
+        if($mode === 'similar') {
+            $fillItems = $this->fillSimilar($config['fill']);
+        }
+
+        if($mode === 'products') {
+            $fillItems = $this->fillProduct($config['fill'], $exclude);
+        }
+
+        return $fillItems;
+    }
+
+    /**
+     *
+     * @param array $fillConfig
+     * @return array
+     * @throws \Exception
+     */
+    protected function fillSimilar(array $fillConfig): array {
+        $productId = $fillConfig['productid'];
+        if(!$productId = $this->cleanProductId($productId)) {
+            return [];
+        }
 
         $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
-        query {
-            products(first: '.$limit.', query: "'.$filter.'", sortKey: UPDATED_AT) {
-                edges {
-                    node {
-                        ... Properties
-                    }
+            query {
+                productRecommendations(productId: '.$productId.') {
+                    ... Properties
                 }
-            }
             
             '.self::GRAPHQL_QUERY_SHOP.'
             
-        }';
+            }';
 
         $data = $this->requestShopify($query)['data'];
         $shop = $data['shop'] ?? [];
 
-        array_walk($data['products']['edges'], function (&$el) use ($shop){
+        array_walk($data['productRecommendations'], function (&$el) use ($shop) {
+            $el['affiliate'] = $shop;
+        });
+        return $data['productRecommendations'] ?: [];
+
+    }
+
+    /**
+     * @param array $fillConfig
+     * @param $exclude
+     * @return array
+     * @throws \Exception
+     */
+    protected function fillProduct(array $fillConfig, $exclude): array {
+
+        $filter = $this->buildQuery($fillConfig['filter'] ?? [], $exclude);
+        $limit  = (int)($fillConfig['limit'] ?: 4);
+
+        $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
+            query {
+                products(first: '.$limit.', query: "'.$filter.'", sortKey: UPDATED_AT) {
+                    edges {
+                        node {
+                            ... Properties
+                        }
+                    }
+            }
+            
+            '.self::GRAPHQL_QUERY_SHOP.'
+            
+            }';
+
+        $data = $this->requestShopify($query)['data'];
+        $shop = $data['shop'] ?? [];
+
+        array_walk($data['products']['edges'], function (&$el) use ($shop) {
             $el['node']['affiliate'] = $shop;
         });
 
         return $data['products']['edges'] ?: [];
-
     }
+
 
     // ----------------------------------------------------------------------------------------------
 
@@ -170,6 +213,8 @@ class ShopifyProductConnector extends BaseConnector {
         return $item;
     }
 
+    /* ------- Helper functions ------ */
+
     /**
      * @param $record
      * @return mixed
@@ -194,8 +239,7 @@ class ShopifyProductConnector extends BaseConnector {
 
     /**
      * Get largest image for a desired aspect ration
-     * @param Content $record
-     * @param float $target
+     * @param array $record
      * @return mixed
      */
     protected function getImage($record) {
@@ -212,13 +256,14 @@ class ShopifyProductConnector extends BaseConnector {
         $query = [];
         foreach ($params as $key => $value) {
             switch ($key) {
+                # Shopify has a thing called global ids, which hold the ID that we need adter the slash
+                # -id means: id != ...
                 case '-id':
                 case 'id':
-                    $value = explode('/', $value);
-                    $query[] = $key.':'.end($value);
+                    $query[] = $key.':'.$this->cleanProductId($value);
                     break;
                 default:
-                   $query[] = $key.':'.preg_replace('/[^a-z0-9\-\_]+/i','*', $value);
+                   $query[] = $key.':'.$this->filterValue($value);
             }
         }
 
@@ -231,6 +276,23 @@ class ShopifyProductConnector extends BaseConnector {
     }
 
     /**
+     * @param string $id
+     * @return array|string|string[]|null
+     */
+    protected function cleanProductId(string $id): string {
+        $id = explode('/', $id);
+        return preg_replace('/[^a-z0-9\=]+/i','*', end($id));
+    }
+
+    /**
+     * @param string $value
+     * @return array|string|string[]|null
+     */
+    protected function filterValue(string $value): string {
+        return preg_replace('/[^a-z0-9\-\_]+/i','*', $value);
+    }
+
+    /**
      * @param $endpoint
      * @param array $query
      * @param string $mode
@@ -239,11 +301,11 @@ class ShopifyProductConnector extends BaseConnector {
      * @return array|mixed
      * @throws \Exception
      */
-    protected function requestShopify($query){
+    protected function requestShopify(string $query){
 
-        $endpoint = $this->config['api']['url'].$this->config['api']['endpoint'];
-        $hash = md5($endpoint.serialize($query));
-        $url = $this->endpoint.$endpoint;
+        $apiUrl = $this->config['api']['url'].$this->config['api']['endpoint'];
+        $hash = md5($apiUrl.serialize($query));
+        $url = $this->endpoint.$apiUrl;
 
         $token = $this->config['api']['token'] ?? false;
         if($token) {
@@ -264,8 +326,9 @@ class ShopifyProductConnector extends BaseConnector {
 
         $result = $this->sendCurl($url, $body, $headers, 'POST');
 
-        if ($result && ($result['error'] ?? false))
+        if ($result && ($result['error'] ?? false)) {
             return false;
+        }
 
         $this->container['logger']->debug('Tipser request successfull');
         $this->container["cache"]->save($hash, $result, self::TTL_DATA);
@@ -273,6 +336,14 @@ class ShopifyProductConnector extends BaseConnector {
         return $result;
     }
 
+    /**
+     * @param $url
+     * @param string $body
+     * @param array $headers
+     * @param string $method
+     * @return mixed
+     * @throws \Exception
+     */
     protected function sendCurl($url, $body = '', $headers = [], $method = 'GET'){
 
         $ch = curl_init();
@@ -317,6 +388,8 @@ class ShopifyProductConnector extends BaseConnector {
 
         return $json;
     }
+
+    // --- GraphQL Fragments ---
 
     const GRAPHQL_QUERY_SHOP = "
       shop {
