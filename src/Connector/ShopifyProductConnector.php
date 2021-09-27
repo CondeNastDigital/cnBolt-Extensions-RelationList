@@ -93,7 +93,7 @@ class ShopifyProductConnector extends BaseConnector {
         }
 
         if($mode === 'products') {
-            $fillItems = $this->fillProduct($config['fill'], $exclude);
+            $fillItems = $this->fillProducts($config['fill'], $exclude);
         }
 
         return $fillItems;
@@ -113,7 +113,7 @@ class ShopifyProductConnector extends BaseConnector {
 
         $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
             query {
-                productRecommendations(productId: '.$productId.') {
+                productRecommendations(productId:"'.$productId.'") {
                     ... Properties
                 }
             
@@ -137,7 +137,7 @@ class ShopifyProductConnector extends BaseConnector {
      * @return array
      * @throws \Exception
      */
-    protected function fillProduct(array $fillConfig, $exclude): array {
+    protected function fillProducts(array $fillConfig, $exclude): array {
 
         $filter = $this->buildQuery($fillConfig['filter'] ?? [], $exclude);
         $limit  = (int)($fillConfig['limit'] ?: 4);
