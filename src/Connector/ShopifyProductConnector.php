@@ -13,6 +13,7 @@ class ShopifyProductConnector extends BaseConnector {
     protected $config = [];
     protected $endpoint = false;
 
+    const SHOPIFY_PRODUCTID_HUMAN_PATTERN = "/^[0-9]+$/";
 
     /**
      * @inheritdoc
@@ -107,7 +108,7 @@ class ShopifyProductConnector extends BaseConnector {
      */
     protected function fillSimilar(array $fillConfig): array {
         $productId = $fillConfig['productid'];
-        if(!$productId = $this->cleanProductId($productId)) {
+        if(!$productId = $this->buildProductId($productId)) {
             return [];
         }
 
@@ -260,7 +261,7 @@ class ShopifyProductConnector extends BaseConnector {
                 # -id means: id != ...
                 case '-id':
                 case 'id':
-                    $query[] = $key.':'.$this->cleanProductId($value);
+                    $query[] = $key.':'.$this->buildProductId($value);
                     break;
                 default:
                    $query[] = $key.':'.$this->filterValue($value);
@@ -276,12 +277,17 @@ class ShopifyProductConnector extends BaseConnector {
     }
 
     /**
+     * Accepts ids in Human Readable format or id Shopify base64 encoded ProductID
      * @param string $id
      * @return array|string|string[]|null
      */
-    protected function cleanProductId(string $id): string {
-        $id = explode('/', $id);
-        return preg_replace('/[^a-z0-9\=]+/i','*', end($id));
+    protected function buildProductId(string $id): string {
+
+        if(preg_match(self::SHOPIFY_PRODUCTID_HUMAN_PATTERN,$id)) {
+            $id = base64_encode("gid://shopify/Product/".$id);
+        }
+
+        return preg_replace('/[^a-z0-9\=]+/i','*', $id);
     }
 
     /**
