@@ -8,6 +8,7 @@ use Bolt\Asset\File\Stylesheet;
 use Bolt\Controller\Zone;
 use Bolt\Extension\CND\RelationList\Controller\RelationController;
 use Bolt\Extension\CND\RelationList\Controller\TipserSelectProxy;
+use Bolt\Extension\CND\RelationList\Controller\ShopifySelectProxy;
 use Bolt\Extension\CND\RelationList\Service\LegacyService;
 use Bolt\Extension\CND\RelationList\Service\TwigService;
 use Bolt\Extension\SimpleExtension;
@@ -94,6 +95,7 @@ class Extension extends SimpleExtension
         return [
             '/relationlist' => new RelationController($app, $config),
             '/relationlist/tipser' => new TipserSelectProxy($app, $config),
+            '/relationlist/shopify' => new ShopifySelectProxy($app, $config),
         ];
     }
 

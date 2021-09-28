@@ -201,7 +201,7 @@ class ShopifyProductConnector extends BaseConnector {
         $item->type = 'product';
         $item->service = $this->key;
         $item->object = $record + [
-            'type' => 'shopify-product',
+            'type' => 'shopify',
             'link' => $this->getLink($record)
         ];
         $item->teaser = [
@@ -352,13 +352,6 @@ class ShopifyProductConnector extends BaseConnector {
         $hash = md5($apiUrl.serialize($query));
         $url = $this->endpoint.$apiUrl;
 
-        $token = $this->config['api']['token'] ?? false;
-        if($token) {
-            $headers = [
-                'X-Shopify-Storefront-Access-Token: ' . $token
-            ];
-        }
-
         // Check Cache
         if($this->container["cache"]->contains($hash)) {
             $this->container['logger']->debug('Tipser request using cache');
@@ -369,13 +362,13 @@ class ShopifyProductConnector extends BaseConnector {
             "query" => $query
         ]);
 
-        $result = $this->sendCurl($url, $body, $headers, 'POST');
+        $result = $this->sendCurl($url, $body, [], 'POST');
 
         if ($result && ($result['error'] ?? false)) {
             return false;
         }
 
-        $this->container['logger']->debug('Tipser request successfull');
+        $this->container['logger']->debug('Shopify request successfull');
         $this->container["cache"]->save($hash, $result, self::TTL_DATA);
 
         return $result;
@@ -390,6 +383,13 @@ class ShopifyProductConnector extends BaseConnector {
      * @throws \Exception
      */
     protected function sendCurl($url, $body = '', $headers = [], $method = 'GET'){
+
+        $token = $this->config['api']['token'] ?? false;
+        if($token) {
+            $headers = [
+                'X-Shopify-Storefront-Access-Token: ' . $token
+            ];
+        }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
