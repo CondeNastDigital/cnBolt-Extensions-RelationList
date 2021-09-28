@@ -13,7 +13,10 @@ class ShopifyProductConnector extends BaseConnector {
     protected $config = [];
     protected $endpoint = false;
 
-    const SHOPIFY_PRODUCTID_HUMAN_PATTERN = "/^[0-9]+$/";
+    const SHOPIFY_PRODUCTID_GLOBAL_PATTERN = "/^gid\:\/\/shopify\/Product\/(?<ID>[0-9]+)$/i";
+    const SHOPIFY_PRODUCTID_CLEAN_PATTERN  = "/^(?<ID>[0-9]+)$/i";
+    const SHOPIFY_PRODUCTID_BASE64_PATTERN = "/^[a-z0-9\=]+$/i";
+    const DEFAULT_FILL_LIMIT               = 4;
 
     /**
      * @inheritdoc
@@ -108,7 +111,9 @@ class ShopifyProductConnector extends BaseConnector {
      */
     protected function fillSimilar(array $fillConfig): array {
         $productId = $fillConfig['productid'];
-        if(!$productId = $this->buildProductId($productId)) {
+        $limit    = $fillConfig['limit'] ?? self::DEFAULT_FILL_LIMIT;
+
+        if(!$productId = $this->toRecommendProductId($productId)) {
             return [];
         }
 
@@ -117,9 +122,7 @@ class ShopifyProductConnector extends BaseConnector {
                 productRecommendations(productId:"'.$productId.'") {
                     ... Properties
                 }
-            
             '.self::GRAPHQL_QUERY_SHOP.'
-            
             }';
 
         $data = $this->requestShopify($query)['data'];
@@ -128,7 +131,9 @@ class ShopifyProductConnector extends BaseConnector {
         array_walk($data['productRecommendations'], function (&$el) use ($shop) {
             $el['affiliate'] = $shop;
         });
-        return $data['productRecommendations'] ?: [];
+
+        // GraphQL productRecommendations supports no limit
+        return array_slice($data['productRecommendations'] ?: [], 0, $limit );
 
     }
 
@@ -152,9 +157,7 @@ class ShopifyProductConnector extends BaseConnector {
                         }
                     }
             }
-            
             '.self::GRAPHQL_QUERY_SHOP.'
-            
             }';
 
         $data = $this->requestShopify($query)['data'];
@@ -256,12 +259,12 @@ class ShopifyProductConnector extends BaseConnector {
     protected function buildQuery($params, $exclude = []) {
         $query = [];
         foreach ($params as $key => $value) {
-            switch ($key) {
+            switch (trim($key)) {
                 # Shopify has a thing called global ids, which hold the ID that we need adter the slash
                 # -id means: id != ...
                 case '-id':
                 case 'id':
-                    $query[] = $key.':'.$this->buildProductId($value);
+                    $query[] = $key.':'.$this->toQueryProductId($value);
                     break;
                 default:
                    $query[] = $key.':'.$this->filterValue($value);
@@ -269,8 +272,8 @@ class ShopifyProductConnector extends BaseConnector {
         }
 
         foreach ($exclude as $value) {
-            $value = explode('/', $value);
-            $query[] = '-id:'.end($value);
+            $value = $this->toQueryProductId($value);
+            $query[] = '-id:'.$value;
         }
 
         return implode(' AND ', $query);
@@ -280,14 +283,50 @@ class ShopifyProductConnector extends BaseConnector {
      * Accepts ids in Human Readable format or id Shopify base64 encoded ProductID
      * @param string $id
      * @return array|string|string[]|null
+     * @throws \Exception
      */
-    protected function buildProductId(string $id): string {
+    protected function toQueryProductId(string $id): string {
 
-        if(preg_match(self::SHOPIFY_PRODUCTID_HUMAN_PATTERN,$id)) {
-            $id = base64_encode("gid://shopify/Product/".$id);
+        if(preg_match(self::SHOPIFY_PRODUCTID_GLOBAL_PATTERN, $id, $match)) {
+
+            $queryId = $match['ID'];
+
+        } elseif ( preg_match(self::SHOPIFY_PRODUCTID_CLEAN_PATTERN, $id)) {
+
+            $queryId = $id;
+
+        } elseif ( preg_match(self::SHOPIFY_PRODUCTID_BASE64_PATTERN, $id)) {
+
+            $queryId = base64_decode($id);
+            $queryId = explode('/', $queryId);
+            $queryId = end($queryId);
+
+        } else {
+            throw new \Exception('Invalid Query Shopify ID:'.$id);
         }
 
-        return preg_replace('/[^a-z0-9\=]+/i','*', $id);
+        return (string)$queryId;
+    }
+
+    /**
+     * Accepts ids in Human Readable format or id Shopify base64 encoded ProductID
+     * @param string $id
+     * @return string
+     * @throws \Exception
+     */
+    protected function toRecommendProductId(string $id): string {
+
+        if(preg_match(self::SHOPIFY_PRODUCTID_CLEAN_PATTERN,$id)) {
+            $queryId = base64_encode("gid://shopify/Product/".$id);
+        } elseif(preg_match(self::SHOPIFY_PRODUCTID_GLOBAL_PATTERN, $id, $match)) {
+            $queryId = base64_encode($id);
+        } elseif (preg_match(self::SHOPIFY_PRODUCTID_BASE64_PATTERN, $id)) {
+            $queryId = $id;
+        } else {
+            throw new \Exception('Invalid Recommend Shopify ID:'.$id);
+        }
+
+        return $queryId;
     }
 
     /**
