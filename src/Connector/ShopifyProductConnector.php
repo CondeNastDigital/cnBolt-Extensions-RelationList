@@ -224,7 +224,9 @@ class ShopifyProductConnector extends BaseConnector {
      * @return mixed
      */
     protected function getLink($record) {
-        return $record['onlineStoreUrl'] ?? null;
+        // TODO: Remove defaults
+        $default = ($record['affiliate']['primaryDomain']['url'] ?? '').'/'.($record['handle'] ?? '');
+        return $record['onlineStoreUrl'] ?? $default;
     }
 
     /**

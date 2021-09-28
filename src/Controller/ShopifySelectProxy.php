@@ -4,6 +4,7 @@ namespace Bolt\Extension\CND\RelationList\Controller;
 
 
 use Bolt\Application;
+use Bolt\Extension\CND\RelationList\Connector\ShopifyProductConnector;
 use Bolt\Extension\CND\RelationList\Entity\Relation;
 use Bolt\Extension\CND\RelationList\Service\RelationService;
 use Exception;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 class ShopifySelectProxy implements ControllerProviderInterface{
 
     const CATEGORIES_TTL = 24*3600;
+    const DEFAULT_FILL_LIMIT = 5;
 
     protected $app;
     protected $config;
@@ -27,7 +29,7 @@ class ShopifySelectProxy implements ControllerProviderInterface{
         $this->app = $app;
         $this->config = $config['connectors']['shopify-product'];
         $this->endpoint = $this->config['api']['url'].$this->config['api']['endpoint'];
-        $this->collection = $this->config['collection'];
+        $this->collection = $this->config['collection'] ?? [];
     }
 
     public function connect(\Silex\Application $app){
@@ -49,23 +51,15 @@ class ShopifySelectProxy implements ControllerProviderInterface{
      */
     public function categories( Request $request ){
 
+        $limit = $this->collection['limit'] ?? self::DEFAULT_FILL_LIMIT;
         $query = 'query {
-            collections(first: '.$this->collection['limit'].') {
+            collections(first: '.$limit.') {
                 edges {
                     node {
                         id
                         title
                         handle
                         descriptionHtml
-                        products(first: 5) {
-                            edges {
-                                node {
-                                    id
-                                    title
-                                    handle
-                                }          
-                            }
-                        }
                     }
                 }  
             }
