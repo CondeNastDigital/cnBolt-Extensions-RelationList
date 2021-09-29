@@ -4,8 +4,6 @@ namespace Bolt\Extension\CND\RelationList\Controller;
 
 
 use Bolt\Application;
-use Bolt\Extension\CND\RelationList\Connector\ShopifyProductConnector;
-use Bolt\Extension\CND\RelationList\Entity\Relation;
 use Bolt\Extension\CND\RelationList\Service\RelationService;
 use Exception;
 use Silex\ControllerProviderInterface;
@@ -14,8 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ShopifySelectProxy implements ControllerProviderInterface{
 
-    const CATEGORIES_TTL = 24*3600;
-    const DEFAULT_FILL_LIMIT = 5;
+    const DEFAULT_FILL_LIMIT = 10;
 
     protected $app;
     protected $config;
@@ -52,8 +49,11 @@ class ShopifySelectProxy implements ControllerProviderInterface{
     public function categories( Request $request ){
 
         $limit = $this->collection['limit'] ?? self::DEFAULT_FILL_LIMIT;
+        $search = $request->get('search') ?: false;
+        $search = preg_replace('/[^a-z0-9\-\_]+/i','*', $search);
+
         $query = 'query {
-            collections(first: '.$limit.') {
+            collections(first: '.$limit.', query: "title:*'.$search.'*") {
                 edges {
                     node {
                         id
@@ -68,18 +68,8 @@ class ShopifySelectProxy implements ControllerProviderInterface{
             "query" => $query
         ]);
 
-        $search = $request->get('search') ?: false;
-
-        /* @var \Bolt\Cache $cache */
-        $cache = $this->app['cache'];
-
-        $categories = $cache->fetch('shopify-categories');
-        if(!$categories){
-            $categories = $this->loadCategories($body);
-            $categories = $this->convertCategories($categories);
-            $cache->save('shopify-categories', $categories, self::CATEGORIES_TTL);
-        }
-        $categories = $this->filterCategories($categories, $search);
+        $categories = $this->loadCategories($body);
+        $categories = $this->convertCategories($categories);
 
         return new JsonResponse([
             'items' => $categories,
@@ -136,7 +126,7 @@ class ShopifySelectProxy implements ControllerProviderInterface{
         $items = [];
         foreach($input['data']['collections']['edges'] ?? [] as $collection) {
             $key = $collection['node']['handle'];
-            $items[$key] = [
+            $items[] = [
                 'value' => $collection['node']['id'],
                 'label' => $collection['node']['title'],
                 'info' => $collection['node']['descriptionHtml'] ?? '',
@@ -144,15 +134,6 @@ class ShopifySelectProxy implements ControllerProviderInterface{
         }
 
         return $items;
-    }
-
-    protected function filterCategories($items, $search){
-        foreach($items as $idx => $item){
-            if(stripos($item['label'], $search) === false){
-                unset($items[$idx]);
-            }
-        }
-        return array_values($items);
     }
 
 }
