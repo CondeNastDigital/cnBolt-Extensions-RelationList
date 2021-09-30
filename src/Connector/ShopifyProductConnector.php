@@ -100,6 +100,10 @@ class ShopifyProductConnector extends BaseConnector {
             $fillItems = $this->fillProducts($config['fill'], $exclude);
         }
 
+        if($mode === 'category') {
+            $fillItems = $this->fillCategory($config['fill'], $exclude);
+        }
+
         return $fillItems;
     }
 
@@ -156,7 +160,7 @@ class ShopifyProductConnector extends BaseConnector {
                             ... Properties
                         }
                     }
-            }
+                }
             '.self::GRAPHQL_QUERY_SHOP.'
             }';
 
@@ -170,6 +174,58 @@ class ShopifyProductConnector extends BaseConnector {
         return $data['products']['edges'] ?: [];
     }
 
+    /**
+     * @param array $fillConfig
+     * @param $exclude
+     * @return array
+     * @throws \Exception
+     */
+    protected function fillCategory(array $fillConfig, $exclude): array {
+
+        $limit  = (int)($fillConfig['limit'] ?: 4);
+        $products = [];
+        foreach ($fillConfig['categoryid'] as $value) {
+            $categoryId = $this->toQueryProductId($value);
+            $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
+            query {
+                collections(first: 1, query:"'.$categoryId.'") {
+                    edges {
+                        node {
+                            id
+                            title
+                            handle
+                            descriptionHtml
+                            products(first: '.$limit.') {
+                                edges {
+                                    node {
+                                        ...Properties
+                                    }          
+                                }
+                            }
+                        }
+                    }  
+                }
+                '.self::GRAPHQL_QUERY_SHOP.'
+            }';
+
+            $result = $this->requestShopify($query);
+            $data[] = $result['data']['collections']['edges'][0]['node']['products']['edges'];
+            $shop = $result['shop'] ?? [];
+        }
+
+        foreach ($data as $idx => $values) {
+            foreach ($values as $product) {
+                if (!in_array($product['node']['id'], $exclude))
+                    $products[] = $product;
+            }
+        }
+
+        array_walk($products, function (&$el) use ($shop) {
+            $el['node']['affiliate'] = $shop;
+        });
+
+        return $products ?: [];
+    }
 
     // ----------------------------------------------------------------------------------------------
 

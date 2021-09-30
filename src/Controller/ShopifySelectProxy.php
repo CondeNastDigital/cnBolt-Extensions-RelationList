@@ -125,7 +125,6 @@ class ShopifySelectProxy implements ControllerProviderInterface{
 
         $items = [];
         foreach($input['data']['collections']['edges'] ?? [] as $collection) {
-            $key = $collection['node']['handle'];
             $items[] = [
                 'value' => $collection['node']['id'],
                 'label' => $collection['node']['title'],
