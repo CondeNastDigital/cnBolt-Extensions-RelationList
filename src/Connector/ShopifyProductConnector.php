@@ -185,6 +185,10 @@ class ShopifyProductConnector extends BaseConnector {
         $limit  = (int)($fillConfig['limit'] ?: 4);
         $products = [];
         foreach ($fillConfig['categoryid'] as $value) {
+
+            if (!$value)
+                continue;
+
             $categoryId = $this->toQueryProductId($value);
             $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
             query {
