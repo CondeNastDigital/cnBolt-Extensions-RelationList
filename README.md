@@ -437,7 +437,7 @@ connectors:
     shopify-product:
         class: Bolt\Extension\CND\RelationList\Connector\ShopifyProductConnector
         api:
-        url: https://[API key]:[Password]@[shopname].myshopify.com
+        url: https://[shopname].myshopify.com
             endpoint: /api/2021-07/graphql.json
             token: [Storefront access token]
         collection:
@@ -449,14 +449,13 @@ This select mode retrieves products similar to a given product id.
 
 ```
 sources:
-    shopify-product-feed: &shopify-product-feed
+    shopify-product: &shopify-product
         connector: shopify-product
         fill:
             mode: '%mode%'
             productid: %productid%
-            categoryid: %categoryIds%
+            categoryIds: %categoryIds%
             limit: 5
-        defaults: []
 ```
 
 ## Usage
