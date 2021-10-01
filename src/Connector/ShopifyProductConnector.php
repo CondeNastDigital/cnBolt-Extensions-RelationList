@@ -189,7 +189,7 @@ class ShopifyProductConnector extends BaseConnector {
             if (!$value)
                 continue;
 
-            $categoryIds = $this->toQueryProductId($value);
+            $categoryIds = $this->toQueryId($value);
             $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
             query {
                 collections(first: 1, query:"'.$categoryIds.'") {
@@ -326,7 +326,7 @@ class ShopifyProductConnector extends BaseConnector {
                 # -id means: id != ...
                 case '-id':
                 case 'id':
-                    $query[] = $key.':'.$this->toQueryProductId($value);
+                    $query[] = $key.':'.$this->toQueryId($value);
                     break;
                 default:
                    $query[] = $key.':'.$this->filterValue($value);
@@ -334,7 +334,7 @@ class ShopifyProductConnector extends BaseConnector {
         }
 
         foreach ($exclude as $value) {
-            $value = $this->toQueryProductId($value);
+            $value = $this->toQueryId($value);
             $query[] = '-id:'.$value;
         }
 
@@ -343,26 +343,21 @@ class ShopifyProductConnector extends BaseConnector {
 
     /**
      * Accepts ids in Human Readable format or id Shopify base64 encoded ProductID
+     * converts whatever ID to shopify ID for usage within product or category queries
      * @param string $id
      * @return array|string|string[]|null
      * @throws \Exception
      */
-    protected function toQueryProductId(string $id): string {
+    protected function toQueryId(string $id): string {
 
         if(preg_match(self::SHOPIFY_PRODUCTID_GLOBAL_PATTERN, $id, $match)) {
-
             $queryId = $match['ID'];
-
         } elseif ( preg_match(self::SHOPIFY_PRODUCTID_CLEAN_PATTERN, $id)) {
-
             $queryId = $id;
-
         } elseif ( preg_match(self::SHOPIFY_PRODUCTID_BASE64_PATTERN, $id)) {
-
             $queryId = base64_decode($id);
             $queryId = explode('/', $queryId);
             $queryId = end($queryId);
-
         } else {
             throw new \Exception('Invalid Query Shopify ID:'.$id);
         }
@@ -372,6 +367,7 @@ class ShopifyProductConnector extends BaseConnector {
 
     /**
      * Accepts ids in Human Readable format or id Shopify base64 encoded ProductID
+     * convert whatever ID for usage at shopify recommendation
      * @param string $id
      * @return string
      * @throws \Exception
