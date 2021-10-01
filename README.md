@@ -426,6 +426,39 @@ Sample:
         endpoints:
             - '/bolt/relationlist/tipser/autocomplete/categories?search={{query}}'
 ```
+#### Shopify
+This connector selects products from the Shopify API via different methods.
+
+**Configuration**
+The connector needs some values to access the api correctly. These are:
+
+```
+connectors:
+    shopify-product:
+        class: Bolt\Extension\CND\RelationList\Connector\ShopifyProductConnector
+        api:
+        url: https://[API key]:[Password]@[shopname].myshopify.com
+            endpoint: /api/2021-07/graphql.json
+            token: [Storefront access token]
+        collection:
+            limit: 100
+``` 
+
+**Similar Products**
+This select mode retrieves products similar to a given product id.
+
+```
+sources:
+    shopify-product-feed: &shopify-product-feed
+        connector: shopify-product
+        fill:
+            mode: '%mode%'
+            productid: %productid%
+            categoryid: %categoryIds%
+            limit: 5
+        defaults: []
+```
+
 ## Usage
 
 ### RelationList
