@@ -24,7 +24,7 @@ class ShopifyProductConnector extends BaseConnector {
      */
     public function searchRecords($config, $text): array{
 
-        $cleaned = preg_replace('/[^a-z0-9\_\-\s]+/i','*', $text);
+        $cleaned = preg_replace('/[^a-z0-9\_\-\säöüÄÖÜ]+/i','*', $text);
 
         $query = self::GRAPHQL_FRAGMENT_PRODUCT.'
         query {
