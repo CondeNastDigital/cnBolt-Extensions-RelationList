@@ -92,16 +92,16 @@ class ShopifyProductConnector extends BaseConnector {
         $mode = $fill['mode'] ?? 'similar';
         $fillItems = [];
 
-        if($mode === 'similar') {
-            $fillItems = $this->fillSimilar($config['fill']);
-        }
-
-        if($mode === 'products') {
-            $fillItems = $this->fillProducts($config['fill'], $exclude);
-        }
-
-        if($mode === 'category') {
-            $fillItems = $this->fillCategory($config['fill'], $exclude);
+        switch ($mode) {
+            case 'similar': // use shopify recommendation
+                $fillItems = $this->fillSimilar($config['fill']);
+                break;
+            case 'category': // fill by category IDs
+                $fillItems = $this->fillCategory($config['fill'], $exclude);
+                break;
+            case 'products': // fill by products & tags
+                $fillItems = $this->fillProducts($config['fill'], $exclude);
+                break;
         }
 
         return $fillItems;
