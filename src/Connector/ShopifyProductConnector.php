@@ -104,10 +104,6 @@ class ShopifyProductConnector extends BaseConnector {
             $fillItems = $this->fillCategory($config['fill'], $exclude);
         }
 
-        if($mode === 'tag') {
-            $fillItems = $this->fillTag($config['fill'], $exclude);
-        }
-
         return $fillItems;
     }
 
@@ -227,43 +223,6 @@ class ShopifyProductConnector extends BaseConnector {
                     $products[] = $product;
             }
         }
-
-        array_walk($products, function (&$el) use ($shop) {
-            $el['node']['affiliate'] = $shop;
-        });
-
-        return $products ?: [];
-    }
-
-    /**
-     * @param array $fillConfig
-     * @param $exclude
-     * @return array
-     * @throws \Exception
-     */
-    protected function fillTag(array $fillConfig, $exclude): array {
-
-        if (!$fillConfig['tagid'])
-            return [];
-
-        $limit  = (int)($fillConfig['limit'] ?: 4);
-        $products = [];
-
-        $query =  self::GRAPHQL_FRAGMENT_PRODUCT.'
-            query {
-                products(first: '.$limit.', query: "tag:'.$fillConfig['tagid'].'", sortKey: UPDATED_AT) {
-                    edges {
-                        node {
-                            ... Properties
-                        }
-                    }
-                }
-                '.self::GRAPHQL_QUERY_SHOP.'
-            }';
-
-        $result = $this->requestShopify($query);
-        $products[] = $result['data']['products']['edges'][0];
-        $shop = $result['shop'] ?? [];
 
         array_walk($products, function (&$el) use ($shop) {
             $el['node']['affiliate'] = $shop;
@@ -433,7 +392,7 @@ class ShopifyProductConnector extends BaseConnector {
      * @return array|string|string[]|null
      */
     protected function filterValue(string $value): string {
-        return preg_replace('/[^a-z0-9\-\_]+/i','*', $value);
+        return preg_replace('/[^a-z0-9äöüÄÖÜ\-\_]+/i','*', $value);
     }
 
     /**

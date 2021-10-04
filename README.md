@@ -455,6 +455,8 @@ sources:
             mode: '%mode%'
             productid: %productid%
             categoryIds: %categoryIds%
+            filter:
+                tag: %tag%
             limit: 5
 ```
 
