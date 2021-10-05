@@ -23,6 +23,10 @@ class ShopifySelectProxy implements ControllerProviderInterface{
     protected $service;
 
     public function __construct (Application $app, array $config){
+
+        if (!isset($config['connectors']['shopify-product']))
+            return;
+
         $this->app = $app;
         $this->config = $config['connectors']['shopify-product'];
         $this->endpoint = $this->config['api']['url'].$this->config['api']['endpoint'];
