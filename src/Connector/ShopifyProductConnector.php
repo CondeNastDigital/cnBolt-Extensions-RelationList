@@ -516,6 +516,7 @@ class ShopifyProductConnector extends BaseConnector {
         vendor
         onlineStoreUrl
         availableForSale
+        totalInventory
         publishedAt
         updatedAt
         tags
