@@ -180,7 +180,7 @@ class RelationService {
         $results = $results ? array_merge(...$results) : [];
         echo "Result";
         print_r($results);
-        die;
+        
         // Re-sort into original order
         return $this->orderByList($relations, $results);
     }
