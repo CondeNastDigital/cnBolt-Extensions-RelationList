@@ -160,7 +160,10 @@ class RelationService {
         
         /* @var IConnector $connector */
         $results = [];
+        echo "<pre>"; 
+        print_r($relations);
         foreach($this->connectors as $key => $connector) {
+            print_r($connector);
             if($itemsByConnector[$key] ?? false) {
 
                 try {
@@ -171,8 +174,13 @@ class RelationService {
 
             }
         }
+        echo "</pre>";
+        
+        
         $results = $results ? array_merge(...$results) : [];
-
+        echo "Result";
+        print_r($results);
+        die;
         // Re-sort into original order
         return $this->orderByList($relations, $results);
     }
