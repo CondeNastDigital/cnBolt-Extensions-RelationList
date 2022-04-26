@@ -152,7 +152,7 @@ class RelationService {
      */
     public function getItems($relations): array{
         // Split items by connector
-       
+       echo 123;
         $itemsByConnector = [];
         foreach($relations as $relation){
             $itemsByConnector[$relation->service][] = $relation;
