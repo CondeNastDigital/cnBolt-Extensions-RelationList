@@ -152,11 +152,19 @@ class RelationService {
      */
     public function getItems($relations): array{
         // Split items by connector
+        echo"getItems Relations array : <br>";
+        print_r($relations);
+        echo"<br>--------------------------<br>";
         $itemsByConnector = [];
         foreach($relations as $relation){
             $itemsByConnector[$relation->service][] = $relation;
         }
-
+        echo"itemsByConnector array : <br>";
+        print_r($itemsByConnector);
+        echo"<br>--------------------------<br>";
+        echo"This->Connectors array : <br>";
+        print_r($this->connectors);
+        echo"<br>--------------------------<br>";
         /* @var IConnector $connector */
         $results = [];
         foreach($this->connectors as $key => $connector) {
