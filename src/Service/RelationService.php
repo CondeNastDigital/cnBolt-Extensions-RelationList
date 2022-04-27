@@ -152,16 +152,10 @@ class RelationService {
      */
     public function getItems($relations): array{
         // Split items by connector
-    //    var_dump($relations);
-    //    echo"-------------<br>";
-    //    var_dump($this->connectors);
         $itemsByConnector = [];
         foreach($relations as $relation){
             $itemsByConnector[$relation->service][] = $relation;
         }
-        // echo"-------------<br>";
-        var_dump($itemsByConnector);
-        /* @var IConnector $connector */
         $results = [];
         foreach($this->connectors as $key => $connector) {
             if($itemsByConnector[$key] ?? false) {
