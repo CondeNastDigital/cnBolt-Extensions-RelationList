@@ -74,7 +74,7 @@ class FillService {
      * @throws \Exception
      */
     public function getItems($poolKeys, $count, $parameters = [], $fixedItems = [], $bucket = 'default', $addShown = true){
-
+        echo 1234;
         $poolKey = $poolKeys['fill']    // seperate pools per type
                 ?? $poolKeys;            // one pool for everything
 
