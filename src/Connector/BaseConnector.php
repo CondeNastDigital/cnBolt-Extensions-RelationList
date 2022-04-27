@@ -68,7 +68,6 @@ abstract class BaseConnector implements IConnector {
     public function getItems($relations): array{
         $results = $this->getRecords($relations);
         $items = [];
-        echo 123;
         // Create item list and remove objects not found
         foreach($relations as $idx => $relation){
             if(isset($results[$relation->id])){
