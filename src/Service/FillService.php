@@ -74,7 +74,7 @@ class FillService {
      * @throws \Exception
      */
     public function getItems($poolKeys, $count, $parameters = [], $fixedItems = [], $bucket = 'default', $addShown = true){
-        
+        echo 1234;
         $poolKey = $poolKeys['fill']    // seperate pools per type
                 ?? $poolKeys;            // one pool for everything
 
@@ -85,6 +85,11 @@ class FillService {
 
         // add fixed items to shown
         $this->addShownItems($fixedItems, $bucket);
+        echo "<pre>";
+        print_r($parameters['pool_sources']);
+        print_r($pool['sources_default']);
+        print_r($pool['sources']);
+        echo"</pre>";
 
         $activeSources = $parameters['pool_sources'] ?? $pool['sources_default'] ?? array_keys($pool['sources']);
 
@@ -92,39 +97,36 @@ class FillService {
         // Load additional items from connectors
         if($count > count($fixedItems)) {
             $resultsByConnector = [];
-            foreach ($pool['sources'] as $sourceKey => &$source) {echo 1;
-                print_r($source);
-                print_r($activeSources);
-                echo "<br>" . $poolKey . " - " . $sourceKey . "<br>";
-                if (!in_array($sourceKey, $activeSources)){ echo 2;
+            foreach ($pool['sources'] as $sourceKey => &$source) {
+
+                if (!in_array($sourceKey, $activeSources))
                     continue;
-                }echo"**";
 
                 $connector = $this->connectors[$source['connector'] ?? false] ?? false;
 
-                if (!$connector) {echo 3;
+                if (!$connector) {
                     throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
                 }
 
                 // Merge the Defaults
                 $defaults = $source['defaults'] ?? [];
-                echo 4;
+
                 $placeholders = ConfigUtility::getQueryParameters(
                     $defaults,
                     $parameters,
                     $source['customfields'] ?? []
-                ); echo 5;
+                );
                 $source = ConfigUtility::applyQueryParameters($source, $placeholders);
-                echo 6; 
+
                 $exclusion = self::$alreadyShown[$bucket][$source['connector']] ?? [];
-                echo 7;
-                try {echo 8;
+
+                try {
                     $resultsByConnector[] = $connector->fillItems($source, $count, $exclusion);
-                } catch (\Exception $e) {echo 9;
+                } catch (\Exception $e) {
                     $this->container['logger']->error('RelationFill - Exception in connector '.$sourceKey, ['exception' => $e]);
                 }
-                echo 10;
-            }echo"--";
+
+            }
             // merge all sub arrays (by split by connector) into one large array
             $results = array_merge([], ...$resultsByConnector);
             unset($resultsByConnector);
