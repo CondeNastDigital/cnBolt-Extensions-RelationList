@@ -74,12 +74,12 @@ class FillService {
      * @throws \Exception
      */
     public function getItems($poolKeys, $count, $parameters = [], $fixedItems = [], $bucket = 'default', $addShown = true){
-        echo 1234;
+        echo 1;
         $poolKey = $poolKeys['fill']    // seperate pools per type
                 ?? $poolKeys;            // one pool for everything
 
         $pool = $this->config['pools'][$poolKey] ?? false;
-        if(!$pool) {
+        if(!$pool) {echo 22;
             throw new \Exception('Pool configuration for field "' . $poolKey . '" invalid');
         }
 
@@ -90,16 +90,16 @@ class FillService {
 
         $results = [];
         // Load additional items from connectors
-        if($count > count($fixedItems)) {
+        if($count > count($fixedItems)) {echo 33;
             $resultsByConnector = [];
-            foreach ($pool['sources'] as $sourceKey => &$source) {
+            foreach ($pool['sources'] as $sourceKey => &$source) {echo 44;
 
-                if (!in_array($sourceKey, $activeSources))
+                if (!in_array($sourceKey, $activeSources))echo 55;
                     continue;
 
                 $connector = $this->connectors[$source['connector'] ?? false] ?? false;
 
-                if (!$connector) {
+                if (!$connector) {echo 66;
                     throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
                 }
 
@@ -115,9 +115,9 @@ class FillService {
 
                 $exclusion = self::$alreadyShown[$bucket][$source['connector']] ?? [];
 
-                try {
+                try {echo 77;
                     $resultsByConnector[] = $connector->fillItems($source, $count, $exclusion);
-                } catch (\Exception $e) {
+                } catch (\Exception $e) {echo 88;
                     $this->container['logger']->error('RelationFill - Exception in connector '.$sourceKey, ['exception' => $e]);
                 }
 
