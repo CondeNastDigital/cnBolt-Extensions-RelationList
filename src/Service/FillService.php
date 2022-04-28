@@ -85,17 +85,15 @@ class FillService {
         // add fixed items to shown
         $this->addShownItems($fixedItems, $bucket);
 
-        if(!empty($parameters['pool_sources'])) { echo 1;
+        if(!empty($parameters['pool_sources'])) {
             $activeSources = $parameters['pool_sources'];
-        } else if(!empty($pool['sources_default'])){ echo 2;
+        } else if(!empty($pool['sources_default'])){
             $activeSources = $pool['sources_default'];
-        } else if(!empty($pool['sources'])) { echo 3;
+        } else if(!empty($pool['sources'])) {
             $activeSources = array_keys($pool['sources']);
-        } else { echo 4;
+        } else {
             $activeSources = [];
         }
-
-        echo "5<pre>";print_r($activeSources);echo "</pre>";
 
         // $activeSources = $parameters['pool_sources'] ?? $pool['sources_default'] ?? array_keys($pool['sources']);
 
