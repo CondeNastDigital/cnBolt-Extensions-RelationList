@@ -93,35 +93,36 @@ class FillService {
         if($count > count($fixedItems)) {
             $resultsByConnector = [];
             foreach ($pool['sources'] as $sourceKey => &$source) {echo 1;
-                echo $poolKey . " - " . $sourceKey . "<br>";
+                print_r($source);
+                echo "<br>" . $poolKey . " - " . $sourceKey . "<br>";
                 if (!in_array($sourceKey, $activeSources))echo 2;
                     continue;
 
                 $connector = $this->connectors[$source['connector'] ?? false] ?? false;
 
-                if (!$connector) {echo 3;
+                if (!$connector) {echo 2;
                     throw new \Exception('Connector configuration for pool "' . $poolKey . '" and source "' . $sourceKey . '" invalid');
                 }
 
                 // Merge the Defaults
                 $defaults = $source['defaults'] ?? [];
-                echo 4;
+                echo 3;
                 $placeholders = ConfigUtility::getQueryParameters(
                     $defaults,
                     $parameters,
                     $source['customfields'] ?? []
-                ); echo 5;
+                ); echo 4;
                 $source = ConfigUtility::applyQueryParameters($source, $placeholders);
-                echo 6; 
+                echo 5; 
                 $exclusion = self::$alreadyShown[$bucket][$source['connector']] ?? [];
-                echo 7;
-                try {echo 8;
+                echo 6;
+                try {echo 7;
                     $resultsByConnector[] = $connector->fillItems($source, $count, $exclusion);
-                } catch (\Exception $e) {echo 9;
+                } catch (\Exception $e) {echo 8;
                     $this->container['logger']->error('RelationFill - Exception in connector '.$sourceKey, ['exception' => $e]);
                 }
-                echo 10;
-            }echo 11;
+                echo 9;
+            }echo 10;
             // merge all sub arrays (by split by connector) into one large array
             $results = array_merge([], ...$resultsByConnector);
             unset($resultsByConnector);
