@@ -87,7 +87,7 @@ class FillService {
         $this->addShownItems($fixedItems, $bucket);
         echo "<pre>";
         print_r($parameters['pool_sources']);
-        print_r($pool['sources_default']);
+        // print_r($pool['sources_default']);
         print_r($pool['sources']);
         echo"</pre>";
 
