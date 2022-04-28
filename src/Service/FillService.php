@@ -95,7 +95,7 @@ class FillService {
             foreach ($pool['sources'] as $sourceKey => &$source) {echo 1;
                 print_r($source);
                 echo "<br>" . $poolKey . " - " . $sourceKey . "<br>";
-                if (!in_array($sourceKey, $activeSources))echo 2;
+                if (!in_array($sourceKey, $activeSources))
                     continue;
 
                 $connector = $this->connectors[$source['connector'] ?? false] ?? false;
