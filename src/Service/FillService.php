@@ -74,7 +74,6 @@ class FillService {
      * @throws \Exception
      */
     public function getItems($poolKeys, $count, $parameters = [], $fixedItems = [], $bucket = 'default', $addShown = true){
-        echo 1234;
         $poolKey = $poolKeys['fill']    // seperate pools per type
                 ?? $poolKeys;            // one pool for everything
 
@@ -85,13 +84,20 @@ class FillService {
 
         // add fixed items to shown
         $this->addShownItems($fixedItems, $bucket);
-        echo "<pre>";
-        print_r($parameters['pool_sources']);
-        // print_r($pool['sources_default']);
-        print_r($pool['sources']);
-        echo"</pre>";
 
-        $activeSources = $parameters['pool_sources'] ?? $pool['sources_default'] ?? array_keys($pool['sources']);
+        if(!empty($parameters['pool_sources'])) { echo 1;
+            $activeSources = $parameters['pool_sources'];
+        } else if(!empty($pool['sources_default'])){ echo 2;
+            $activeSources = $pool['sources_default'];
+        } else if(!empty($pool['sources'])) { echo 3;
+            $activeSources = $pool['sources'];
+        } else { echo 4;
+            $activeSources = [];
+        }
+
+        echo "5<pre>";print_r($activeSources);echo "</pre>";
+
+        // $activeSources = $parameters['pool_sources'] ?? $pool['sources_default'] ?? array_keys($pool['sources']);
 
         $results = [];
         // Load additional items from connectors
