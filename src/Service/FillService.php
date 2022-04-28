@@ -90,7 +90,7 @@ class FillService {
         } else if(!empty($pool['sources_default'])){ echo 2;
             $activeSources = $pool['sources_default'];
         } else if(!empty($pool['sources'])) { echo 3;
-            $activeSources = $pool['sources'];
+            $activeSources = array_keys($pool['sources']);
         } else { echo 4;
             $activeSources = [];
         }
