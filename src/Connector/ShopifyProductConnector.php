@@ -73,9 +73,11 @@ class ShopifyProductConnector extends BaseConnector {
 
         // Applies the shop and transfers the Products to the results array
         foreach ($products as $product) {
-            $product['affiliate']   = $shop;
-            $result[$product['id']] = $product;
-        }
+            if(isset($product['id'])){
+                $product['affiliate']   = $shop;
+                $result[$product['id']] = $product;
+            }
+        }   
 
         return $result;
     }
