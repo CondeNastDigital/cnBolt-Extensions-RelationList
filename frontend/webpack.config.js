@@ -2,8 +2,7 @@
 const Vue = require('vue');
 const path = require('path');
 
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const extractCSS = new ExtractTextPlugin('styles.min.css');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const clientConfig = {
     target: 'web',
@@ -58,19 +57,29 @@ const clientConfig = {
             },
             {
                 test: /\.css$/,
-                use: extractCSS.extract([
+                use: [
+                    MiniCssExtractPlugin.loader,
                     'css-loader',
                     'postcss-loader'
-                ])
+                ]
             },
             {
                 test: /\.(jpe?g|png|gif|woff|woff2|eot|ttf|svg)(\?[a-z0-9=.]+)?$/,
-                loader: 'url-loader?limit=100000'
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            limit: 100000
+                        }
+                    }
+                ]
             }
         ]
     },
     plugins: [
-        extractCSS
+        new MiniCssExtractPlugin({
+            filename: "styles.min.css"
+        })
     ]
 };
 
@@ -127,19 +136,29 @@ const serverConfig = {
             },
             {
                 test: /\.css$/,
-                use: extractCSS.extract([
+                use: [
+                    MiniCssExtractPlugin.loader,
                     'css-loader',
                     'postcss-loader'
-                ])
+                ]
             },
             {
                 test: /\.(jpe?g|png|gif|woff|woff2|eot|ttf|svg)(\?[a-z0-9=.]+)?$/,
-                loader: 'url-loader?limit=100000'
+                use: [
+                    {
+                        loader: 'url-loader',
+                        options: {
+                            limit: 100000
+                        }
+                    }
+                ]
             }
         ]
     },
     plugins: [
-        extractCSS
+        new MiniCssExtractPlugin({
+            filename: "styles.min.css"
+        })
     ],
     devServer: {
         port: 3000
